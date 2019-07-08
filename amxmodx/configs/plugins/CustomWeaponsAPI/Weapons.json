@@ -1,0 +1,14 @@
+[{
+    "DefaultName": "deagle",
+    "Name": "FireDeagle",
+    "ClipSize": 5,
+    "MaxAmmo": 20,
+    "Models": {
+        "v": "models/FireDeagle/v_deagle.mdl",
+        "p": "models/FireDeagle/p_deagle.mdl",
+        "w": "models/FireDeagle/w_deagle.mdl"
+    },
+    "MaxWalkSpeed": 500,
+    "DamageMult": 0.75,
+    "Weight": 10
+}]
