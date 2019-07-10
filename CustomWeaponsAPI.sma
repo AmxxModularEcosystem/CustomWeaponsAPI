@@ -82,11 +82,11 @@ public plugin_precache(){
     LoadWeapons();
 }
 
-public plugin_natives(){
-    // Регистрация обработчика события оружия по его имени
-    // Возвращает ID зарегистрированного обработчика
-    register_native("CWAPI_RegisterHook", "Native_RegisterHook");
-}
+//public plugin_natives(){
+//    // Регистрация обработчика события оружия по его имени
+//    // Возвращает ID зарегистрированного обработчика
+//    register_native("CWAPI_RegisterHook", "Native_RegisterHook");
+//}
 
 //public Native_RegisterHook(const PluginId, const Params){
 //    static WeaponName[32]; get_string(1, WeaponName, charsmax(WeaponName));
