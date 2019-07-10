@@ -1,14 +1,53 @@
 [{
-    "DefaultName": "deagle",
-    "Name": "FireDeagle",
-    "ClipSize": 5,
-    "MaxAmmo": 20,
-    "Models": {
-        "v": "models/FireDeagle/v_deagle.mdl",
-        "p": "models/FireDeagle/p_deagle.mdl",
-        "w": "models/FireDeagle/w_deagle.mdl"
+        "DefaultName": "deagle",
+        "Name": "FireDeagle",
+        "ClipSize": 5,
+        "MaxAmmo": 20,
+        "Models": {
+            "v": "models/FireDeagle/v_deagle.mdl",
+            "p": "models/FireDeagle/p_deagle.mdl",
+            "w": "models/FireDeagle/w_deagle.mdl"
+        },
+        "Sounds": {
+            "Shot": "FireDeagle/shoot.wav",
+            "Reload": ""
+        },
+        "MaxWalkSpeed": 800,
+        "DamageMult": 1.5,
+        "Weight": 10,
+        "Price": 3000
     },
-    "MaxWalkSpeed": 500,
-    "DamageMult": 0.75,
-    "Weight": 10
-}]
+    {
+        "DefaultName": "m4a1",
+        "Name": "NoveskeDiplomat",
+        "ClipSize": 35,
+        "MaxAmmo": 150,
+        "Models": {
+            "v": "models/CustomWeapons/Noveske Diplomat/v_m4a1.mdl",
+            "p": "models/CustomWeapons/Noveske Diplomat/p_m4a1.mdl",
+            "w": "models/CustomWeapons/Noveske Diplomat/w_m4a1.mdl"
+        },
+        "Sounds": {
+            "Shot": "CustomWeapons/Noveske Diplomat/m4a1_unsil-1.wav",
+            "ShotSilent": "CustomWeapons/Noveske Diplomat/m4a1-1.wav",
+            "OnlyPrecache": [
+                "weapons/M4A1/Ripper/boltback.wav",
+                "weapons/M4A1/Ripper/boltrelease.wav",
+                "weapons/M4A1/Ripper/bullet.wav",
+                "weapons/M4A1/Ripper/draw.wav",
+                "weapons/M4A1/Ripper/inspect.wav",
+                "weapons/M4A1/Ripper/magin.wav",
+                "weapons/M4A1/Ripper/magout.wav",
+                "weapons/M4A1/Ripper/magtap.wav",
+                "weapons/M4A1/Ripper/siloff.wav",
+                "weapons/M4A1/Ripper/silon.wav",
+                "weapons/M4A1/Ripper/silpush.wav",
+                "weapons/M4A1/Ripper/maghit.wav"
+            ]
+        },
+        "MaxWalkSpeed": 800,
+        "DamageMult": 1.1,
+        "Weight": 100,
+        "Price": 6000
+    }
+]
