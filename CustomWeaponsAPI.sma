@@ -236,13 +236,11 @@ public Hook_PlayerGetMaxSpeed(const ItemId){
 //}
 
 GiveCustomWeapon(const Id, const WeaponId){
-    log_amx("GiveCustomWeapon 1 [user: %n] => WeaponId = %d", Id, WeaponId);
     if(!IsCustomWeapon(WeaponId)) return -1;
 
     new Data[E_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
     new ItemId = rg_give_custom_item(Id, GetWeapFullName(Data[WD_DefaultName]), GT_DROP_AND_REPLACE, WeaponId+WEAPONS_IMPULSE_OFFSET);
 
-    log_amx("GiveCustomWeapon 2 [user: %n] => WeaponName = %s | DefWeaponname = %s || ItemId = %d", Id, Data[WD_Name], Data[WD_DefaultName], ItemId);
     if(is_nullent(ItemId)) return -1;
 
     static WeaponIdType:DefaultWeaponId; DefaultWeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
