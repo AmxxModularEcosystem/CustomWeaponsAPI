@@ -9,8 +9,7 @@
             "w": "models/FireDeagle/w_deagle.mdl"
         },
         "Sounds": {
-            "Shot": "FireDeagle/shoot.wav",
-            "Reload": ""
+            "Shot": "FireDeagle/shoot.wav"
         },
         "MaxWalkSpeed": 800,
         "DamageMult": 1.5,

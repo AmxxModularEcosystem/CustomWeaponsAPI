@@ -2,10 +2,12 @@
 #include <reapi>
 #include <hamsandwich>
 #include <json>
+#include <cwapi>
 
 #pragma semicolon 1
 
 #define DEBUG // Закомментировать чтобы запретить бесплатную выдачу пушек
+//#define SUPPORT_RESTRICT // Поддержка запрещалки пушек
 
 #define WEAPONS_IMPULSE_OFFSET 4354
 #define GetWeapFullName(%0) fmt("weapon_%s",%0)
@@ -14,9 +16,13 @@
 #define GetWeapId(%0) get_entvar(%0,var_impulse)-WEAPONS_IMPULSE_OFFSET
 #define IsCustomWeapon(%0) (0 <= %0 < CUSTOM_WEAPONS_COUNT)
 
+#if defined SUPPORT_RESTRICT
+    forward WeaponsRestrict_LoadingWeapons_Post();
+    native WeaponsRestrict_AddWeapon(const WeaponId, const WeaponName[32]);
+#endif
 
 enum E_Fwds{
-    Fwd_LoadWeapon,
+    Fwd_LoadWeaponsPost,
 }
 
 enum E_WeaponModels{
@@ -24,19 +30,6 @@ enum E_WeaponModels{
     WM_P[PLATFORM_MAX_PATH],
     WM_W[PLATFORM_MAX_PATH],
 }
-
-//enum E_WeaponEvents{
-//    WH_Shot = 1,
-//    WH_Reload,
-//    WH_Deploy,
-//    WH_Holster,
-//    WH_Damage,
-//}
-
-//enum E_CustomHandlerData{
-//    CHD_Plugin[64],
-//    CHD_Function[64],
-//}
 
 enum E_WeaponSounds{
     WS_Shot[PLATFORM_MAX_PATH],
@@ -52,7 +45,7 @@ enum _:E_WeaponData{
     WD_MaxAmmo,
     Float:WD_MaxWalkSpeed,
     WD_Weight,
-    //Array:WD_CustomHandlers[E_WeaponEvents],
+    Array:WD_CustomHandlers[CWAPI_WeaponEvents],
     Float:WD_DamageMult,
     WD_Price,
     Float:WD_Accuracy,
@@ -61,17 +54,24 @@ enum _:E_WeaponData{
 new Trie:WeaponsNames;
 new Array:CustomWeapons;
 
+new Fwds[E_Fwds];
+
 new const PLUG_NAME[] = "Custom Weapons API";
 new const PLUG_VER[] = "0.1";
 
 public plugin_init(){
     register_plugin(PLUG_NAME, PLUG_VER, "ArKaNeMaN");
     
-    RegisterHookChain(RG_CWeaponBox_SetModel , "Hook_WeaponBoxSetModel", false);
-    RegisterHookChain(RG_CBasePlayer_SetAnimation , "Hook_PlayerAnimation", true);
+    RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel", false);
+    RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Post", true);
+    RegisterHookChain(RG_CBasePlayer_SetAnimation, "Hook_PlayerAnimation", true);
+    //RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_PlayerAddItem", true);
+    //RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
 
+    // Покупка пушки (Только если указана цена)
     register_clcmd("CWAPI_Buy", "Cmd_Buy");
     #if defined DEBUG
+        // Бесплатная выдача пушки (Для тестов)
         register_clcmd("CWAPI_Give", "Cmd_GiveCustomWeapon");
     #endif
 
@@ -79,46 +79,102 @@ public plugin_init(){
 }
 
 public plugin_precache(){
+    InitForwards();
+
     LoadWeapons();
 }
 
-//public plugin_natives(){
-//    // Регистрация обработчика события оружия по его имени
-//    // Возвращает ID зарегистрированного обработчика
-//    register_native("CWAPI_RegisterHook", "Native_RegisterHook");
-//}
+public plugin_natives(){
+    register_native("CWAPI_RegisterHook", "Native_RegisterHook");
 
-//public Native_RegisterHook(const PluginId, const Params){
-//    static WeaponName[32]; get_string(1, WeaponName, charsmax(WeaponName));
-//    static E_WeaponEvents:Event; Event = E_WeaponEvents:get_param_byref(2);
-//    static FuncName[64]; get_string(3, FuncName, charsmax(FuncName));
-//    static PlugName[64]; get_plugin(PluginId, PlugName, charsmax(PlugName));
-//    if(!TrieKeyExists(WeaponsNames, WeaponName)) return -1;
-//    static WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
-//    static Data[E_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
-//    if(Data[WD_CustomHandlers][Event] == Invalid_Array) Data[WD_CustomHandlers][Event] = ArrayCreate(E_CustomHandlerData);
-//    static Handler[E_CustomHandlerData];
-//    formatex(Handler[CHD_Plugin], charsmax(Handler[CHD_Plugin]), PlugName);
-//    formatex(Handler[CHD_Function], charsmax(Handler[CHD_Function]), FuncName);
-//    static HandlerId; HandlerId = ArrayPushArray(Data[WD_CustomHandlers][Event], Handler);
-//    ArraySetArray(CustomWeapons, WeapnId, Data);
-//    return HandlerId;
-//}
-//
-//CallWeaponFwd(const WeaponId, const E_WeaponEvents:Event){
-//    static Data[E_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
-//
-//    static Handler[E_CustomHandlerData];
-//    for(new i = 0; i < ArraySize(Data[WD_CustomHandlers][Event]); i++){
-//        ArrayGetArray(Data[WD_CustomHandlers][Event], i, Handler);
-//
-//        callfunc_begin(Handler[CHD_Function], Handler[CHD_Plugin]);
-//
-//        call
-//
-//        callfunc_end();
-//    }
-//}
+    register_native("CWAPI_GiveWeapon", "Native_GiveWeapon");
+}
+
+public Native_GiveWeapon(){
+    static UserId; UserId = get_param(1);
+    static WeaponName[32]; get_string(2, WeaponName, charsmax(WeaponName));
+    if(!TrieKeyExists(WeaponsNames, WeaponName)){
+        log_error(1, "Weapon '%s' not found", WeaponName);
+        return -1;
+    }
+    static WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
+    return GiveCustomWeapon(UserId, WeaponId);
+}
+
+public Native_RegisterHook(const PluginId, const Params){
+    new WeaponName[32]; get_string(1, WeaponName, charsmax(WeaponName));
+    new CWAPI_WeaponEvents:Event = CWAPI_WeaponEvents:get_param(2);
+    new FuncName[64]; get_string(3, FuncName, charsmax(FuncName));
+
+    //log_amx("[Native_RegisterHook] 1 [PluginId= %d || WeaponName = %s | Event = %d | FuncName = %s]", PluginId, WeaponName, _:Event, FuncName);
+
+    if(!TrieKeyExists(WeaponsNames, WeaponName)) return -1;
+    new WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
+    new Data[E_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
+
+    //log_amx("[Native_RegisterHook] 2 [WeaponId = %d]", WeaponId);
+
+    if(Data[WD_CustomHandlers][Event] == Invalid_Array){
+        Data[WD_CustomHandlers][Event] = ArrayCreate();
+        ArraySetArray(CustomWeapons, WeaponId, Data);
+    }
+    
+    new FwdId = _CreateOneForward(PluginId, FuncName, Event);
+    new HandlerId = ArrayPushCell(Data[WD_CustomHandlers][Event], _:FwdId);
+
+    //log_amx("[Native_RegisterHook] 3 [HandlerId = %d | FwdId = %d] [From Array: FwdId = %d]", HandlerId, FwdId, ArrayGetCell(Data[WD_CustomHandlers][Event], HandlerId));
+
+    return HandlerId;
+}
+
+CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, Array:Params = Invalid_Array){
+    static Data[E_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
+
+    if(Data[WD_CustomHandlers][Event] == Invalid_Array) return true;
+
+    //log_amx("[CallWeaponEvent] 1 [WeaponId = %d | Event = %d | ItemId = %d]", WeaponId, _:Event, ItemId);
+
+    static FwdId, Return;
+    for(new i = 0; i < ArraySize(Data[WD_CustomHandlers][Event]); i++){
+        FwdId = ArrayGetCell(Data[WD_CustomHandlers][Event], i);
+        //log_amx("[CallWeaponEvent] 2 - %d [FwdId = %d]", i, FwdId);
+        _ExecuteForward(FwdId, Return, Event, ItemId, Params);
+        //log_amx("[CallWeaponEvent] 3 - %d [Return = %d | Status = %s]", i, Return, Status);
+        if(Return == CWAPI_RET_HANDLED) break;
+    }
+    if(Params != Invalid_Array) ArrayDestroy(Params);
+    if(Return == CWAPI_RET_HANDLED) return false;
+    return true;
+}
+
+_CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Event){
+    switch(Event){
+        case CWAPI_WE_Shot: return CreateOneForward(PluginId, FuncName, FP_CELL);
+        case CWAPI_WE_Reload: return CreateOneForward(PluginId, FuncName, FP_CELL);
+        case CWAPI_WE_Deploy: return CreateOneForward(PluginId, FuncName, FP_CELL);
+        case CWAPI_WE_Holster: return CreateOneForward(PluginId, FuncName, FP_CELL);
+        case CWAPI_WE_Damage: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL, FP_FLOAT, FP_CELL);
+        case CWAPI_WE_Droped: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
+        case CWAPI_WE_AddItem: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
+        case CWAPI_WE_Take: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
+    }
+    return log_error(0, "Undefined weapon event '%d'", _:Event);
+}
+
+_ExecuteForward(const FwdId, &Return, const CWAPI_WeaponEvents:Event, const ItemId, const Array:Params = Invalid_Array){
+    Return = CWAPI_RET_CONTINUE;
+    switch(Event){
+        case CWAPI_WE_Shot: return ExecuteForward(FwdId, Return, ItemId);
+        case CWAPI_WE_Reload: return ExecuteForward(FwdId, Return, ItemId);
+        case CWAPI_WE_Deploy: return ExecuteForward(FwdId, Return, ItemId);
+        case CWAPI_WE_Holster: return ExecuteForward(FwdId, Return, ItemId);
+        case CWAPI_WE_Damage: return ExecuteForward(FwdId, Return, ItemId, ArrayGetCell(Params, 0), ArrayGetCell(Params, 1), ArrayGetCell(Params, 2));
+        case CWAPI_WE_Droped: return ExecuteForward(FwdId, Return, ItemId, ArrayGetCell(Params, 0));
+        case CWAPI_WE_AddItem: return ExecuteForward(FwdId, Return, ItemId, ArrayGetCell(Params, 0));
+        case CWAPI_WE_Take: return ExecuteForward(FwdId, Return, ItemId, ArrayGetCell(Params, 0));
+    }
+    return 1;
+}
 
 public Hook_WeaponBoxSetModel(const WeaponBox){
     static ItemId;
@@ -130,17 +186,35 @@ public Hook_WeaponBoxSetModel(const WeaponBox){
     return HC_SUPERCEDE;
 }
 
+public Hook_WeaponBoxSetModel_Post(const WeaponBox){
+    static ItemId;
+    if(!(ItemId = GetItemFromWeaponBox(WeaponBox))) return HC_CONTINUE;
+    static WeaponId; WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId)) return HC_CONTINUE;
+
+    static Array:Params; Params = ArrayCreate();
+    ArrayPushCell(Params, WeaponBox);
+
+    CallWeaponEvent(WeaponId, CWAPI_WE_Droped, ItemId, Params);
+
+    return HC_CONTINUE;
+}
+
 public Hook_PlayerAnimation(const Id, const PLAYER_ANIM:Anim){
-    if(!is_user_connected(Id)) return;
-    if(Anim != PLAYER_ATTACK1) return;
+    if(!is_user_connected(Id)) return HC_CONTINUE;
+    if(Anim != PLAYER_ATTACK1) return HC_CONTINUE;
     static ItemId; ItemId = get_member(Id, m_pActiveItem);
     static WeaponId; WeaponId = GetWeapId(ItemId);
-    if(!IsCustomWeapon(WeaponId)) return;
+    if(!IsCustomWeapon(WeaponId)) return HC_CONTINUE;
     static Data[E_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
+
+    if(!CallWeaponEvent(WeaponId, CWAPI_WE_Shot, ItemId)) return HC_SUPERCEDE;
     
     // Звук вроде бы слышен только носителю
     if(IsWeaponSilenced(ItemId)) if(Data[WD_Sounds][WS_ShotSilent][0]) rh_emit_sound2(Id, 0, CHAN_WEAPON, Data[WD_Sounds][WS_ShotSilent]);
     else if(Data[WD_Sounds][WS_Shot][0]) rh_emit_sound2(Id, 0, CHAN_WEAPON, Data[WD_Sounds][WS_Shot]);
+
+    return HC_CONTINUE;
 }
 
 #if defined DEBUG
@@ -182,6 +256,38 @@ public Cmd_Buy(const Id){
     return PLUGIN_HANDLED;
 }
 
+public Hook_PlayerAddItem(const UserId, const ItemId){
+    static WeaponId; WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId)) return HC_CONTINUE;
+    if(!is_user_connected(UserId)) return HC_CONTINUE;
+
+    static Array:Params; Params = ArrayCreate();
+    ArrayPushCell(Params, UserId);
+
+    CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_AddItem, ItemId, Params);
+
+    return HC_CONTINUE;
+}
+
+public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, DamageBits){
+    if(DamageBits & DMG_GRENADE) return HC_CONTINUE;
+    static ItemId; ItemId = get_member(Attacker, m_pActiveItem);
+    static WeaponId; WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId)) return HC_CONTINUE;
+
+    static Array:Params; Params = ArrayCreate();
+    ArrayPushCell(Params, Victim);
+    ArrayPushCell(Params, Damage);
+    ArrayPushCell(Params, DamageBits);
+
+    if(!CallWeaponEvent(WeaponId, CWAPI_WE_Damage, ItemId, Params)){
+        SetHookChainReturn(ATYPE_INTEGER, 0);
+        return HC_SUPERCEDE;
+    }
+
+    return HC_CONTINUE;
+}
+
 public Hook_PlayerItemDeploy(const ItemId){
     if(!IsCustomWeapon(GetWeapId(ItemId))) return HAM_IGNORED;
     static Id; Id = get_member(ItemId, m_pPlayer);
@@ -192,24 +298,32 @@ public Hook_PlayerItemDeploy(const ItemId){
     if(Data[WD_Models][WM_V][0]) set_entvar(Id, var_viewmodel, Data[WD_Models][WM_V][0]);
     if(Data[WD_Models][WM_P][0]) set_entvar(Id, var_weaponmodel, Data[WD_Models][WM_P][0]);
 
+    CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
+
     return HAM_IGNORED;
 }
 
-//public Hook_PlayerItemHolster(const ItemId){
-//    if(!IsCustomWeapon(GetWeapId(ItemId))) return HAM_IGNORED;
-//    static Id; Id = get_member(ItemId, m_pPlayer);
-//    if(!is_user_connected(Id)) return HAM_IGNORED;
-//
-//    return HAM_IGNORED;
-//}
-//
-//public Hook_PlayerItemReloaded(const ItemId){
-//    if(!IsCustomWeapon(GetWeapId(ItemId))) return HAM_IGNORED;
-//    static Id; Id = get_member(ItemId, m_pPlayer);
-//    if(!is_user_connected(Id)) return HAM_IGNORED;
-//
-//    return HAM_IGNORED;
-//}
+public Hook_PlayerItemHolster(const ItemId){
+    if(!IsCustomWeapon(GetWeapId(ItemId))) return HAM_IGNORED;
+    static Id; Id = get_member(ItemId, m_pPlayer);
+    if(!is_user_connected(Id)) return HAM_IGNORED;
+
+    CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Holster, ItemId);
+
+    return HAM_IGNORED;
+}
+
+public Hook_PlayerItemReloaded(const ItemId){
+    if(!IsCustomWeapon(GetWeapId(ItemId))) return HAM_IGNORED;
+    if(get_member(ItemId, m_Weapon_iClip) >= rg_get_iteminfo(ItemId, ItemInfo_iMaxClip)) return HAM_SUPERCEDE;
+
+    static Id; Id = get_member(ItemId, m_pPlayer);
+    if(!is_user_connected(Id)) return HAM_IGNORED;
+
+    CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Reload, ItemId);
+
+    return HAM_IGNORED;
+}
 
 public Hook_PlayerGetMaxSpeed(const ItemId){
     if(!IsCustomWeapon(GetWeapId(ItemId))) return HAM_IGNORED;
@@ -235,8 +349,15 @@ public Hook_PlayerGetMaxSpeed(const ItemId){
 //    }
 //}
 
+// Выдача пушки
 GiveCustomWeapon(const Id, const WeaponId){
+    if(!is_user_alive(Id)) return -1;
     if(!IsCustomWeapon(WeaponId)) return -1;
+
+    static Array:Params; Params = ArrayCreate();
+    ArrayPushCell(Params, Id);
+
+    if(!CallWeaponEvent(WeaponId, CWAPI_WE_Take, WeaponId, Params)) return -1;
 
     new Data[E_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
     new ItemId = rg_give_custom_item(Id, GetWeapFullName(Data[WD_DefaultName]), GT_DROP_AND_REPLACE, WeaponId+WEAPONS_IMPULSE_OFFSET);
@@ -260,9 +381,12 @@ GiveCustomWeapon(const Id, const WeaponId){
     if(Data[WD_DamageMult]){
         set_member(ItemId, m_Weapon_flBaseDamage, Float:get_member(ItemId, m_Weapon_flBaseDamage)*Data[WD_DamageMult]);
 
-        if(DefaultWeaponId == WEAPON_M4A1) set_member(ItemId, m_M4A1_flBaseDamageSil, Float:get_member(ItemId, m_M4A1_flBaseDamageSil)*Data[WD_DamageMult]);
-        else if(DefaultWeaponId == WEAPON_USP) set_member(ItemId, m_USP_flBaseDamageSil, Float:get_member(ItemId, m_USP_flBaseDamageSil)*Data[WD_DamageMult]);
-        else if(DefaultWeaponId == WEAPON_FAMAS) set_member(ItemId, m_Famas_flBaseDamageBurst, Float:get_member(ItemId, m_Famas_flBaseDamageBurst)*Data[WD_DamageMult]);
+        if(DefaultWeaponId == WEAPON_M4A1)
+            set_member(ItemId, m_M4A1_flBaseDamageSil, Float:get_member(ItemId, m_M4A1_flBaseDamageSil)*Data[WD_DamageMult]);
+        else if(DefaultWeaponId == WEAPON_USP)
+            set_member(ItemId, m_USP_flBaseDamageSil, Float:get_member(ItemId, m_USP_flBaseDamageSil)*Data[WD_DamageMult]);
+        else if(DefaultWeaponId == WEAPON_FAMAS)
+            set_member(ItemId, m_Famas_flBaseDamageBurst, Float:get_member(ItemId, m_Famas_flBaseDamageBurst)*Data[WD_DamageMult]);
     }
 
     return ItemId;
@@ -363,7 +487,6 @@ LoadWeapons(){
                 log_amx("[WARNING] Sound file '%s' not found.", Data[WD_Sounds][WS_Shot]);
                 formatex(Data[WD_Sounds][WS_Shot], PLATFORM_MAX_PATH-1, "");
             }
-            
 
             if(json_object_has_value(Sounds, "OnlyPrecache", JSONArray)){
                 new JSON:OnlyPrecache = json_object_get_value(Sounds, "OnlyPrecache");
@@ -393,8 +516,8 @@ LoadWeapons(){
         //register_clcmd(GetWeapFullName(Data[WD_Name]), "Cmd_ChooseCustomWeapon");
 
         RegisterHam(Ham_Item_Deploy, GetWeapFullName(Data[WD_DefaultName]), "Hook_PlayerItemDeploy", true);
-        //RegisterHam(Ham_Item_Holster, GetWeapFullName(Data[WD_DefaultName]), "Hook_PlayerItemHolster", true);
-        //RegisterHam(Ham_Weapon_Reload, GetWeapFullName(Data[WD_DefaultName]), "Hook_PlayerItemReloaded", false);
+        RegisterHam(Ham_Item_Holster, GetWeapFullName(Data[WD_DefaultName]), "Hook_PlayerItemHolster", true);
+        RegisterHam(Ham_Weapon_Reload, GetWeapFullName(Data[WD_DefaultName]), "Hook_PlayerItemReloaded", false);
         RegisterHam(Ham_CS_Item_GetMaxSpeed, GetWeapFullName(Data[WD_DefaultName]), "Hook_PlayerGetMaxSpeed", false);
         
         TrieSetCell(WeaponsNames, Data[WD_Name], ArrayPushArray(CustomWeapons, Data));
@@ -402,5 +525,29 @@ LoadWeapons(){
     }
     json_free(List);
 
+    //log_amx("Before call 'Fwd_LoadWeaponsPost'");
+
+    ExecuteForward(Fwds[Fwd_LoadWeaponsPost]);
+
+    //log_amx("After call 'Fwd_LoadWeaponsPost' - Status = %d", Status);
+
     server_print("[%s v%s] %d custom weapons loaded from '%s'", PLUG_NAME, PLUG_VER, CUSTOM_WEAPONS_COUNT, file);
 }
+
+InitForwards(){
+    Fwds[Fwd_LoadWeaponsPost] = CreateMultiForward("CWAPI_LoawWeaponsPost", ET_IGNORE);
+}
+
+#if defined SUPPORT_RESTRICT
+    public WeaponsRestrict_LoadingWeapons_Post(){
+        new WeaponName[32], WeaponId, TrieIter:IterHandler;
+        IterHandler = TrieIterCreate(WeaponsNames);
+        while(!TrieIterEnded(IterHandler)){
+            TrieIterGetKey(IterHandler, WeaponName, charsmax(WeaponName));
+            TrieIterGetCell(IterHandler, WeaponId);
+            TrieIterNext(IterHandler);
+        }
+        TrieIterDestroy(IterHandler);
+        WeaponsRestrict_AddWeapon(WeaponId+WEAPONS_IMPULSE_OFFSET, WeaponName);
+    }
+#endif
