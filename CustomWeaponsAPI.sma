@@ -65,8 +65,8 @@ public plugin_init(){
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel", false);
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Post", true);
     RegisterHookChain(RG_CBasePlayer_SetAnimation, "Hook_PlayerAnimation", true);
-    //RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_PlayerAddItem", true);
-    //RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
+    RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_PlayerAddItem", true);
+    RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
 
     // Покупка пушки (Только если указана цена)
     register_clcmd("CWAPI_Buy", "Cmd_Buy");
