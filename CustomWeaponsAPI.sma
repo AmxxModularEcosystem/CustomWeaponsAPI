@@ -271,7 +271,9 @@ public Hook_PlayerAddItem(const UserId, const ItemId){
 
 public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, DamageBits){
     if(DamageBits & DMG_GRENADE) return HC_CONTINUE;
+    if(!is_user_connected(Victim) || !is_user_connected(Attacker)) return HC_CONTINUE;
     static ItemId; ItemId = get_member(Attacker, m_pActiveItem);
+    if(is_nullent(ItemId)) return HC_CONTINUE;
     static WeaponId; WeaponId = GetWeapId(ItemId);
     if(!IsCustomWeapon(WeaponId)) return HC_CONTINUE;
 
