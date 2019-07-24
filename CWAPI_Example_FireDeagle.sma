@@ -68,11 +68,11 @@ public plugin_precache(){
 }
 
 public Hook_PlayerKilled(const Id){
-    if(GetUserFire(Id)) PlayerStopFire(Id);
+    if(is_user_connected(Id) && GetUserFire(Id)) PlayerStopFire(Id);
 }
 
 public client_disconnected(Id){
-    if(GetUserFire(Id)) PlayerStopFire(Id);
+    if(is_user_connected(Id) && GetUserFire(Id)) PlayerStopFire(Id);
 }
 
 public PlayerStopFire(const Id){
