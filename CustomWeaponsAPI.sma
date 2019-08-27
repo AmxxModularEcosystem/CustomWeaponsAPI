@@ -15,6 +15,7 @@
 #define CUSTOM_WEAPONS_COUNT ArraySize(CustomWeapons)
 #define GetWeapId(%0) get_entvar(%0,var_impulse)-WEAPONS_IMPULSE_OFFSET
 #define IsCustomWeapon(%0) (0 <= %0 < CUSTOM_WEAPONS_COUNT)
+#define IsGrenade(%0) (equal(%0, "hegrenade") || equal(%0, "smokegrenade") || equal(%0, "flashbang"))
 
 #if defined SUPPORT_RESTRICT
     forward WeaponsRestrict_LoadingWeapons_Post();
@@ -361,8 +362,19 @@ GiveCustomWeapon(const Id, const WeaponId){
 
     if(!CallWeaponEvent(WeaponId, CWAPI_WE_Take, WeaponId, Params)) return -1;
 
-    new Data[E_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
-    new ItemId = rg_give_custom_item(Id, GetWeapFullName(Data[WD_DefaultName]), GT_DROP_AND_REPLACE, WeaponId+WEAPONS_IMPULSE_OFFSET);
+    static Data[E_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
+
+    static GiveType:WeaponGiveType;
+    if(equal(Data[WD_DefaultName], "knife")) WeaponGiveType = GT_REPLACE;
+    else if(IsGrenade(Data[WD_DefaultName])) WeaponGiveType = GT_APPEND;
+    else WeaponGiveType = GT_DROP_AND_REPLACE;
+
+    static ItemId; ItemId = rg_give_custom_item(
+        Id,
+        GetWeapFullName(Data[WD_DefaultName]),
+        WeaponGiveType,
+        WeaponId+WEAPONS_IMPULSE_OFFSET
+    );
 
     if(is_nullent(ItemId)) return -1;
 
@@ -370,14 +382,16 @@ GiveCustomWeapon(const Id, const WeaponId){
 
     if(Data[WD_Weight]) rg_set_iteminfo(ItemId, ItemInfo_iWeight, Data[WD_Weight]);
     
-    if(Data[WD_ClipSize]){
-        rg_set_iteminfo(ItemId, ItemInfo_iMaxClip, Data[WD_ClipSize]);
-        rg_set_user_ammo(Id, DefaultWeaponId, Data[WD_ClipSize]);
-    }
+    if(DefaultWeaponId != WEAPON_KNIFE){
+        if(Data[WD_ClipSize]){
+            rg_set_iteminfo(ItemId, ItemInfo_iMaxClip, Data[WD_ClipSize]);
+            rg_set_user_ammo(Id, DefaultWeaponId, Data[WD_ClipSize]);
+        }
 
-    if(Data[WD_MaxAmmo]){
-        rg_set_iteminfo(ItemId, ItemInfo_iMaxAmmo1, Data[WD_MaxAmmo]);
-        rg_set_user_bpammo(Id, DefaultWeaponId, Data[WD_MaxAmmo]);
+        if(Data[WD_MaxAmmo]){
+            rg_set_iteminfo(ItemId, ItemInfo_iMaxAmmo1, Data[WD_MaxAmmo]);
+            rg_set_user_bpammo(Id, DefaultWeaponId, Data[WD_MaxAmmo]);
+        }
     }
 
     if(Data[WD_DamageMult]){
