@@ -87,8 +87,8 @@ public plugin_precache(){
 
 public plugin_natives(){
     register_native("CWAPI_RegisterHook", "Native_RegisterHook");
-
     register_native("CWAPI_GiveWeapon", "Native_GiveWeapon");
+    register_native("CWAPI_GetWeaponsList", "Native_GetWeaponsList");
 }
 
 public Native_GiveWeapon(){
@@ -126,6 +126,10 @@ public Native_RegisterHook(const PluginId, const Params){
     //log_amx("[Native_RegisterHook] 3 [HandlerId = %d | FwdId = %d] [From Array: FwdId = %d]", HandlerId, FwdId, ArrayGetCell(Data[WD_CustomHandlers][Event], HandlerId));
 
     return HandlerId;
+}
+
+public Array:Native_GetWeaponsList(){
+    return ArrayClone(CustomWeapons);
 }
 
 CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, Array:Params = Invalid_Array){

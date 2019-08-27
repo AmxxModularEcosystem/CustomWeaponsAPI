@@ -93,6 +93,14 @@ native CWAPI_RegisterHook(const WeaponName[], const CWAPI_WeaponEvents:Event, co
 native CWAPI_GiveWeapon(const WeaponName[], const UserId);
 
 /**
+ * Возвращает Array массив со всеми кастомными пушками.
+ * Надо разрушить массив (ArrayDestroy) после использования
+ *
+ * @return      Дескриптор Array массива
+ */
+native Array:CWAPI_GetWeaponsList();
+
+/**
  * Вызывается после загрузки всех пушек из конфига
  *
  * @noreturn
