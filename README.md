@@ -4,6 +4,11 @@
 
 API для создания кастомного оружия
 
+## Требования
+
+- [AmxModX 1.9.0](https://www.amxmodx.org/downloads-new.php)
+- [ReAPI 5.8.0.163 или новее](http://teamcity.rehlds.org/project.html?projectId=Reapi)
+
 ## Настройки оружий [_configs/plugins/CustomWeaponAPI/Weapons.json_]
 
 ### Структура
@@ -11,25 +16,28 @@ API для создания кастомного оружия
 ```js
 [
     {
-        "DefaultName": "Название дефолтного оружие, на котором будет основано кастомное",
-        "Name": "Название кастомного оружия (Желательно без пробелов и спецсимволов)",
+        "DefaultName": [String] Название дефолтного оружие, на котором будет основано кастомное,
+        "Name": [String] Название кастомного оружия (Желательно без пробелов и спецсимволов),
         "ClipSize": [Int] Максимальное кол-во патронов в обойме,
         "MaxAmmo": [Int] Общее кол-во патронов,
         "Models": {
-            "v": "v_ модель оружия (Опционально)",
-            "p": "p_ модель оружия (Опционально)",
-            "w": "w_ модель оружия (Опционально)"
+            "v": [String] v_ модель оружия (Опционально),
+            "p": [String] p_ модель оружия (Опционально),
+            "w": [String] w_ модель оружия (Опционально)
         },
         "Sounds": {
-            "Shot": "Звук выстрела",
-            "ShotSilent": "Звук выстрела с глушителем (Только для M4A1 и USP-S)",
+            "Shot": [String] Звук выстрела,
+            "ShotSilent": [String] Звук выстрела с глушителем (Только для M4A1 и USP-S),
             "OnlyPrecache": [
-                "Звуковой файл используемый самой моделькой оружия",
+                [String] Звуковой файл используемый самой моделькой оружия,
                 "..."
             ]
         },
         "MaxWalkSpeed": [Int] Скорость бега с оружием в руках,
         "DamageMult": [Float] Множитель урона,
+        "DeployTime": [Float] Длительность доставания оружия,
+        "PrimaryAttackRate": [Float] Интервал между первичными атаками,
+        "SecondaryAttackRate": [Float] Интервал между вторичными атаками (Например, снятие\надевание глушителя),
         "Weight": [Int] Вес оружия,
         "Price": [Int] Цена оружия (Если не указать то купить нельзя будет)
     },
@@ -77,105 +85,7 @@ API для создания кастомного оружия
 ]
 ```
 
-## API
-
-```cpp
-enum CWAPI_WeaponEvents{
-
-    /**
-    * Описание: Вызывается при выстреле
-    *
-    * Параметры: (const ItemId)
-    */
-    CWAPI_WE_Shot = 1,
-
-    /**
-    * Описание: Вызывается при перезарядке
-    *
-    * Параметры: (const ItemId)
-    */
-    CWAPI_WE_Reload,
-
-    /**
-    * Описание: Вызывается при доставании оружия
-    *
-    * Параметры: (const ItemId)
-    */
-    CWAPI_WE_Deploy,
-
-    /**
-    * Описание: Вызывается при убирании оружия
-    *
-    * Параметры: (const ItemId)
-    */
-    CWAPI_WE_Holster,
-
-    /**
-    * Описание: Вызывается при нанесении урона при помощи оружия
-    *
-    * Параметры: (const ItemId, const Victim, const Float:Damage, const DamageBits)
-    */
-    CWAPI_WE_Damage,
-
-    /**
-    * Описание: Вызывается при появлении оружия в мире (Выбрасывании)
-    *
-    * Параметры: (const ItemId, const WeaponBox)
-    */
-    CWAPI_WE_Droped,
-
-    /**
-    * Описание: Вызывается при добавлении оружия в инвентарь
-    *
-    * Параметры: (const ItemId)
-    */
-    CWAPI_WE_AddItem,
-
-    /**
-    * Описание: Вызывается при выдаче оружия
-    *
-    * Параметры: (const WeaponId, const UserId)
-    */
-    CWAPI_WE_Take,
-}
-
-enum {
-
-    // Продолжить вызов обработчиков и обработка события
-    CWAPI_RET_CONTINUE = 1,
-
-    // Прекратить вызов обработчиков и отменить событие
-    CWAPI_RET_HANDLED,
-}
-
-/**
- * Регистрирует хук события оружия
- *
- * @param WeaponName        Название оружия указанное в конфиге
- * @param Event             Событие
- * @param HandlerFuncName   Название функции-обработчика
- *
- * @return      Идентификатор хука. -1 в случае ошибки
- */
-native CWAPI_RegisterHook(const WeaponName[], const CWAPI_WeaponEvents:Event, const HandlerFuncName[]);
-
-/**
- * Выдаёт кастомное оружие игроку
- *
- * @param WeaponName        Название оружия указанное в конфиге
- * @param UserId            Идентификатор игрока, которому надо выдать оружие
- *
- * @return      Идентификатор выданного предмета. -1 в случае ошибки
- */
-native CWAPI_GiveWeapon(const WeaponName[], const UserId);
-
-/**
- * Вызывается после загрузки всех пушек из конфига
- *
- * @noreturn
- */
-forward CWAPI_LoawWeaponsPost();
-```
+## [API](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/include/cwapi.inc)
 
 ### [Пример использования API](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/CWAPI_Example_FireDeagle.sma)
 

@@ -2,7 +2,7 @@
 #include <reapi>
 #include <cwapi>
 
-new const WEAPON_NAME[] = "FireDeagle";
+new const WEAPON_NAME[] = "NoveskeDiplomat";
 
 new const PLUG_NAME[] = "[CWAPI] Test Hooks";
 new const PLUG_VER[] = "1.0";

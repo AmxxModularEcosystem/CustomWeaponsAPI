@@ -3,6 +3,18 @@
 #endif
 #define _cwapi_included
 
+
+enum CWAPI_WeaponModels{
+    CWAPI_WM_V[PLATFORM_MAX_PATH],
+    CWAPI_WM_P[PLATFORM_MAX_PATH],
+    CWAPI_WM_W[PLATFORM_MAX_PATH],
+};
+
+enum CWAPI_WeaponSounds{
+    CWAPI_WS_Shot[PLATFORM_MAX_PATH],
+    CWAPI_WS_ShotSilent[PLATFORM_MAX_PATH], // Only M4A1 & USP-S
+};
+
 enum CWAPI_WeaponEvents{
 
     /**
@@ -60,16 +72,34 @@ enum CWAPI_WeaponEvents{
     * Параметры: (const WeaponId, const UserId)
     */
     CWAPI_WE_Take,
-}
+};
+
+enum _:CWAPI_WeaponData{
+    CWAPI_WD_Name[32],
+    CWAPI_WD_DefaultName[32],
+    CWAPI_WD_Models[CWAPI_WeaponModels],
+    CWAPI_WD_Sounds[CWAPI_WeaponSounds],
+    CWAPI_WD_ClipSize,
+    CWAPI_WD_MaxAmmo,
+    Float:CWAPI_WD_MaxWalkSpeed,
+    CWAPI_WD_Weight,
+    Array:CWAPI_WD_CustomHandlers[CWAPI_WeaponEvents],
+    Float:CWAPI_WD_DamageMult,
+    CWAPI_WD_Price,
+    Float:CWAPI_WD_Accuracy,
+    Float:CWAPI_WD_DeployTime,
+    Float:CWAPI_WD_PrimaryAttackRate,
+    Float:CWAPI_WD_SecondaryAttackRate,
+};
 
 enum {
 
-    // Продолжить вызов обработчиков и обработка события
+    // Продолжить вызов обработчиков и обработать событие
     CWAPI_RET_CONTINUE = 1,
 
     // Прекратить вызов обработчиков и отменить событие
     CWAPI_RET_HANDLED,
-}
+};
 
 /**
  * Регистрирует хук события оружия
