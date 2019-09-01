@@ -1,4 +1,5 @@
 #include <amxmodx>
+#include <reapi>
 #include <cwapi>
 
 #pragma semicolon 1
@@ -17,10 +18,10 @@ public CWAPI_LoawWeaponsPost(){
 
     new WeaponData[CWAPI_WeaponData];
     for(new i = 0; i < ArraySize(WeaponsList); i++){
-        log_amx("Create menu: Add Item: i = %d | Name = %s | Price = %d", i, WeaponData[CWAPI_WD_Name], WeaponData[CWAPI_WD_Price]);
-        if(WeaponData[CWAPI_WD_Price] < 1) continue;
         ArrayGetArray(WeaponsList, i, WeaponData);
-        menu_additem(Menu_Shop, fmt("\r[$%d] \y%s", WeaponData[CWAPI_WD_Price], WeaponData[CWAPI_WD_Name]), WeaponData[CWAPI_WD_Name]);
+        //log_amx("Create menu: Add Item: i = %d | Name = %s | Price = %d", i, WeaponData[CWAPI_WD_Name], WeaponData[CWAPI_WD_Price]);
+        if(WeaponData[CWAPI_WD_Price] < 1) continue;
+        menu_additem(Menu_Shop, fmt("\r[$%d]^t\y%s", WeaponData[CWAPI_WD_Price], WeaponData[CWAPI_WD_Name]), WeaponData[CWAPI_WD_Name]);
     }
 
     ArrayDestroy(WeaponsList);
@@ -33,6 +34,10 @@ public CWAPI_LoawWeaponsPost(){
 }
 
 public Cmd_OpenShop(const Id){
+    if(!IsUserInBuyZone(Id)){
+        client_print(Id, print_center, "Вы не в зоне покупки");
+        return PLUGIN_HANDLED;
+    }
     menu_display(Id, Menu_Shop);
     return PLUGIN_HANDLED;
 }
@@ -46,6 +51,12 @@ public MenuHandler_Shop(const Id, const Menu, const Item){
     static Access, Data[32];
     menu_item_getinfo(Menu, Item, Access, Data, charsmax(Data));
 
-    client_cmd(Id, Data);
+    client_cmd(Id, "CWAPI_Buy %s", Data);
     return;
+}
+
+// В зоне закупки ли игрок
+bool:IsUserInBuyZone(const Id){
+    static Signal[UnifiedSignals]; get_member(Id, m_signals, Signal);
+    return (Signal[US_Signal] == _:SIGNAL_BUY);
 }

@@ -3,6 +3,9 @@
 #endif
 #define _cwapi_included
 
+#include <json>
+
+#define json_object_get_type(%0,%1) json_get_type(json_object_get_value(%0,%1));
 
 enum CWAPI_WeaponModels{
     CWAPI_WM_V[PLATFORM_MAX_PATH],
@@ -18,11 +21,18 @@ enum CWAPI_WeaponSounds{
 enum CWAPI_WeaponEvents{
 
     /**
-    * Описание: Вызывается при выстреле
+    * Описание: Вызывается при основной атаке
     *
     * Параметры: (const ItemId)
     */
-    CWAPI_WE_Shot = 1,
+    CWAPI_WE_PrimaryAttack = 1,
+
+    /**
+    * Описание: Вызывается при вторичной атаке
+    *
+    * Параметры: (const ItemId)
+    */
+    CWAPI_WE_SecondaryAttack,
 
     /**
     * Описание: Вызывается при перезарядке
@@ -90,6 +100,7 @@ enum _:CWAPI_WeaponData{
     Float:CWAPI_WD_DeployTime,
     Float:CWAPI_WD_PrimaryAttackRate,
     Float:CWAPI_WD_SecondaryAttackRate,
+    bool:CWAPI_WD_HasSecondaryAttack,
 };
 
 enum {
@@ -100,6 +111,11 @@ enum {
     // Прекратить вызов обработчиков и отменить событие
     CWAPI_RET_HANDLED,
 };
+
+enum _:CWAPI_WeaponAbilityData{
+    CWAPI_WAD_WeaponName[32],
+    //Trie:CWAPI_WAD_AdditionalData,
+}
 
 /**
  * Регистрирует хук события оружия
@@ -123,7 +139,7 @@ native CWAPI_RegisterHook(const WeaponName[], const CWAPI_WeaponEvents:Event, co
 native CWAPI_GiveWeapon(const WeaponName[], const UserId);
 
 /**
- * Возвращает Array массив со всеми кастомными пушками.
+ * Возвращает Array массив со списком кастомных пушек.
  * Надо разрушить массив (ArrayDestroy) после использования
  *
  * @return      Дескриптор Array массива
@@ -131,8 +147,56 @@ native CWAPI_GiveWeapon(const WeaponName[], const UserId);
 native Array:CWAPI_GetWeaponsList();
 
 /**
+ * Получает информацию о кастомном оружии
+ *
+ * @param WeaponId   Индекс кастомного оружия
+ * @param Data       Буфер для записи информации об оружии
+ *
+ * @return      true в случае удачи, иначе false
+ */
+native bool:CWAPI_GetWeaponData(const WeaponId, CWAPI_WeaponData:Data);
+
+/**
  * Вызывается после загрузки всех пушек из конфига
  *
  * @noreturn
  */
 forward CWAPI_LoawWeaponsPost();
+
+/**
+ * Возвращает Array массив со списком пушек использующих указанную способность.
+ * Надо разрушить массив (ArrayDestroy) после использования
+ *
+ * @param AbilityName   Название способности
+ *
+ * @return      Дескриптор Array массива
+ */
+stock Array:CWAPI_GetAbilityWeaponsList(const AbilityName[]){
+    new Array:WeaponsList; WeaponsList = ArrayCreate(CWAPI_WeaponAbilityData);
+    
+    new file[PLATFORM_MAX_PATH];
+    get_localinfo("amxx_configsdir", file, charsmax(file));
+    add(file, charsmax(file), fmt("/plugins/CustomWeaponsAPI/Abilities/%s.json", AbilityName));
+    if(!file_exists(file)){
+        set_fail_state("[ERROR] Config file '%s' not found", file);
+        return Invalid_Array;
+    }
+    new JSON:List = json_parse(file, true);
+    if(json_is_array(List)){
+        for(new i = 0; i < json_array_get_count(List); i++){
+            new Data[CWAPI_WeaponAbilityData];
+            json_array_get_string(List, i, Data[CWAPI_WAD_WeaponName], charsmax(Data[CWAPI_WAD_WeaponName]));
+            ArrayPushArray(WeaponsList, Data);
+        }
+    }
+    else if(json_is_object(List)){
+        //...
+    }
+    else{
+        json_free(List);
+        set_fail_state("[ERROR] Invalid config structure. File '%s'", file);
+        return Invalid_Array;
+    }
+    
+    return WeaponsList;
+}

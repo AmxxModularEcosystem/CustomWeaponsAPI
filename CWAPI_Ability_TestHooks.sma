@@ -2,33 +2,42 @@
 #include <reapi>
 #include <cwapi>
 
-new const WEAPON_NAME[] = "NoveskeDiplomat";
-
-new const PLUG_NAME[] = "[CWAPI] Test Hooks";
+new const PLUG_NAME[] = "[CWAPI][Ability] Test Hooks";
 new const PLUG_VER[] = "1.0";
 
-public plugin_init(){
+public CWAPI_LoawWeaponsPost(){
     register_plugin(PLUG_NAME, PLUG_VER, "ArKaNeMaN");
+
+    new Array:TestWeapons = CWAPI_GetAbilityWeaponsList("Test");
+    new WeaponAbilityData[CWAPI_WeaponAbilityData];
+    for(new i = 0; i < ArraySize(TestWeapons); i++){
+        ArrayGetArray(TestWeapons, i, WeaponAbilityData);
+
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_PrimaryAttack, "Hook_CWAPI_PrimaryAttack");
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_SecondaryAttack, "Hook_CWAPI_SecondaryAttack");
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Reload, "Hook_CWAPI_Reload");
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Deploy, "Hook_CWAPI_Deploy");
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Holster, "Hook_CWAPI_Holster");
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Damage, "Hook_CWAPI_Damage");
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Droped, "Hook_CWAPI_Droped");
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_AddItem, "Hook_CWAPI_AddItem");
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Take, "Hook_CWAPI_Take");
+    }
+    ArrayDestroy(TestWeapons);
 
     server_print("[%s v%s] loaded.", PLUG_NAME, PLUG_VER);
 }
 
-public CWAPI_LoawWeaponsPost(){
-    //log_amx("CWAPI_LoawWeaponsPost");
-    CWAPI_RegisterHook(WEAPON_NAME, CWAPI_WE_Shot, "Hook_CWAPI_Shot");
-    CWAPI_RegisterHook(WEAPON_NAME, CWAPI_WE_Reload, "Hook_CWAPI_Reload");
-    CWAPI_RegisterHook(WEAPON_NAME, CWAPI_WE_Deploy, "Hook_CWAPI_Deploy");
-    CWAPI_RegisterHook(WEAPON_NAME, CWAPI_WE_Holster, "Hook_CWAPI_Holster");
-    CWAPI_RegisterHook(WEAPON_NAME, CWAPI_WE_Damage, "Hook_CWAPI_Damage");
-    CWAPI_RegisterHook(WEAPON_NAME, CWAPI_WE_Droped, "Hook_CWAPI_Droped");
-    CWAPI_RegisterHook(WEAPON_NAME, CWAPI_WE_AddItem, "Hook_CWAPI_AddItem");
-    CWAPI_RegisterHook(WEAPON_NAME, CWAPI_WE_Take, "Hook_CWAPI_Take");
+public Hook_CWAPI_PrimaryAttack(const ItemId){
+    static UserId; UserId = get_member(ItemId, m_pPlayer);
+    client_print(UserId, print_center, "HookTest: PrimaryAttack");
+    client_print(UserId, print_console, "HookTest: PrimaryAttack");
 }
 
-public Hook_CWAPI_Shot(const ItemId){
+public Hook_CWAPI_SecondaryAttack(const ItemId){
     static UserId; UserId = get_member(ItemId, m_pPlayer);
-    client_print(UserId, print_center, "HookTest: Shot");
-    client_print(UserId, print_console, "HookTest: Shot");
+    client_print(UserId, print_center, "HookTest: SecondaryAttack");
+    client_print(UserId, print_console, "HookTest: SecondaryAttack");
 }
 
 public Hook_CWAPI_Reload(const ItemId){

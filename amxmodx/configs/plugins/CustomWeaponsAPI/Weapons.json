@@ -12,9 +12,12 @@
             "Shot": "FireDeagle/shoot.wav"
         },
         "MaxWalkSpeed": 800,
-        "DamageMult": 1.5,
+        "DamageMult": 0.75,
         "Weight": 10,
-        "Price": 3000
+        "Price": 3000,
+        "HasSecondaryAttack": true,
+        "SecondaryAttackRate": 0.5
+
     },
     {
         "DefaultName": "m4a1",
@@ -22,13 +25,13 @@
         "ClipSize": 35,
         "MaxAmmo": 150,
         "Models": {
-            "v": "models/CustomWeapons/Noveske Diplomat/v_m4a1.mdl",
-            "p": "models/CustomWeapons/Noveske Diplomat/p_m4a1.mdl",
-            "w": "models/CustomWeapons/Noveske Diplomat/w_m4a1.mdl"
+            "v": "models/CustomWeapons/NoveskeDiplomat/v_m4a1.mdl",
+            "p": "models/CustomWeapons/NoveskeDiplomat/p_m4a1.mdl",
+            "w": "models/CustomWeapons/NoveskeDiplomat/w_m4a1.mdl"
         },
         "Sounds": {
-            "Shot": "CustomWeapons/Noveske Diplomat/m4a1_unsil-1.wav",
-            "ShotSilent": "CustomWeapons/Noveske Diplomat/m4a1-1.wav",
+            "Shot": "CustomWeapons/NoveskeDiplomat/m4a1_unsil-1.wav",
+            "ShotSilent": "CustomWeapons/NoveskeDiplomat/m4a1-1.wav",
             "OnlyPrecache": [
                 "weapons/M4A1/Ripper/boltback.wav",
                 "weapons/M4A1/Ripper/boltrelease.wav",
@@ -48,5 +51,83 @@
         "DamageMult": 1.1,
         "Weight": 100,
         "Price": 6000
+    },
+    {
+        "DefaultName": "m4a1",
+        "Name": "NoveskeDiplomat2",
+        "ClipSize": 35,
+        "MaxAmmo": 150,
+        "Models": {
+            "v": "models/CustomWeapons/NoveskeDiplomat/v_m4a1.mdl",
+            "p": "models/CustomWeapons/NoveskeDiplomat/p_m4a1.mdl",
+            "w": "models/CustomWeapons/NoveskeDiplomat/w_m4a1.mdl"
+        },
+        "Sounds": {
+            "Shot": "CustomWeapons/NoveskeDiplomat/m4a1_unsil-1.wav",
+            "ShotSilent": "CustomWeapons/NoveskeDiplomat/m4a1-1.wav",
+            "OnlyPrecache": [
+                "weapons/M4A1/Ripper/boltback.wav",
+                "weapons/M4A1/Ripper/boltrelease.wav",
+                "weapons/M4A1/Ripper/bullet.wav",
+                "weapons/M4A1/Ripper/draw.wav",
+                "weapons/M4A1/Ripper/inspect.wav",
+                "weapons/M4A1/Ripper/magin.wav",
+                "weapons/M4A1/Ripper/magout.wav",
+                "weapons/M4A1/Ripper/magtap.wav",
+                "weapons/M4A1/Ripper/siloff.wav",
+                "weapons/M4A1/Ripper/silon.wav",
+                "weapons/M4A1/Ripper/silpush.wav",
+                "weapons/M4A1/Ripper/maghit.wav"
+            ]
+        },
+        "MaxWalkSpeed": 800,
+        "DamageMult": 1.1,
+        "Weight": 100,
+        "Price": 6000
+    },
+    {
+        "DefaultName": "aug",
+        "Name": "AugA3War",
+        "ClipSize": 40,
+        "MaxAmmo": 240,
+        "Models": {
+            "v": "models/CustomWeapons/AugA3War/v_aug.mdl",
+            "p": "models/CustomWeapons/AugA3War/p_aug.mdl",
+            "w": "models/CustomWeapons/AugA3War/w_aug.mdl"
+        },
+        "Sounds": {
+            "Shot": "CustomWeapons/AugA3War/aug-1.wav",
+            "OnlyPrecache": [
+                "weapons/AUG/Mercury/bolt.wav",
+                "weapons/AUG/Mercury/boltback.wav",
+                "weapons/AUG/Mercury/boltrelease.wav",
+                "weapons/AUG/Mercury/bullet.wav",
+                "weapons/AUG/Mercury/draw.wav",
+                "weapons/AUG/Mercury/magin.wav",
+                "weapons/AUG/Mercury/magout.wav",
+                "weapons/AUG/Mercury/magtap.wav"
+            ]
+        },
+        "MaxWalkSpeed": 800,
+        "DamageMult": 1.15,
+        "Weight": 120,
+        "Price": 7500,
+        "DeployTime": 1.6,
+        "PrimaryAttackRate": 0.12,
+        "SecondaryAttackRate": 0.5
+    },
+    {
+        "DefaultName": "knife",
+        "Name": "Bulava",
+        "Models": {
+            "v": "models/CustomWeapons/Bulava/v_knife.mdl"
+        },
+        "MaxWalkSpeed": 800,
+        "DamageMult": 1.5,
+        "Weight": 10,
+        "Price": 300,
+        "DeployTime": 3.0,
+        "PrimaryAttackRate": 1.00,
+        "SecondaryAttackRate": 1.50
     }
 ]

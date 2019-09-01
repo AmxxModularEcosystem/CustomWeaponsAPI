@@ -11,7 +11,6 @@
 
 #define WEAPONS_IMPULSE_OFFSET 4354
 #define GetWeapFullName(%0) fmt("weapon_%s",%0)
-#define json_object_get_type(%0,%1) json_get_type(json_object_get_value(%0,%1));
 #define CUSTOM_WEAPONS_COUNT ArraySize(CustomWeapons)
 #define GetWeapId(%0) get_entvar(%0,var_impulse)-WEAPONS_IMPULSE_OFFSET
 #define IsCustomWeapon(%0) (0 <= %0 < CUSTOM_WEAPONS_COUNT)
@@ -38,7 +37,6 @@ public plugin_init(){
     
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel", false);
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Post", true);
-    //RegisterHookChain(RG_CBasePlayer_SetAnimation, "Hook_PlayerAnimation", true);
     RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_PlayerAddItem", true);
     RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
 
@@ -64,6 +62,7 @@ public plugin_natives(){
     register_native("CWAPI_RegisterHook", "Native_RegisterHook");
     register_native("CWAPI_GiveWeapon", "Native_GiveWeapon");
     register_native("CWAPI_GetWeaponsList", "Native_GetWeaponsList");
+    register_native("CWAPI_GetWeaponData", "Native_GetWeaponData");
 }
 
 public Native_GiveWeapon(){
@@ -107,6 +106,12 @@ public Array:Native_GetWeaponsList(){
     return ArrayClone(CustomWeapons);
 }
 
+public Native_GetWeaponData(){
+    static WeaponData[CWAPI_WeaponData];
+    ArrayGetArray(CustomWeapons, get_param(1), WeaponData);
+    return set_array(2, WeaponData, CWAPI_WeaponData);
+}
+
 CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, Array:Params = Invalid_Array){
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
 
@@ -129,7 +134,8 @@ CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, Ar
 
 _CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Event){
     switch(Event){
-        case CWAPI_WE_Shot: return CreateOneForward(PluginId, FuncName, FP_CELL);
+        case CWAPI_WE_PrimaryAttack: return CreateOneForward(PluginId, FuncName, FP_CELL);
+        case CWAPI_WE_SecondaryAttack: return CreateOneForward(PluginId, FuncName, FP_CELL);
         case CWAPI_WE_Reload: return CreateOneForward(PluginId, FuncName, FP_CELL);
         case CWAPI_WE_Deploy: return CreateOneForward(PluginId, FuncName, FP_CELL);
         case CWAPI_WE_Holster: return CreateOneForward(PluginId, FuncName, FP_CELL);
@@ -144,7 +150,8 @@ _CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Eve
 _ExecuteForward(const FwdId, &Return, const CWAPI_WeaponEvents:Event, const ItemId, const Array:Params = Invalid_Array){
     Return = CWAPI_RET_CONTINUE;
     switch(Event){
-        case CWAPI_WE_Shot: return ExecuteForward(FwdId, Return, ItemId);
+        case CWAPI_WE_PrimaryAttack: return ExecuteForward(FwdId, Return, ItemId);
+        case CWAPI_WE_SecondaryAttack: return ExecuteForward(FwdId, Return, ItemId);
         case CWAPI_WE_Reload: return ExecuteForward(FwdId, Return, ItemId);
         case CWAPI_WE_Deploy: return ExecuteForward(FwdId, Return, ItemId);
         case CWAPI_WE_Holster: return ExecuteForward(FwdId, Return, ItemId);
@@ -183,21 +190,6 @@ public Hook_WeaponBoxSetModel_Post(const WeaponBox){
     return HC_CONTINUE;
 }
 
-//public Hook_PlayerAnimation(const Id, const PLAYER_ANIM:Anim){
-//    if(!is_user_connected(Id)) return HC_CONTINUE;
-//    if(Anim != PLAYER_ATTACK1) return HC_CONTINUE;
-//    static ItemId; ItemId = get_member(Id, m_pActiveItem);
-//    static WeaponId; WeaponId = GetWeapId(ItemId);
-//    if(!IsCustomWeapon(WeaponId)) return HC_CONTINUE;
-//    static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
-//    
-//    // Звук вроде бы слышен только носителю
-//    if(IsWeaponSilenced(ItemId)) if(Data[CWAPI_WD_Sounds][CWAPI_WS_ShotSilent][0]) rh_emit_sound2(Id, 0, CHAN_WEAPON, Data[CWAPI_WD_Sounds][CWAPI_WS_ShotSilent]);
-//    else if(Data[CWAPI_WD_Sounds][CWAPI_WS_Shot][0]) rh_emit_sound2(Id, 0, CHAN_WEAPON, Data[CWAPI_WD_Sounds][CWAPI_WS_Shot]);
-//
-//    return HC_CONTINUE;
-//}
-
 #if defined DEBUG
     public Cmd_GiveCustomWeapon(const Id){
         static WeaponName[32]; read_argv(1, WeaponName, charsmax(WeaponName));
@@ -213,8 +205,12 @@ public Hook_WeaponBoxSetModel_Post(const WeaponBox){
 #endif
 
 public Cmd_Buy(const Id){
+    if(!is_user_alive(Id)){
+        client_print(Id, print_center, "Вы мертвы");
+        return PLUGIN_HANDLED;
+    }
     if(!IsUserInBuyZone(Id)){
-        client_print_color(Id, print_team_default, "^3Вы не в зоне покупки");
+        client_print(Id, print_center, "Вы не в зоне покупки");
         return PLUGIN_HANDLED;
     }
     static WeaponName[32]; read_argv(1, WeaponName, charsmax(WeaponName));
@@ -353,6 +349,7 @@ GiveCustomWeapon(const Id, const WeaponId){
 
     static WeaponIdType:DefaultWeaponId; DefaultWeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
 
+    if(Data[CWAPI_WD_HasSecondaryAttack]) set_member(ItemId, m_Weapon_bHasSecondaryAttack, Data[CWAPI_WD_HasSecondaryAttack]);
     if(Data[CWAPI_WD_Weight]) rg_set_iteminfo(ItemId, ItemInfo_iWeight, Data[CWAPI_WD_Weight]);
     
     if(DefaultWeaponId != WEAPON_KNIFE){
@@ -510,14 +507,40 @@ LoadWeapons(){
         Data[CWAPI_WD_PrimaryAttackRate] = json_object_get_real(Item, "PrimaryAttackRate");
         Data[CWAPI_WD_SecondaryAttackRate] = json_object_get_real(Item, "SecondaryAttackRate");
 
-        if(!TrieKeyExists(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName])){
-            RegisterHam(Ham_Item_Deploy, GetWeapFullName(Data[CWAPI_WD_DefaultName]), "Hook_PlayerItemDeploy", true);
-            RegisterHam(Ham_Item_Holster, GetWeapFullName(Data[CWAPI_WD_DefaultName]), "Hook_PlayerItemHolster", true);
-            RegisterHam(Ham_Weapon_Reload, GetWeapFullName(Data[CWAPI_WD_DefaultName]), "Hook_PlayerItemReloaded", false);
-            RegisterHam(Ham_CS_Item_GetMaxSpeed, GetWeapFullName(Data[CWAPI_WD_DefaultName]), "Hook_PlayerGetMaxSpeed", false);
+        Data[CWAPI_WD_HasSecondaryAttack] = json_object_get_bool(Item, "HasSecondaryAttack");
 
-            RegisterHam(Ham_Weapon_PrimaryAttack, GetWeapFullName(Data[CWAPI_WD_DefaultName]), "Hook_PrimaryAttack", true);
-            RegisterHam(Ham_Weapon_SecondaryAttack, GetWeapFullName(Data[CWAPI_WD_DefaultName]), "Hook_SecondaryAttack", true);
+        if(!TrieKeyExists(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName])){
+            RegisterHam(
+                Ham_Item_Deploy,
+                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
+                "Hook_PlayerItemDeploy", true
+            );
+            RegisterHam(
+                Ham_Item_Holster,
+                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
+                "Hook_PlayerItemHolster", true
+            );
+            RegisterHam(
+                Ham_Weapon_Reload,
+                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
+                "Hook_PlayerItemReloaded", false
+            );
+            RegisterHam(
+                Ham_CS_Item_GetMaxSpeed,
+                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
+                "Hook_PlayerGetMaxSpeed", false
+            );
+
+            RegisterHam(
+                Ham_Weapon_PrimaryAttack,
+                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
+                "Hook_PrimaryAttack", true
+            );
+            RegisterHam(
+                Ham_Weapon_SecondaryAttack,
+                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
+                "Hook_SecondaryAttack", true
+            );
 
             TrieSetCell(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName], 0);
         }
@@ -547,7 +570,7 @@ public Hook_PrimaryAttack(ItemId){
     ) return HAM_IGNORED;
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
 
-    if(!CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Shot, ItemId)) return HAM_SUPERCEDE;
+    if(!CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_PrimaryAttack, ItemId)) return HAM_SUPERCEDE;
 
     //log_amx("Hook_PrimaryAttack: m_Weapon_flNextPrimaryAttack = %.2f", get_member(ItemId, m_Weapon_flNextPrimaryAttack));
     //log_amx("Hook_PrimaryAttack: m_Weapon_fInReload = %d", get_member(ItemId, m_Weapon_fInReload));
@@ -574,6 +597,8 @@ public Hook_SecondaryAttack(ItemId){
     ) return HAM_IGNORED;
     if(!IsCustomWeapon(GetWeapId(ItemId))) return HAM_IGNORED;
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
+
+    if(!CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_SecondaryAttack, ItemId)) return HAM_SUPERCEDE;
 
     //log_amx("Hook_PrimaryAttack: m_Weapon_flNextSecondaryAttack = %.2f", get_member(ItemId, m_Weapon_flNextSecondaryAttack));
     //log_amx("Hook_PrimaryAttack: m_Weapon_fInReload = %d", get_member(ItemId, m_Weapon_fInReload));
