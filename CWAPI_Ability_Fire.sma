@@ -7,12 +7,13 @@
 
 #define FIRE_DEAGLE_WEAPON_FULL_NAME fmt("weapon_%s",FIRE_DEAGLE_WEAPON_NAME)
 #define var_FireEnt var_iuser2
+#define var_FireSwitch var_iuser3
 #define GetUserFire(%0) get_entvar(%0,var_FireEnt)
 
 /* НАСТРОЙКИ */
 
 // Спрайт огня
-new const FIRE_SPRITE[] = "sprites/FireDeagle/fire.spr";
+new const FIRE_SPRITE[] = "sprites/FireWeapons/fire.spr";
 
 /* НАСТРОЙКИ */
 
@@ -32,13 +33,23 @@ new Cvars[E_Cvars];
 new HudDamager;
 
 
-new const PLUG_NAME[] = "[CWAPI] Fire Deagle";
-new const PLUG_VER[] = "1.0";
+new const PLUG_NAME[] = "[CWAPI][Ability] Fire";
+new const PLUG_VER[] = "1.1";
 
-public plugin_init(){
+public CWAPI_LoawWeaponsPost(){
     register_plugin(PLUG_NAME, PLUG_VER, "ArKaNeMaN");
-    
+
+    new Array:FireWeapons = CWAPI_GetAbilityWeaponsList("Fire");
+    new WeaponAbilityData[CWAPI_WeaponAbilityData];
+    for(new i = 0; i < ArraySize(FireWeapons); i++){
+        ArrayGetArray(FireWeapons, i, WeaponAbilityData);
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Damage, "Hook_CWAPI_Damage");
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_SecondaryAttack, "Hook_CWAPI_SecondaryAttack");
+    }
+    ArrayDestroy(FireWeapons);
+
     RegisterHookChain(RG_CSGameRules_PlayerKilled , "Hook_PlayerKilled", false);
+    //RegisterHookChain(RG_RoundEnd , "Hook_RoundEnd", false);
 
     HudDamager = CreateHudSyncObj();
 
@@ -47,11 +58,16 @@ public plugin_init(){
     server_print("[%s v%s] loaded.", PLUG_NAME, PLUG_VER);
 }
 
-public CWAPI_LoawWeaponsPost(){
-    CWAPI_RegisterHook("FireDeagle", CWAPI_WE_Damage, "Hook_CWAPI_Damage");
+public Hook_CWAPI_SecondaryAttack(ItemId){
+    static UserId; UserId = get_member(ItemId, m_pPlayer);
+    static FireSwitch; FireSwitch = get_entvar(ItemId, var_FireSwitch);
+    set_entvar(ItemId, var_FireSwitch, _:!bool:FireSwitch);
+    client_print(UserId, print_center, "Огонь в%sключен", FireSwitch ? "ы" : "");
 }
 
 public Hook_CWAPI_Damage(const ItemId, const Victim, const Float:Damage, const DamageBits){
+    if(!get_entvar(ItemId, var_FireSwitch)) return CWAPI_RET_CONTINUE;
+
     static Attacker; Attacker = get_member(ItemId, m_pPlayer);
 
     if(!is_user_connected(Victim) || !is_user_connected(Attacker) || Victim == Attacker) return CWAPI_RET_CONTINUE;
@@ -67,6 +83,10 @@ public plugin_precache(){
     precache_model(FIRE_SPRITE);
 }
 
+//public Hook_RoundEnd(){
+//    for(new i = 1; i <= MAX_PLAYERS; i++) if(is_user_connected(i) && GetUserFire(i)) PlayerStopFire(i);
+//}
+
 public Hook_PlayerKilled(const Id){
     if(is_user_connected(Id) && GetUserFire(Id)) PlayerStopFire(Id);
 }
@@ -76,12 +96,14 @@ public client_disconnected(Id){
 }
 
 public PlayerStopFire(const Id){
+    if(!is_user_connected(Id)) return;
     rg_set_user_rendering(Id);
     if(task_exists(Id)) remove_task(Id);
     if(task_exists(Id+200)) remove_task(Id+200);
     static FireEnt; FireEnt = GetUserFire(Id);
-    if(is_entity(FireEnt)) set_entvar(FireEnt, var_flags, FL_KILLME);
+    if(!is_nullent(FireEnt)) set_entvar(FireEnt, var_flags, FL_KILLME);
     set_entvar(Id, var_FireEnt, 0);
+    return;
 }
 
 PlayerStartFire(const Id, const Igniter, const Dur){
