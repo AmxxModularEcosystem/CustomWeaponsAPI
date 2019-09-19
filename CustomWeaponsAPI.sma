@@ -15,6 +15,7 @@
 #define GetWeapId(%0) get_entvar(%0,var_impulse)-WEAPONS_IMPULSE_OFFSET
 #define IsCustomWeapon(%0) (0 <= %0 < CUSTOM_WEAPONS_COUNT)
 #define IsGrenade(%0) (equal(%0, "hegrenade") || equal(%0, "smokegrenade") || equal(%0, "flashbang"))
+#define IsWeaponSilenced(%0) bool:((WPNSTATE_M4A1_SILENCED|WPNSTATE_USP_SILENCED)&get_member(%0,m_Weapon_iWeaponState))
 
 #if defined SUPPORT_RESTRICT
     forward WeaponsRestrict_LoadingWeapons_Post();
@@ -81,13 +82,9 @@ public Native_RegisterHook(const PluginId, const Params){
     new CWAPI_WeaponEvents:Event = CWAPI_WeaponEvents:get_param(2);
     new FuncName[64]; get_string(3, FuncName, charsmax(FuncName));
 
-    //log_amx("[Native_RegisterHook] 1 [PluginId= %d || WeaponName = %s | Event = %d | FuncName = %s]", PluginId, WeaponName, _:Event, FuncName);
-
     if(!TrieKeyExists(WeaponsNames, WeaponName)) return -1;
     new WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
     new Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
-
-    //log_amx("[Native_RegisterHook] 2 [WeaponId = %d]", WeaponId);
 
     if(Data[CWAPI_WD_CustomHandlers][Event] == Invalid_Array){
         Data[CWAPI_WD_CustomHandlers][Event] = ArrayCreate();
@@ -96,8 +93,6 @@ public Native_RegisterHook(const PluginId, const Params){
     
     new FwdId = _CreateOneForward(PluginId, FuncName, Event);
     new HandlerId = ArrayPushCell(Data[CWAPI_WD_CustomHandlers][Event], _:FwdId);
-
-    //log_amx("[Native_RegisterHook] 3 [HandlerId = %d | FwdId = %d] [From Array: FwdId = %d]", HandlerId, FwdId, ArrayGetCell(Data[CWAPI_WD_CustomHandlers][Event], HandlerId));
 
     return HandlerId;
 }
@@ -117,14 +112,10 @@ CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, Ar
 
     if(Data[CWAPI_WD_CustomHandlers][Event] == Invalid_Array) return true;
 
-    //log_amx("[CallWeaponEvent] 1 [WeaponId = %d | Event = %d | ItemId = %d]", WeaponId, _:Event, ItemId);
-
     static FwdId, Return;
     for(new i = 0; i < ArraySize(Data[CWAPI_WD_CustomHandlers][Event]); i++){
         FwdId = ArrayGetCell(Data[CWAPI_WD_CustomHandlers][Event], i);
-        //log_amx("[CallWeaponEvent] 2 - %d [FwdId = %d]", i, FwdId);
         _ExecuteForward(FwdId, Return, Event, ItemId, Params);
-        //log_amx("[CallWeaponEvent] 3 - %d [Return = %d | Status = %s]", i, Return, Status);
         if(Return == CWAPI_RET_HANDLED) break;
     }
     if(Params != Invalid_Array) ArrayDestroy(Params);
@@ -195,22 +186,22 @@ public Hook_WeaponBoxSetModel_Post(const WeaponBox){
         static WeaponName[32]; read_argv(1, WeaponName, charsmax(WeaponName));
         if(TrieKeyExists(WeaponsNames, WeaponName)){
             static WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
-            if(GiveCustomWeapon(Id, WeaponId) != -1) client_print_color(Id, print_team_default, "^3Вы взяли ^4%s", WeaponName);
-            else client_print_color(Id, print_team_default, "^3При выдаче возникла ошибка");
+            if(GiveCustomWeapon(Id, WeaponId) != -1) client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_GIVE_SUCCESS", WeaponName);
+            else client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_GIVE_ERROR");
             return PLUGIN_HANDLED;
         }
-        client_print_color(Id, print_team_default, "^3Оружие ^4%s ^3не найдено", WeaponName);
+        client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_NOT_FOUND", WeaponName);
         return PLUGIN_CONTINUE;
     }
 #endif
 
 public Cmd_Buy(const Id){
     if(!is_user_alive(Id)){
-        client_print(Id, print_center, "Вы мертвы");
+        client_print(Id, print_center, "%L", LANG_PLAYER, "YOU_DEAD");
         return PLUGIN_HANDLED;
     }
     if(!IsUserInBuyZone(Id)){
-        client_print(Id, print_center, "Вы не в зоне покупки");
+        client_print(Id, print_center, "%L", LANG_PLAYER, "OUT_OF_BUYZONE");
         return PLUGIN_HANDLED;
     }
     static WeaponName[32]; read_argv(1, WeaponName, charsmax(WeaponName));
@@ -218,18 +209,18 @@ public Cmd_Buy(const Id){
     static WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
     if(!Data[CWAPI_WD_Price]){
-        client_print_color(Id, print_team_default, "^3Оружие ^4%s ^3нельзя купить", WeaponName);
+        client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_BUY_NO_PRICE", WeaponName);
         return PLUGIN_HANDLED;
     }
     if(get_member(Id, m_iAccount) < Data[CWAPI_WD_Price]){
-        client_print_color(Id, print_team_default, "^3У вас недостаточно средств для покупки ^4%s", WeaponName);
+        client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_BUY_NO_MONEY", WeaponName);
         return PLUGIN_HANDLED;
     }
     if(GiveCustomWeapon(Id, WeaponId) != -1){
         rg_add_account(Id, -Data[CWAPI_WD_Price], AS_ADD);
-        client_print_color(Id, print_team_default, "^3Вы купили ^4%s ^3за ^4$%d", WeaponName, Data[CWAPI_WD_Price]);
+        client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_BUY_SUCCESS", WeaponName, Data[CWAPI_WD_Price]);
     }
-    else client_print_color(Id, print_team_default, "^3При покупке возникла ошибка");
+    else client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_BUY_ERROR");
     return PLUGIN_HANDLED;
 }
 
@@ -387,13 +378,6 @@ GetItemFromWeaponBox(const WeaponBox){
     return NULLENT;
 }
 
-// Надет ли глушитель
-bool:IsWeaponSilenced(const ItemId){
-    static WeaponState:State; State = get_member(ItemId, m_Weapon_iWeaponState);
-    static bool:IsSilenced; IsSilenced = (State & WPNSTATE_USP_SILENCED || State & WPNSTATE_M4A1_SILENCED);
-    return IsSilenced;
-}
-
 // В зоне закупки ли игрок
 bool:IsUserInBuyZone(const Id){
     static Signal[UnifiedSignals]; get_member(Id, m_signals, Signal);
@@ -431,14 +415,14 @@ LoadWeapons(){
         Item = json_array_get_value(List, i);
         if(!json_is_object(Item)){
             json_free(Item);
-            set_fail_state("[WARNING] Invalid config structure. File '%s'. Item #%d", file, i);
+            log_amx("[WARNING] Invalid config structure. File '%s'. Item #%d", file, i);
             continue;
         }
 
         json_object_get_string(Item, "Name", Data[CWAPI_WD_Name], charsmax(Data[CWAPI_WD_Name]));
         if(TrieKeyExists(WeaponsNames, Data[CWAPI_WD_Name])){
             json_free(Item);
-            set_fail_state("[WARNING] Duplicate weapon name '%s'. File '%s'. Item #%d", Data[CWAPI_WD_Name], file, i);
+            log_amx("[WARNING] Duplicate weapon name '%s'. File '%s'. Item #%d", Data[CWAPI_WD_Name], file, i);
             continue;
         }
 
@@ -467,7 +451,7 @@ LoadWeapons(){
 
             json_object_get_string(Sounds, "ShotSilent", Data[CWAPI_WD_Sounds][CWAPI_WS_ShotSilent], PLATFORM_MAX_PATH-1);
             if(file_exists(fmt("sound/%s", Data[CWAPI_WD_Sounds][CWAPI_WS_ShotSilent]))) precache_sound(Data[CWAPI_WD_Sounds][CWAPI_WS_ShotSilent]);
-            else if(Data[CWAPI_WD_Sounds][CWAPI_WS_Shot][0]){
+            else if(Data[CWAPI_WD_Sounds][CWAPI_WS_ShotSilent][0]){
                 log_amx("[WARNING] Sound file '%s' not found.", Data[CWAPI_WD_Sounds][CWAPI_WS_ShotSilent]);
                 formatex(Data[CWAPI_WD_Sounds][CWAPI_WS_ShotSilent], PLATFORM_MAX_PATH-1, "");
             }
@@ -530,7 +514,6 @@ LoadWeapons(){
                 GetWeapFullName(Data[CWAPI_WD_DefaultName]),
                 "Hook_PlayerGetMaxSpeed", false
             );
-
             RegisterHam(
                 Ham_Weapon_PrimaryAttack,
                 GetWeapFullName(Data[CWAPI_WD_DefaultName]),
@@ -565,8 +548,7 @@ public Hook_PrimaryAttack(ItemId){
     if(!IsCustomWeapon(GetWeapId(ItemId))) return HAM_IGNORED;
     if(
         get_member(ItemId, m_Weapon_iClientClip) < 1 || 
-        get_member(ItemId, m_Weapon_iClientClip) == get_member(ItemId, m_Weapon_iClip) || 
-        get_member(ItemId, m_Weapon_fInReload)
+        get_member(ItemId, m_Weapon_iClientClip) == get_member(ItemId, m_Weapon_iClip)
     ) return HAM_IGNORED;
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
 
