@@ -82,6 +82,13 @@ enum CWAPI_WeaponEvents{
     * Параметры: (const WeaponId, const UserId)
     */
     CWAPI_WE_Take,
+
+    /**
+    * Описание: Вызывается при убийстве при помощи оружия. ПОКА НЕ РАБОТАЕТ
+    * 
+    * Параметры: (const ItemId)
+    */
+    CWAPI_WE_Kill,
 };
 
 enum _:CWAPI_WeaponData{
