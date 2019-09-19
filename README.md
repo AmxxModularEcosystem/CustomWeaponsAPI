@@ -1,4 +1,4 @@
-# Custom Weapons API
+# Custom Weapons API 1.2.0-beta
 
 ## Описание
 
