@@ -35,6 +35,7 @@ new const PLUG_NAME[] = "Custom Weapons API";
 new const PLUG_VER[] = "0.1.1";
 
 public plugin_init(){
+    register_dictionary("cwapi.txt");
     
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel", false);
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Post", true);
