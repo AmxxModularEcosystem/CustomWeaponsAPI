@@ -12,6 +12,8 @@ new const PLUG_VER[] = "1.0";
 public CWAPI_LoawWeaponsPost(){
     register_plugin(PLUG_NAME, PLUG_VER, "ArKaNeMaN");
 
+    register_dictionary("cwapi.txt");
+
     new Array:WeaponsList = CWAPI_GetWeaponsList();
 
     Menu_Shop = menu_create("\r[\yCWAPI\r] \wShop", "MenuHandler_Shop");
@@ -21,7 +23,7 @@ public CWAPI_LoawWeaponsPost(){
         ArrayGetArray(WeaponsList, i, WeaponData);
         //log_amx("Create menu: Add Item: i = %d | Name = %s | Price = %d", i, WeaponData[CWAPI_WD_Name], WeaponData[CWAPI_WD_Price]);
         if(WeaponData[CWAPI_WD_Price] < 1) continue;
-        menu_additem(Menu_Shop, fmt("\r[$%d]^t\y%s", WeaponData[CWAPI_WD_Price], WeaponData[CWAPI_WD_Name]), WeaponData[CWAPI_WD_Name]);
+        menu_additem(Menu_Shop, fmt("\r[$%d] \y%s", WeaponData[CWAPI_WD_Price], WeaponData[CWAPI_WD_Name]), WeaponData[CWAPI_WD_Name]);
     }
 
     ArrayDestroy(WeaponsList);
@@ -35,7 +37,7 @@ public CWAPI_LoawWeaponsPost(){
 
 public Cmd_OpenShop(const Id){
     if(!IsUserInBuyZone(Id)){
-        client_print(Id, print_center, "Вы не в зоне покупки");
+        client_print(Id, print_center, "%L", LANG_PLAYER, "OUT_OF_BUYZONE");
         return PLUGIN_HANDLED;
     }
     menu_display(Id, Menu_Shop);
