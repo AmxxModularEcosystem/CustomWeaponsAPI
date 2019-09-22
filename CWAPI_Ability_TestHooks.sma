@@ -5,7 +5,7 @@
 new const PLUG_NAME[] = "[CWAPI][Ability] Test Hooks";
 new const PLUG_VER[] = "1.0";
 
-public CWAPI_LoawWeaponsPost(){
+public CWAPI_LoadWeaponsPost(){
     register_plugin(PLUG_NAME, PLUG_VER, "ArKaNeMaN");
 
     new Array:TestWeapons = CWAPI_GetAbilityWeaponsList("Test");

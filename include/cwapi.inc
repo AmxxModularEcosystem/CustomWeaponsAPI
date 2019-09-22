@@ -113,7 +113,7 @@ enum _:CWAPI_WeaponData{
 enum {
 
     // Продолжить вызов обработчиков и обработать событие
-    CWAPI_RET_CONTINUE = 1,
+    CWAPI_RET_CONTINUE = 0,
 
     // Прекратить вызов обработчиков и отменить событие
     CWAPI_RET_HANDLED,
@@ -168,7 +168,7 @@ native bool:CWAPI_GetWeaponData(const WeaponId, CWAPI_WeaponData:Data);
  *
  * @noreturn
  */
-forward CWAPI_LoawWeaponsPost();
+forward CWAPI_LoadWeaponsPost();
 
 /**
  * Возвращает Array массив со списком пушек использующих указанную способность.

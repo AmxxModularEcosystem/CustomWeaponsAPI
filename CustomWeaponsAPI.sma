@@ -598,7 +598,7 @@ public Hook_SecondaryAttack(ItemId){
 }
 
 InitForwards(){
-    Fwds[F_LoadWeaponsPost] = CreateMultiForward("CWAPI_LoawWeaponsPost", ET_IGNORE);
+    Fwds[F_LoadWeaponsPost] = CreateMultiForward("CWAPI_LoadWeaponsPost", ET_IGNORE);
 }
 
 #if defined SUPPORT_RESTRICT

@@ -36,7 +36,7 @@ new HudDamager;
 new const PLUG_NAME[] = "[CWAPI][Ability] Fire";
 new const PLUG_VER[] = "1.1";
 
-public CWAPI_LoawWeaponsPost(){
+public CWAPI_LoadWeaponsPost(){
     register_plugin(PLUG_NAME, PLUG_VER, "ArKaNeMaN");
 
     new Array:FireWeapons = CWAPI_GetAbilityWeaponsList("Fire");
