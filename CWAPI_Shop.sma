@@ -7,7 +7,7 @@
 new Menu_Shop;
 
 new const PLUG_NAME[] = "[CWAPI] Shop";
-new const PLUG_VER[] = "1.0";
+new const PLUG_VER[] = "1.0.1";
 
 public CWAPI_LoadWeaponsPost(){
     register_plugin(PLUG_NAME, PLUG_VER, "ArKaNeMaN");
