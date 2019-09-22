@@ -18,7 +18,7 @@ WEAPON_BUY_ERROR = ^3When buying an error occurred
 WEAPON_BUY_NO_MONEY = ^3You don't have enough money to buy ^4%s
 WEAPON_BUY_NO_PRICE = ^3The weapon ^4%s ^3can't buy
 
-OUT_OF_BUYZONE = You are in the area of purchase
+OUT_OF_BUYZONE = You aren't in the area of purchase
 YOU_DEAD = You are dead
 
 WEAPON_NOT_FOUND = ^3Weapon ^4%s ^3not found
