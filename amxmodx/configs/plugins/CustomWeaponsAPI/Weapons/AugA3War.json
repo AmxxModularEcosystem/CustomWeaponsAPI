@@ -1,0 +1,30 @@
+{
+    "DefaultName": "aug",
+    "ClipSize": 40,
+    "MaxAmmo": 240,
+    "Models": {
+        "v": "models/CustomWeapons/AugA3War/v_aug.mdl",
+        "p": "models/CustomWeapons/AugA3War/p_aug.mdl",
+        "w": "models/CustomWeapons/AugA3War/w_aug.mdl"
+    },
+    "Sounds": {
+        "Shot": "CustomWeapons/AugA3War/aug-1.wav",
+        "OnlyPrecache": [
+            "weapons/AUG/Mercury/bolt.wav",
+            "weapons/AUG/Mercury/boltback.wav",
+            "weapons/AUG/Mercury/boltrelease.wav",
+            "weapons/AUG/Mercury/bullet.wav",
+            "weapons/AUG/Mercury/draw.wav",
+            "weapons/AUG/Mercury/magin.wav",
+            "weapons/AUG/Mercury/magout.wav",
+            "weapons/AUG/Mercury/magtap.wav"
+        ]
+    },
+    "MaxWalkSpeed": 800,
+    "DamageMult": 1.15,
+    "Weight": 120,
+    "Price": 7500,
+    "DeployTime": 1.6,
+    "PrimaryAttackRate": 0.12,
+    "SecondaryAttackRate": 0.5
+}

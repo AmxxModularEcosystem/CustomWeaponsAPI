@@ -1,0 +1,13 @@
+{
+    "DefaultName": "knife",
+    "Models": {
+        "v": "models/CustomWeapons/Bulava/v_knife.mdl"
+    },
+    "MaxWalkSpeed": 800,
+    "DamageMult": 1.5,
+    "Weight": 10,
+    "Price": 300,
+    "DeployTime": 3.0,
+    "PrimaryAttackRate": 1.00,
+    "SecondaryAttackRate": 1.50
+}

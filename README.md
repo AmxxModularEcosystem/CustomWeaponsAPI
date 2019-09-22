@@ -9,7 +9,7 @@ API для создания кастомного оружия
 - [AmxModX 1.9.0](https://www.amxmodx.org/downloads-new.php)
 - [ReAPI 5.8.0.163 или новее](http://teamcity.rehlds.org/project.html?projectId=Reapi)
 
-## Настройки оружий [_configs/plugins/CustomWeaponAPI/Weapons.json_]
+## Настройки оружий [`/amxmodx/configs/plugins/CustomWeaponAPI/Weapons/<WeponName>.json`]
 
 ### Структура
 <details>
@@ -19,7 +19,6 @@ API для создания кастомного оружия
 [
     {
         "DefaultName": [String] Название дефолтного оружие, на котором будет основано кастомное,
-        "Name": [String] Название кастомного оружия (Желательно без пробелов и спецсимволов),
         "ClipSize": [Int] Максимальное кол-во патронов в обойме,
         "MaxAmmo": [Int] Общее кол-во патронов,
         "Models": {
@@ -54,42 +53,39 @@ API для создания кастомного оружия
 <details>
     <summary>Спойлер</summary>
 
+`/amxmodx/configs/plugins/CustomWeaponAPI/Weapons/AugA3War.json`:
+
 ```json
-[
-    {
-        "DefaultName": "m4a1",
-        "Name": "NoveskeDiplomat",
-        "ClipSize": 35,
-        "MaxAmmo": 150,
-        "Models": {
-            "v": "models/CustomWeapons/Noveske Diplomat/v_m4a1.mdl",
-            "p": "models/CustomWeapons/Noveske Diplomat/p_m4a1.mdl",
-            "w": "models/CustomWeapons/Noveske Diplomat/w_m4a1.mdl"
-        },
-        "Sounds": {
-            "Shot": "CustomWeapons/Noveske Diplomat/m4a1_unsil-1.wav",
-            "ShotSilent": "CustomWeapons/Noveske Diplomat/m4a1-1.wav",
-            "OnlyPrecache": [
-                "weapons/M4A1/Ripper/boltback.wav",
-                "weapons/M4A1/Ripper/boltrelease.wav",
-                "weapons/M4A1/Ripper/bullet.wav",
-                "weapons/M4A1/Ripper/draw.wav",
-                "weapons/M4A1/Ripper/inspect.wav",
-                "weapons/M4A1/Ripper/magin.wav",
-                "weapons/M4A1/Ripper/magout.wav",
-                "weapons/M4A1/Ripper/magtap.wav",
-                "weapons/M4A1/Ripper/siloff.wav",
-                "weapons/M4A1/Ripper/silon.wav",
-                "weapons/M4A1/Ripper/silpush.wav",
-                "weapons/M4A1/Ripper/maghit.wav"
-            ]
-        },
-        "MaxWalkSpeed": 800,
-        "DamageMult": 1.1,
-        "Weight": 100,
-        "Price": 6000
-    }
-]
+{
+    "DefaultName": "aug",
+    "ClipSize": 40,
+    "MaxAmmo": 240,
+    "Models": {
+        "v": "models/CustomWeapons/AugA3War/v_aug.mdl",
+        "p": "models/CustomWeapons/AugA3War/p_aug.mdl",
+        "w": "models/CustomWeapons/AugA3War/w_aug.mdl"
+    },
+    "Sounds": {
+        "Shot": "CustomWeapons/AugA3War/aug-1.wav",
+        "OnlyPrecache": [
+            "weapons/AUG/Mercury/bolt.wav",
+            "weapons/AUG/Mercury/boltback.wav",
+            "weapons/AUG/Mercury/boltrelease.wav",
+            "weapons/AUG/Mercury/bullet.wav",
+            "weapons/AUG/Mercury/draw.wav",
+            "weapons/AUG/Mercury/magin.wav",
+            "weapons/AUG/Mercury/magout.wav",
+            "weapons/AUG/Mercury/magtap.wav"
+        ]
+    },
+    "MaxWalkSpeed": 800,
+    "DamageMult": 1.15,
+    "Weight": 120,
+    "Price": 7500,
+    "DeployTime": 1.6,
+    "PrimaryAttackRate": 0.12,
+    "SecondaryAttackRate": 0.5
+}
 ```
 </details>
 
@@ -105,7 +101,7 @@ API для создания кастомного оружия
 
 Пример: `CWAPI_Give NoveskeDiplomat`
 
-Работает, только если плагин скомпилирован с дефайном `DEBUG`
+_Работает, только если плагин скомпилирован с дефайном `DEBUG`_
 
 ## [API](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/include/cwapi.inc)
 

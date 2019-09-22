@@ -2,6 +2,7 @@
 #include <reapi>
 #include <hamsandwich>
 #include <json>
+#include <regex>
 #include <cwapi>
 
 #pragma semicolon 1
@@ -57,7 +58,10 @@ public plugin_precache(){
     
     InitForwards();
     LoadWeapons();
-    if(CUSTOM_WEAPONS_COUNT < 1) set_fail_state("[WARNING] No loaded weapons");
+    if(CUSTOM_WEAPONS_COUNT < 1)
+        set_fail_state("[WARNING] No loaded weapons");
+
+    server_print("[%s v%s] %d custom weapons loaded.", PLUG_NAME, PLUG_VER, CUSTOM_WEAPONS_COUNT);
 }
 
 public plugin_natives(){
@@ -454,36 +458,56 @@ SetWeaponNextAttack(ItemId, Float:Rate){
 LoadWeapons(){
     CustomWeapons = ArrayCreate(CWAPI_WeaponData);
     WeaponsNames = TrieCreate();
+    new Path[PLATFORM_MAX_PATH];
+    get_localinfo("amxx_configsdir", Path, charsmax(Path));
+    add(Path, charsmax(Path), "/plugins/CustomWeaponsAPI/Weapons/");
+    if(!dir_exists(Path)){
+        set_fail_state("[ERROR] Weapons folder '%s' not found.", Path);
+        return;
+    }
     
-    new file[PLATFORM_MAX_PATH];
-    get_localinfo("amxx_configsdir", file, charsmax(file));
-    add(file, charsmax(file), "/plugins/CustomWeaponsAPI/Weapons.json");
-    if(!file_exists(file)){
-        set_fail_state("[ERROR] Config file '%s' not found", file);
+    new File[PLATFORM_MAX_PATH], DirHandler, FileType:Type;
+    DirHandler = open_dir(Path, File, charsmax(File), Type);
+    if(!DirHandler){
+        set_fail_state("[ERROR] Can't open weapons folder '%s'.", Path);
         return;
     }
-    new JSON:List = json_parse(file, true);
-    if(!json_is_array(List)){
-        json_free(List);
-        set_fail_state("[ERROR] Invalid config structure. File '%s'", file);
-        return;
-    }
-    new Trie:DefWeaponsNamesList = TrieCreate();
+
+    new Regex:RegEx_FileName, ret; RegEx_FileName = regex_compile("([a-z0-9]+).json$", ret, "", 0, "i");
     new Data[CWAPI_WeaponData], JSON:Item;
-    for(new i = 0; i < json_array_get_count(List); i++){
-        Item = json_array_get_value(List, i);
+    new Trie:DefWeaponsNamesList = TrieCreate();
+    do{
+        //log_amx("[DEBUG] New_LoadWeapons: Cycle: Item = %d ==========", CUSTOM_WEAPONS_COUNT);
+        //log_amx("[DEBUG] New_LoadWeapons: Cycle: File = %s", File);
+        //log_amx("[DEBUG] New_LoadWeapons: Cycle: FileType = %d", _:Type);
+
+        if(Type != FileType_File)
+            continue;
+        
+        if(regex_match_c(File, RegEx_FileName) <= 0)
+            continue;
+
+        regex_substr(RegEx_FileName, 1, Data[CWAPI_WD_Name], charsmax(Data[CWAPI_WD_Name]));
+        
+        //log_amx("[DEBUG] New_LoadWeapons: Cycle: Name = %s", Data[CWAPI_WD_Name]);
+
+        format(File, charsmax(File), "%s%s", Path, File);
+        Item = json_parse(File, true, true);
+
+        //log_amx("[DEBUG] New_LoadWeapons: Cycle: Jsno Type = %d", _:json_get_type(Item));
+
         if(!json_is_object(Item)){
             json_free(Item);
-            log_amx("[WARNING] Invalid config structure. File '%s'. Item #%d", file, i);
+            log_amx("[WARNING] Invalid config structure. File '%s'.", File);
             continue;
         }
 
-        json_object_get_string(Item, "Name", Data[CWAPI_WD_Name], charsmax(Data[CWAPI_WD_Name]));
-        if(TrieKeyExists(WeaponsNames, Data[CWAPI_WD_Name])){
-            json_free(Item);
-            log_amx("[WARNING] Duplicate weapon name '%s'. File '%s'. Item #%d", Data[CWAPI_WD_Name], file, i);
-            continue;
-        }
+        //json_object_get_string(Item, "Name", Data[CWAPI_WD_Name], charsmax(Data[CWAPI_WD_Name]));
+        //if(TrieKeyExists(WeaponsNames, Data[CWAPI_WD_Name])){
+        //    json_free(Item);
+        //    log_amx("[WARNING] Duplicate weapon name '%s'. File '%s'.", Data[CWAPI_WD_Name], File);
+        //    continue;
+        //}
 
         json_object_get_string(Item, "DefaultName", Data[CWAPI_WD_DefaultName], charsmax(Data[CWAPI_WD_DefaultName]));
 
@@ -588,19 +612,15 @@ LoadWeapons(){
         }
         
         TrieSetCell(WeaponsNames, Data[CWAPI_WD_Name], ArrayPushArray(CustomWeapons, Data));
-        json_free(Item);
-    }
-    json_free(List);
 
+        json_free(Item);
+    }while(next_file(DirHandler, File, charsmax(File), Type));
+
+    regex_free(RegEx_FileName);
+    close_dir(DirHandler);
     TrieDestroy(DefWeaponsNamesList);
 
-    //log_amx("Before call 'FCWAPI_WD_LoadWeaponsPost'");
-
     ExecuteForward(Fwds[F_LoadWeaponsPost]);
-
-    //log_amx("After call 'FCWAPI_WD_LoadWeaponsPost' - Status = %d", Status);
-
-    server_print("[%s v%s] %d custom weapons loaded from '%s'", PLUG_NAME, PLUG_VER, CUSTOM_WEAPONS_COUNT, file);
 }
 
 public Hook_PrimaryAttack(ItemId){
