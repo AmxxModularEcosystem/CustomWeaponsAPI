@@ -23,6 +23,12 @@
     native WeaponsRestrict_AddWeapon(const WeaponId, const WeaponName[32]);
 #endif
 
+enum {
+    CWAPI_ERR_UNDEFINED_EVENT = 0,
+    CWAPI_ERR_WEAPON_NOT_FOUND,
+    CWAPI_ERR_CANT_EXECUTE_FWD,
+}
+
 enum E_Fwds{
     F_LoadWeaponsPost,
 };
@@ -77,7 +83,7 @@ public Native_GiveWeapon(){
     static WeaponName[32]; get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
 
     if(!TrieKeyExists(WeaponsNames, WeaponName)){
-        log_error(1, "Weapon '%s' not found", WeaponName);
+        log_error(CWAPI_ERR_WEAPON_NOT_FOUND, "Weapon '%s' not found", WeaponName);
         return -1;
     }
     static WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
@@ -418,14 +424,26 @@ GiveCustomWeapon(const Id, const WeaponId){
     }
 
     if(Data[CWAPI_WD_DamageMult]){
-        set_member(ItemId, m_Weapon_flBaseDamage, Float:get_member(ItemId, m_Weapon_flBaseDamage)*Data[CWAPI_WD_DamageMult]);
+        set_member(
+            ItemId, m_Weapon_flBaseDamage,
+            Float:get_member(ItemId, m_Weapon_flBaseDamage)*Data[CWAPI_WD_DamageMult]
+        );
 
         if(DefaultWeaponId == WEAPON_M4A1)
-            set_member(ItemId, m_M4A1_flBaseDamageSil, Float:get_member(ItemId, m_M4A1_flBaseDamageSil)*Data[CWAPI_WD_DamageMult]);
+            set_member(
+                ItemId, m_M4A1_flBaseDamageSil,
+                Float:get_member(ItemId, m_M4A1_flBaseDamageSil)*Data[CWAPI_WD_DamageMult]
+            );
         else if(DefaultWeaponId == WEAPON_USP)
-            set_member(ItemId, m_USP_flBaseDamageSil, Float:get_member(ItemId, m_USP_flBaseDamageSil)*Data[CWAPI_WD_DamageMult]);
+            set_member(
+                ItemId, m_USP_flBaseDamageSil,
+                Float:get_member(ItemId, m_USP_flBaseDamageSil)*Data[CWAPI_WD_DamageMult]
+            );
         else if(DefaultWeaponId == WEAPON_FAMAS)
-            set_member(ItemId, m_Famas_flBaseDamageBurst, Float:get_member(ItemId, m_Famas_flBaseDamageBurst)*Data[CWAPI_WD_DamageMult]);
+            set_member(
+                ItemId, m_Famas_flBaseDamageBurst,
+                Float:get_member(ItemId, m_Famas_flBaseDamageBurst)*Data[CWAPI_WD_DamageMult]
+            );
     }
 
     return ItemId;
