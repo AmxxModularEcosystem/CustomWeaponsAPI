@@ -189,37 +189,6 @@ _CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Eve
     return log_error(CWAPI_ERR_UNDEFINED_EVENT, "Undefined weapon event '%d'", _:Event);
 }
 
-public Hook_WeaponBoxSetModel(const WeaponBox){
-    static ItemId;
-    if(!(ItemId = GetItemFromWeaponBox(WeaponBox)))
-        return HC_CONTINUE;
-
-    static WeaponId; WeaponId = GetWeapId(ItemId);
-    if(!IsCustomWeapon(WeaponId))
-        return HC_CONTINUE;
-
-    static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
-
-    if(Data[CWAPI_WD_Models][CWAPI_WM_W][0])
-        SetHookChainArg(2, ATYPE_STRING, Data[CWAPI_WD_Models][CWAPI_WM_W], PLATFORM_MAX_PATH-1);
-
-    return HC_SUPERCEDE;
-}
-
-public Hook_WeaponBoxSetModel_Post(const WeaponBox){
-    static ItemId;
-    if(!(ItemId = GetItemFromWeaponBox(WeaponBox)))
-        return HC_CONTINUE;
-
-    static WeaponId; WeaponId = GetWeapId(ItemId);
-    if(!IsCustomWeapon(WeaponId))
-        return HC_CONTINUE;
-
-    CallWeaponEvent(WeaponId, CWAPI_WE_Droped, ItemId, WeaponBox);
-
-    return HC_CONTINUE;
-}
-
 #if defined DEBUG
     public Cmd_GiveCustomWeapon(const Id){
         static WeaponName[32]; read_argv(1, WeaponName, charsmax(WeaponName));
@@ -268,6 +237,37 @@ public Cmd_Buy(const Id){
     }
     else client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_BUY_ERROR");
     return PLUGIN_HANDLED;
+}
+
+public Hook_WeaponBoxSetModel(const WeaponBox){
+    static ItemId;
+    if(!(ItemId = GetItemFromWeaponBox(WeaponBox)))
+        return;
+
+    static WeaponId; WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId))
+        return;
+
+    static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
+
+    if(Data[CWAPI_WD_Models][CWAPI_WM_W][0])
+        SetHookChainArg(2, ATYPE_STRING, Data[CWAPI_WD_Models][CWAPI_WM_W], PLATFORM_MAX_PATH-1);
+
+    return;
+}
+
+public Hook_WeaponBoxSetModel_Post(const WeaponBox){
+    static ItemId;
+    if(!(ItemId = GetItemFromWeaponBox(WeaponBox)))
+        return;
+
+    static WeaponId; WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId))
+        return;
+
+    CallWeaponEvent(WeaponId, CWAPI_WE_Droped, ItemId, WeaponBox);
+
+    return;
 }
 
 public Hook_PlayerAddItem(const UserId, const ItemId){
