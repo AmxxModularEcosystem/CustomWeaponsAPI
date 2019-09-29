@@ -352,13 +352,29 @@ public Hook_PlayerItemHolster(const ItemId){
 }
 
 public Hook_PlayerItemReloaded(const ItemId){
-    if(!IsCustomWeapon(GetWeapId(ItemId)))
+    static Id; Id = get_member(ItemId, m_pPlayer);
+    if(!is_user_connected(Id) || !IsCustomWeapon(GetWeapId(ItemId)))
         return HAM_IGNORED;
 
-    if(get_member(ItemId, m_Weapon_iClip) >= rg_get_iteminfo(ItemId, ItemInfo_iMaxClip))
-        return HAM_SUPERCEDE;
+    if(
+        get_member(ItemId, m_Weapon_iClip) < rg_get_iteminfo(ItemId, ItemInfo_iMaxClip) &&
+        CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Reload, ItemId)
+    )
+        return HAM_IGNORED;
+    
+    static Anim; Anim = 0;
+    if(!IsWeaponSilenced(ItemId)){
+        static WeaponIdType:WeaponId; WeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
+        if(WeaponId == WEAPON_M4A1) Anim = 7;
+        else if(WeaponId == WEAPON_USP) Anim = 8;
+    }
 
-    CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Reload, ItemId);
+    set_entvar(Id, var_weaponanim, Anim);
+
+    message_begin(MSG_ONE_UNRELIABLE, SVC_WEAPONANIM, .player = Id);
+    write_byte(Anim);
+    write_byte(get_entvar(Id, var_body));
+    message_end();
 
     //log_amx("Hook_PlayerItemReloaded: m_Weapon_flNextPrimaryAttack = %.2f", get_member(ItemId, m_Weapon_flNextPrimaryAttack));
     //log_amx("Hook_PlayerItemReloaded: m_Weapon_fInReload = %d", get_member(ItemId, m_Weapon_fInReload));
