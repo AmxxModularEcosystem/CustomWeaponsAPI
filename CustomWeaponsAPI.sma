@@ -274,14 +274,14 @@ public Hook_PlayerAddItem(const UserId, const ItemId){
     static WeaponId; WeaponId = GetWeapId(ItemId);
 
     if(!IsCustomWeapon(WeaponId))
-        return HC_CONTINUE;
+        return;
     
     if(!is_user_connected(UserId))
-        return HC_CONTINUE;
+        return;
 
     CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_AddItem, ItemId, UserId);
 
-    return HC_CONTINUE;
+    return;
 }
 
 public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, DamageBits){
@@ -316,12 +316,12 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
 
 public Hook_PlayerItemDeploy(const ItemId){
     if(!IsCustomWeapon(GetWeapId(ItemId)))
-        return HAM_IGNORED;
+        return;
     
     static Id; Id = get_member(ItemId, m_pPlayer);
 
     if(!is_user_connected(Id))
-        return HAM_IGNORED;
+        return;
     
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
 
@@ -339,16 +339,16 @@ public Hook_PlayerItemDeploy(const ItemId){
 
     CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
 
-    return HAM_IGNORED;
+    return;
 }
 
 public Hook_PlayerItemHolster(const ItemId){
     if(!IsCustomWeapon(GetWeapId(ItemId)))
-        return HAM_IGNORED;
+        return;
 
     CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Holster, ItemId);
 
-    return HAM_IGNORED;
+    return;
 }
 
 public Hook_PlayerItemReloaded(const ItemId){
@@ -383,7 +383,7 @@ public Hook_PlayerItemReloaded(const ItemId){
     //log_amx("Hook_PlayerItemReloaded: m_Weapon_flNextReload = %d", get_member(ItemId, m_Weapon_flNextReload));
     //log_amx("Hook_PlayerItemReloaded: ===================================================");
 
-    return HAM_IGNORED;
+    return HAM_SUPERCEDE;
 }
 
 public Hook_PlayerGetMaxSpeed(const ItemId){
@@ -402,17 +402,17 @@ public Hook_PlayerGetMaxSpeed(const ItemId){
 
 public Hook_PrimaryAttack_Pre(ItemId){
     if(!IsCustomWeapon(GetWeapId(ItemId)))
-        return HAM_IGNORED;
+        return;
 
     if(get_member(ItemId, m_Weapon_iClip) < 1)
-        return HAM_IGNORED;
+        return;
 
     if(IsPistol(ItemId) && get_member(ItemId, m_Weapon_iShotsFired)+1 > 1)
-        return HAM_IGNORED;
+        return;
     
     CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_PrimaryAttack, ItemId);
     
-    return HAM_IGNORED;
+    return;
 }
 
 public Hook_PrimaryAttack(ItemId){
