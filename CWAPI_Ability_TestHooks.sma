@@ -44,6 +44,7 @@ public Hook_CWAPI_Reload(const ItemId){
     static UserId; UserId = get_member(ItemId, m_pPlayer);
     client_print(UserId, print_center, "HookTest: Reload");
     client_print(UserId, print_console, "HookTest: Reload");
+    return CWAPI_RET_HANDLED;
 }
 
 public Hook_CWAPI_Deploy(const ItemId){

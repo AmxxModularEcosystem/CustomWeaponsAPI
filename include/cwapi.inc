@@ -105,6 +105,7 @@ enum _:CWAPI_WeaponData{
     CWAPI_WD_Price,
     Float:CWAPI_WD_Accuracy,
     Float:CWAPI_WD_DeployTime,
+    Float:CWAPI_WD_ReloadTime,
     Float:CWAPI_WD_PrimaryAttackRate,
     Float:CWAPI_WD_SecondaryAttackRate,
     bool:CWAPI_WD_HasSecondaryAttack,
