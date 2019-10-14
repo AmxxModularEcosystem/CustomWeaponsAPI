@@ -497,6 +497,17 @@ GiveCustomWeapon(const Id, const WeaponId){
         }
     }
 
+    if(Data[CWAPI_WD_Damage])
+        set_member(
+            ItemId, m_Weapon_flBaseDamage,
+            Data[CWAPI_WD_Damage]
+        );
+    else if(Data[CWAPI_WD_Damage] < 0)
+        set_member(
+            ItemId, m_Weapon_flBaseDamage,
+            0.0
+        );
+
     if(Data[CWAPI_WD_DamageMult]){
         set_member(
             ItemId, m_Weapon_flBaseDamage,
@@ -566,7 +577,7 @@ LoadWeapons(){
     }
 
     new Regex:RegEx_FileName, ret; RegEx_FileName = regex_compile("([a-z0-9]+).json$", ret, "", 0, "i");
-    new Data[CWAPI_WeaponData], JSON:Item;
+    new JSON:Item;
     new Trie:DefWeaponsNamesList = TrieCreate();
     do{
         //log_amx("[DEBUG] New_LoadWeapons: Cycle: Item = %d ==========", CUSTOM_WEAPONS_COUNT);
@@ -578,6 +589,8 @@ LoadWeapons(){
         
         if(regex_match_c(File, RegEx_FileName) <= 0)
             continue;
+
+        new Data[CWAPI_WeaponData];
 
         regex_substr(RegEx_FileName, 1, Data[CWAPI_WD_Name], charsmax(Data[CWAPI_WD_Name]));
         
@@ -654,11 +667,11 @@ LoadWeapons(){
 
         Data[CWAPI_WD_MaxWalkSpeed] = json_object_get_real(Item, "MaxWalkSpeed");
         Data[CWAPI_WD_DamageMult] = json_object_get_real(Item, "DamageMult");
+        Data[CWAPI_WD_Damage] = json_object_get_real(Item, "Damage");
         Data[CWAPI_WD_Accuracy] = json_object_get_real(Item, "Accuracy");
         Data[CWAPI_WD_DeployTime] = json_object_get_real(Item, "DeployTime");
         Data[CWAPI_WD_PrimaryAttackRate] = json_object_get_real(Item, "PrimaryAttackRate");
         Data[CWAPI_WD_SecondaryAttackRate] = json_object_get_real(Item, "SecondaryAttackRate");
-
         Data[CWAPI_WD_HasSecondaryAttack] = json_object_get_bool(Item, "HasSecondaryAttack");
 
         if(!TrieKeyExists(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName])){

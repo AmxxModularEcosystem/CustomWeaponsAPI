@@ -108,6 +108,7 @@ enum _:CWAPI_WeaponData{
     Float:CWAPI_WD_PrimaryAttackRate,
     Float:CWAPI_WD_SecondaryAttackRate,
     bool:CWAPI_WD_HasSecondaryAttack,
+    Float:CWAPI_WD_Damage,
 };
 
 enum {
