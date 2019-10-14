@@ -9,7 +9,7 @@ API для создания кастомного оружия
 - [AmxModX 1.9.0](https://www.amxmodx.org/downloads-new.php)
 - [ReAPI 5.8.0.163 или новее](http://teamcity.rehlds.org/project.html?projectId=Reapi)
 
-## Настройки оружий [`/amxmodx/configs/plugins/CustomWeaponAPI/Weapons/<WeponName>.json`]
+## Настройки оружий [`/amxmodx/configs/plugins/CustomWeaponAPI/Weapons/<WeaponName>.json`]
 
 ### Структура
 <details>
