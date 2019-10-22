@@ -166,6 +166,17 @@ native Array:CWAPI_GetWeaponsList();
 native bool:CWAPI_GetWeaponData(const WeaponId, CWAPI_WeaponData:Data);
 
 /**
+ * Добавляет кастомное оружие
+ *
+ * @note        Если указываются модели, то они должны быть в прекеше.
+ *
+ * @param WeaponData    Данные о добавляемом оружии
+ *
+ * @return      Индекс добавленного оружия. -1 в случае ошибки.
+ */
+native CWAPI_AddCustomWeapon(const WeaponData[CWAPI_WeaponData]);
+
+/**
  * Вызывается после загрузки всех пушек из конфига
  *
  * @noreturn

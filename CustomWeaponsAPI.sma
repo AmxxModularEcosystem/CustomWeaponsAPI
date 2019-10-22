@@ -29,6 +29,7 @@ enum {
     CWAPI_ERR_UNDEFINED_EVENT = 0,
     CWAPI_ERR_WEAPON_NOT_FOUND,
     CWAPI_ERR_CANT_EXECUTE_FWD,
+    CWAPI_ERR_DUPLICATE_WEAPON_NAME,
 }
 
 enum E_Fwds{
@@ -77,6 +78,7 @@ public plugin_natives(){
     register_native("CWAPI_GiveWeapon", "Native_GiveWeapon");
     register_native("CWAPI_GetWeaponsList", "Native_GetWeaponsList");
     register_native("CWAPI_GetWeaponData", "Native_GetWeaponData");
+    register_native("CWAPI_AddCustomWeapon", "Native_AddCustomWeapon");
 }
 
 public Native_GiveWeapon(){
@@ -124,6 +126,24 @@ public Native_GetWeaponData(){
     static WeaponData[CWAPI_WeaponData];
     ArrayGetArray(CustomWeapons, get_param(Arg_WeaponId), WeaponData);
     return set_array(Arg_WeaponData, WeaponData, CWAPI_WeaponData);
+}
+
+public Native_AddCustomWeapon(){
+    enum {Arg_WeaponData = 1}
+    new Data[CWAPI_WeaponData]; get_array(Arg_WeaponData, Data, CWAPI_WeaponData);
+
+    if(TrieKeyExists(WeaponsNames, Data[CWAPI_WD_Name])){
+        log_error(CWAPI_ERR_DUPLICATE_WEAPON_NAME, "Weapon '%s' already exists.", Data[CWAPI_WD_Name]);
+        return -1;
+    }
+
+    if(Data[CWAPI_WD_CustomHandlers] != Invalid_Array)
+        for(new i = 1; i < _:CWAPI_WeaponEvents; i++)
+            ArrayDestroy(Data[CWAPI_WD_CustomHandlers][CWAPI_WeaponEvents:i]);
+
+    new WeaponId = ArrayPushArray(CustomWeapons, Data);
+    TrieSetCell(WeaponsNames, Data[CWAPI_WD_Name], WeaponId);
+    return WeaponId;
 }
 
 CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, const any:...){
