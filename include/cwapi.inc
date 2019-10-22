@@ -163,7 +163,7 @@ native Array:CWAPI_GetWeaponsList();
  *
  * @return      true в случае удачи, иначе false
  */
-native bool:CWAPI_GetWeaponData(const WeaponId, CWAPI_WeaponData:Data);
+native bool:CWAPI_GetWeaponData(const WeaponId, Data[CWAPI_WeaponData]);
 
 /**
  * Добавляет кастомное оружие
