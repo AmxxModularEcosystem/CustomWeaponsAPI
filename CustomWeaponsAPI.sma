@@ -30,6 +30,7 @@ enum {
     CWAPI_ERR_WEAPON_NOT_FOUND,
     CWAPI_ERR_CANT_EXECUTE_FWD,
     CWAPI_ERR_DUPLICATE_WEAPON_NAME,
+    CWAPI_ERR_UNDEFINED_WEAPON_FIELD,
 }
 
 enum E_Fwds{
@@ -80,6 +81,7 @@ public plugin_natives(){
     register_native("CWAPI_GetWeaponData", "Native_GetWeaponData");
     register_native("CWAPI_GetWeaponId", "Native_GetWeaponId");
     register_native("CWAPI_AddCustomWeapon", "Native_AddCustomWeapon");
+    register_native("CWAPI_FindWeapon", "Native_FindWeapon");
 }
 
 public Native_GiveWeapon(){
@@ -154,6 +156,75 @@ public Native_AddCustomWeapon(){
     new WeaponId = ArrayPushArray(CustomWeapons, Data);
     TrieSetCell(WeaponsNames, Data[CWAPI_WD_Name], WeaponId);
     return WeaponId;
+}
+
+public Native_FindWeapon(){
+    enum {Arg_StartWeaponId = 1, Arg_Field, Arg_Value};
+    static StartWeaponId; StartWeaponId = get_param(Arg_StartWeaponId)+1;
+    static Field; Field = get_param(Arg_Field);
+
+    //log_amx("[DEBUG] Native_FindWeapon: StartWeaponId = %d", StartWeaponId);
+    //log_amx("[DEBUG] Native_FindWeapon: Field = %d", Field);
+
+    static Data[CWAPI_WeaponData];
+    switch(Field){
+        case CWAPI_WD_DefaultName: {
+            static Value[32]; get_string(Arg_Value, Value, charsmax(Value));
+            //log_amx("[DEBUG] Native_FindWeapon: Value = %s", Value);
+            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+                //log_amx("[DEBUG] Native_FindWeapon: WeaponId = %d", WeaponId);
+                ArrayGetArray(CustomWeapons, WeaponId, Data);
+                //log_amx("[DEBUG] Native_FindWeapon: Field value = %s", Data[Field]);
+                if(equal(Data[Field], Value)){
+                    return WeaponId;
+                }
+            }
+        }
+        case CWAPI_WD_Price,
+        CWAPI_WD_Weight,
+        CWAPI_WD_MaxAmmo, 
+        CWAPI_WD_ClipSize: {
+            static Value; Value = get_param_byref(Arg_Value);
+            //log_amx("[DEBUG] Native_FindWeapon: Value = %d", Value);
+            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+                //log_amx("[DEBUG] Native_FindWeapon: WeaponId = %d", WeaponId);
+                ArrayGetArray(CustomWeapons, WeaponId, Data);
+                //log_amx("[DEBUG] Native_FindWeapon: Field value = %d", Data[Field]);
+                if(Data[Field] == Value)
+                    return WeaponId;
+            }
+        }
+        case CWAPI_WD_MaxWalkSpeed,
+        CWAPI_WD_DamageMult,
+        CWAPI_WD_Accuracy,
+        CWAPI_WD_DeployTime,
+        CWAPI_WD_ReloadTime,
+        CWAPI_WD_PrimaryAttackRate,
+        CWAPI_WD_SecondaryAttackRate,
+        CWAPI_WD_Damage: {
+            static Float:Value; Value = get_float_byref(Arg_Value);
+            //log_amx("[DEBUG] Native_FindWeapon: Value = %.1f", Value);
+            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+                //log_amx("[DEBUG] Native_FindWeapon: WeaponId = %d", WeaponId);
+                ArrayGetArray(CustomWeapons, WeaponId, Data);
+                //log_amx("[DEBUG] Native_FindWeapon: Field value = %.1f", Data[Field]);
+                if(Data[Field] == Value)
+                    return WeaponId;
+            }
+        }
+        case CWAPI_WD_HasSecondaryAttack: {
+            static bool:Value; Value = bool:get_param_byref(Arg_Value);
+            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+                ArrayGetArray(CustomWeapons, WeaponId, Data);
+                if(bool:Data[Field] == Value)
+                    return WeaponId;
+            }
+        }
+        default: {
+            log_error(CWAPI_ERR_UNDEFINED_WEAPON_FIELD, "Undefined weapon field or not allowed for search.");
+        }
+    }
+    return -1;
 }
 
 CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, const any:...){
