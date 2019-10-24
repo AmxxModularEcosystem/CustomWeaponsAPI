@@ -78,6 +78,7 @@ public plugin_natives(){
     register_native("CWAPI_GiveWeapon", "Native_GiveWeapon");
     register_native("CWAPI_GetWeaponsList", "Native_GetWeaponsList");
     register_native("CWAPI_GetWeaponData", "Native_GetWeaponData");
+    register_native("CWAPI_GetWeaponId", "Native_GetWeaponId");
     register_native("CWAPI_AddCustomWeapon", "Native_AddCustomWeapon");
 }
 
@@ -126,6 +127,15 @@ public Native_GetWeaponData(){
     static WeaponData[CWAPI_WeaponData];
     ArrayGetArray(CustomWeapons, get_param(Arg_WeaponId), WeaponData);
     return set_array(Arg_WeaponData, WeaponData, CWAPI_WeaponData);
+}
+
+public Native_GetWeaponId(){
+    enum {Arg_WeaponName = 1};
+    static WeaponName[32]; get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
+    static WeaponId;
+    if(!TrieGetCell(WeaponsNames, WeaponName, WeaponId))
+        return -1;
+    return WeaponId;
 }
 
 public Native_AddCustomWeapon(){

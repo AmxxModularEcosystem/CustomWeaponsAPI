@@ -156,6 +156,15 @@ native CWAPI_GiveWeapon(const WeaponName[], const UserId);
 native Array:CWAPI_GetWeaponsList();
 
 /**
+ * Получает индекс кастомного оружия
+ *
+ * @param WeaponName   Название кастомного оружия
+ *
+ * @return      Индекс кастомного оружия. -1, если такого оружия не существует.
+ */
+native CWAPI_GetWeaponId(const WeaponName[32]);
+
+/**
  * Получает информацию о кастомном оружии
  *
  * @param WeaponId   Индекс кастомного оружия
