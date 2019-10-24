@@ -147,8 +147,8 @@ public Native_AddCustomWeapon(){
         return -1;
     }
 
-    if(Data[CWAPI_WD_CustomHandlers] != Invalid_Array)
-        for(new i = 1; i < _:CWAPI_WeaponEvents; i++)
+    for(new i = 1; i < _:CWAPI_WeaponEvents; i++)
+        if(Data[CWAPI_WD_CustomHandlers][CWAPI_WeaponEvents:i] != Invalid_Array)
             ArrayDestroy(Data[CWAPI_WD_CustomHandlers][CWAPI_WeaponEvents:i]);
 
     new WeaponId = ArrayPushArray(CustomWeapons, Data);
