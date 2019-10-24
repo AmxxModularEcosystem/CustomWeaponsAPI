@@ -231,15 +231,6 @@ CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, co
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
     if(Data[CWAPI_WD_CustomHandlers][Event] == Invalid_Array)
         return true;
-
-    //log_amx("[DEBUG] CallWeaponEvent: WeaponId = %d", WeaponId);
-    //log_amx("[DEBUG] CallWeaponEvent: Event = %d", _:Event);
-    //log_amx("[DEBUG] CallWeaponEvent: ItemId = %d", ItemId);
-    //log_amx("[DEBUG] CallWeaponEvent: numargs() = %d", numargs());
-    //for(new i = 1; i <= numargs(); i++){
-    //    log_amx("[DEBUG] CallWeaponEvent:     getarg(%d) = (int) %d", i, _:getarg(i));
-    //    log_amx("[DEBUG] CallWeaponEvent:     getarg(%d) = (float) %.2f", i, Float:getarg(i));
-    //}
     
     static FwdId, Return, Status;
     for(new i = 0; i < ArraySize(Data[CWAPI_WD_CustomHandlers][Event]); i++){
@@ -401,11 +392,6 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
 
     if(!IsCustomWeapon(WeaponId))
         return HC_CONTINUE;
-
-    //log_amx("[DEBUG] Hook_PlayerTakeDamage: ItemId = %в", ItemId);
-    //log_amx("[DEBUG] Hook_PlayerTakeDamage: Victim = %n", Victim);
-    //log_amx("[DEBUG] Hook_PlayerTakeDamage: Damage = %.2f", Damage);
-    //log_amx("[DEBUG] Hook_PlayerTakeDamage: DamageBits = %d", DamageBits);
 
     if(!CallWeaponEvent(WeaponId, CWAPI_WE_Damage, ItemId, Victim, Damage, DamageBits)){
         SetHookChainReturn(ATYPE_INTEGER, 0);
@@ -693,9 +679,6 @@ LoadWeapons(){
     new JSON:Item;
     new Trie:DefWeaponsNamesList = TrieCreate();
     do{
-        //log_amx("[DEBUG] New_LoadWeapons: Cycle: Item = %d ==========", CUSTOM_WEAPONS_COUNT);
-        //log_amx("[DEBUG] New_LoadWeapons: Cycle: File = %s", File);
-        //log_amx("[DEBUG] New_LoadWeapons: Cycle: FileType = %d", _:Type);
 
         if(Type != FileType_File)
             continue;
@@ -706,13 +689,9 @@ LoadWeapons(){
         new Data[CWAPI_WeaponData];
 
         regex_substr(RegEx_FileName, 1, Data[CWAPI_WD_Name], charsmax(Data[CWAPI_WD_Name]));
-        
-        //log_amx("[DEBUG] New_LoadWeapons: Cycle: Name = %s", Data[CWAPI_WD_Name]);
 
         format(File, charsmax(File), "%s%s", Path, File);
         Item = json_parse(File, true, true);
-
-        //log_amx("[DEBUG] New_LoadWeapons: Cycle: Jsno Type = %d", _:json_get_type(Item));
 
         if(!json_is_object(Item)){
             json_free(Item);
