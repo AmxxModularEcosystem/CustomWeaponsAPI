@@ -4,6 +4,8 @@
 
 API для создания кастомного оружия
 
+[Ресурс на Dev-CS](https://dev-cs.ru/resources/852/)
+
 ## Требования
 
 - [AmxModX 1.9.0](https://www.amxmodx.org/downloads-new.php)
