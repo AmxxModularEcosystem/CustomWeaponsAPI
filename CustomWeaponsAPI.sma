@@ -303,7 +303,7 @@ public Cmd_Buy(const Id){
 
     static WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
-    if(!Data[CWAPI_WD_Price]){
+    if(!Data[CWAPI_WD_Price] < 0){
         client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_BUY_NO_PRICE", WeaponName);
         return PLUGIN_HANDLED;
     }
@@ -406,10 +406,10 @@ public Hook_PlayerItemDeploy(const ItemId){
     if(Data[CWAPI_WD_Models][CWAPI_WM_P][0])
         set_entvar(Id, var_weaponmodel, Data[CWAPI_WD_Models][CWAPI_WM_P][0]);
     
-    if(Data[CWAPI_WD_DeployTime] > 0.0)
+    if(Data[CWAPI_WD_DeployTime] >= 0.0)
         SetWeaponNextAttack(ItemId, Data[CWAPI_WD_DeployTime]);
 
-    if(Data[CWAPI_WD_Accuracy] > 0.0)
+    if(Data[CWAPI_WD_Accuracy] >= 0.0)
         set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
 
     CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
@@ -448,7 +448,7 @@ public Hook_PlayerItemReloaded_Post(const ItemId){
 
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
     
-    if(Data[CWAPI_WD_ReloadTime])
+    if(Data[CWAPI_WD_ReloadTime] >= 0.0)
         if(get_member(ItemId, m_Weapon_fInSpecialReload)) set_member(ItemId, m_Weapon_flNextReload, Data[CWAPI_WD_ReloadTime]);
         else SetWeaponNextAttack(ItemId, Data[CWAPI_WD_ReloadTime]);
 
@@ -461,7 +461,7 @@ public Hook_PlayerGetMaxSpeed(const ItemId){
     
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
 
-    if(Data[CWAPI_WD_MaxWalkSpeed]){
+    if(Data[CWAPI_WD_MaxWalkSpeed] >= 0){
         SetHamReturnFloat(Data[CWAPI_WD_MaxWalkSpeed]);
         return HAM_SUPERCEDE;
     }
@@ -563,13 +563,13 @@ GiveCustomWeapon(const Id, const WeaponId){
             rg_set_user_ammo(Id, DefaultWeaponId, Data[CWAPI_WD_ClipSize]);
         }
 
-        if(Data[CWAPI_WD_MaxAmmo]){
+        if(Data[CWAPI_WD_MaxAmmo] >= 0){
             rg_set_iteminfo(ItemId, ItemInfo_iMaxAmmo1, Data[CWAPI_WD_MaxAmmo]);
             rg_set_user_bpammo(Id, DefaultWeaponId, Data[CWAPI_WD_MaxAmmo]);
         }
     }
 
-    if(Data[CWAPI_WD_Damage])
+    if(Data[CWAPI_WD_Damage] >= 0)
         set_member(
             ItemId, m_Weapon_flBaseDamage,
             Data[CWAPI_WD_Damage]
@@ -580,7 +580,7 @@ GiveCustomWeapon(const Id, const WeaponId){
             0.0
         );
 
-    if(Data[CWAPI_WD_DamageMult]){
+    if(Data[CWAPI_WD_DamageMult] >= 0){
         set_member(
             ItemId, m_Weapon_flBaseDamage,
             Float:get_member(ItemId, m_Weapon_flBaseDamage)*Data[CWAPI_WD_DamageMult]
@@ -741,18 +741,29 @@ LoadWeapons(){
         }
 
         Data[CWAPI_WD_ClipSize] = json_object_get_number(Item, "ClipSize");
-        Data[CWAPI_WD_MaxAmmo] = json_object_get_number(Item, "MaxAmmo");
         Data[CWAPI_WD_Weight] = json_object_get_number(Item, "Weight");
-        Data[CWAPI_WD_Price] = json_object_get_number(Item, "Price");
+        if(json_object_has_value(Item, "Price")) Data[CWAPI_WD_Price] = json_object_get_real(Item, "Price");
+        else Data[CWAPI_WD_Price] = -1;
+        if(json_object_has_value(Item, "MaxAmmo")) Data[CWAPI_WD_MaxAmmo] = json_object_get_real(Item, "MaxAmmo");
+        else Data[CWAPI_WD_MaxAmmo] = -1;
 
-        Data[CWAPI_WD_MaxWalkSpeed] = json_object_get_real(Item, "MaxWalkSpeed");
-        Data[CWAPI_WD_DamageMult] = json_object_get_real(Item, "DamageMult");
-        Data[CWAPI_WD_Damage] = json_object_get_real(Item, "Damage");
-        Data[CWAPI_WD_Accuracy] = json_object_get_real(Item, "Accuracy");
-        Data[CWAPI_WD_DeployTime] = json_object_get_real(Item, "DeployTime");
-        Data[CWAPI_WD_ReloadTime] = json_object_get_real(Item, "ReloadTime");
-        Data[CWAPI_WD_PrimaryAttackRate] = json_object_get_real(Item, "PrimaryAttackRate");
+        if(json_object_has_value(Item, "MaxWalkSpeed")) Data[CWAPI_WD_MaxWalkSpeed] = json_object_get_real(Item, "MaxWalkSpeed");
+        else Data[CWAPI_WD_MaxWalkSpeed] = -1.0;
+        if(json_object_has_value(Item, "DamageMult")) Data[CWAPI_WD_DamageMult] = json_object_get_real(Item, "DamageMult");
+        else Data[CWAPI_WD_DamageMult] = -1.0;
+        if(json_object_has_value(Item, "Damage")) Data[CWAPI_WD_Damage] = json_object_get_real(Item, "Damage");
+        else Data[CWAPI_WD_Damage] = -1.0;
+        if(json_object_has_value(Item, "Accuracy")) Data[CWAPI_WD_Accuracy] = json_object_get_real(Item, "Accuracy");
+        else Data[CWAPI_WD_Accuracy] = -1.0;
+        if(json_object_has_value(Item, "DeployTime")) Data[CWAPI_WD_DeployTime] = json_object_get_real(Item, "DeployTime");
+        else Data[CWAPI_WD_DeployTime] = -1.0;
+        if(json_object_has_value(Item, "ReloadTime")) Data[CWAPI_WD_ReloadTime] = json_object_get_real(Item, "ReloadTime");
+        else Data[CWAPI_WD_ReloadTime] = -1.0;
+        if(json_object_has_value(Item, "PrimaryAttackRate")) Data[CWAPI_WD_PrimaryAttackRate] = json_object_get_real(Item, "PrimaryAttackRate");
+        else Data[CWAPI_WD_PrimaryAttackRate] = 0.0;
         Data[CWAPI_WD_SecondaryAttackRate] = json_object_get_real(Item, "SecondaryAttackRate");
+        else Data[CWAPI_WD_SecondaryAttackRate] = 0.0;
+
         Data[CWAPI_WD_HasSecondaryAttack] = json_object_get_bool(Item, "HasSecondaryAttack");
 
         if(!TrieKeyExists(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName])){
