@@ -163,18 +163,12 @@ public Native_FindWeapon(){
     static StartWeaponId; StartWeaponId = get_param(Arg_StartWeaponId)+1;
     static Field; Field = get_param(Arg_Field);
 
-    //log_amx("[DEBUG] Native_FindWeapon: StartWeaponId = %d", StartWeaponId);
-    //log_amx("[DEBUG] Native_FindWeapon: Field = %d", Field);
-
     static Data[CWAPI_WeaponData];
     switch(Field){
         case CWAPI_WD_DefaultName: {
             static Value[32]; get_string(Arg_Value, Value, charsmax(Value));
-            //log_amx("[DEBUG] Native_FindWeapon: Value = %s", Value);
             for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
-                //log_amx("[DEBUG] Native_FindWeapon: WeaponId = %d", WeaponId);
                 ArrayGetArray(CustomWeapons, WeaponId, Data);
-                //log_amx("[DEBUG] Native_FindWeapon: Field value = %s", Data[Field]);
                 if(equal(Data[Field], Value)){
                     return WeaponId;
                 }
@@ -185,11 +179,8 @@ public Native_FindWeapon(){
         CWAPI_WD_MaxAmmo, 
         CWAPI_WD_ClipSize: {
             static Value; Value = get_param_byref(Arg_Value);
-            //log_amx("[DEBUG] Native_FindWeapon: Value = %d", Value);
             for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
-                //log_amx("[DEBUG] Native_FindWeapon: WeaponId = %d", WeaponId);
                 ArrayGetArray(CustomWeapons, WeaponId, Data);
-                //log_amx("[DEBUG] Native_FindWeapon: Field value = %d", Data[Field]);
                 if(Data[Field] == Value)
                     return WeaponId;
             }
@@ -203,11 +194,8 @@ public Native_FindWeapon(){
         CWAPI_WD_SecondaryAttackRate,
         CWAPI_WD_Damage: {
             static Float:Value; Value = get_float_byref(Arg_Value);
-            //log_amx("[DEBUG] Native_FindWeapon: Value = %.1f", Value);
             for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
-                //log_amx("[DEBUG] Native_FindWeapon: WeaponId = %d", WeaponId);
                 ArrayGetArray(CustomWeapons, WeaponId, Data);
-                //log_amx("[DEBUG] Native_FindWeapon: Field value = %.1f", Data[Field]);
                 if(Data[Field] == Value)
                     return WeaponId;
             }
