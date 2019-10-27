@@ -10,6 +10,8 @@ API для создания кастомного оружия
 
 - [AmxModX 1.9.0](https://www.amxmodx.org/downloads-new.php)
 - [ReAPI 5.8.0.163 или новее](http://teamcity.rehlds.org/project.html?projectId=Reapi)
+- [Fix Custom iMaxClip](https://goldsrc.ru/threads/4165/)
+  - Необязательно. Исправляет баг с анимацией перезарядки при полном магазине.
 
 ## Настройки оружий [`/amxmodx/configs/plugins/CustomWeaponAPI/Weapons/<WeaponName>.json`]
 
@@ -93,17 +95,14 @@ API для создания кастомного оружия
 
 ## Команды
 
-### CWAPI_Buy <WeaponName>
-Покупка кастомного оружия
+### CWAPI_Buy \<WeaponName\>
+* Покупка кастомного оружия
+* Пример: `CWAPI_Buy NoveskeDiplomat`
 
-Пример: `CWAPI_Buy NoveskeDiplomat`
-
-### CWAPI_Give <WeaponName>
-Выдача себе кастомного оружия
-
-Пример: `CWAPI_Give NoveskeDiplomat`
-
-_Работает, только если плагин скомпилирован с дефайном `DEBUG`_
+### CWAPI_Give \<WeaponName\>
+* Выдача себе кастомного оружия
+* Пример: `CWAPI_Give NoveskeDiplomat`
+* _Работает, только если плагин скомпилирован с дефайном `DEBUG`_
 
 ## [API](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/include/cwapi.inc)
 
