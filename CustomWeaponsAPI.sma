@@ -37,6 +37,7 @@ enum E_Fwds{
     F_LoadWeaponsPost,
 };
 
+new Trie:WeaponAbilities;
 new Trie:WeaponsNames;
 new Array:CustomWeapons;
 
@@ -82,6 +83,7 @@ public plugin_natives(){
     register_native("CWAPI_GetWeaponId", "Native_GetWeaponId");
     register_native("CWAPI_AddCustomWeapon", "Native_AddCustomWeapon");
     register_native("CWAPI_FindWeapon", "Native_FindWeapon");
+    register_native("CWAPI_GetAbilityWeaponsList", "Native_GetAbilityWeaponsList");
 }
 
 public Native_GiveWeapon(){
@@ -213,6 +215,17 @@ public Native_FindWeapon(){
         }
     }
     return -1;
+}
+
+public Array:Native_GetAbilityWeaponsList(){
+    enum {Arg_AbilityName = 1};
+    new AbilityName[32]; get_string(Arg_AbilityName, AbilityName, charsmax(AbilityName));
+    new Array:AbilityWeaponsList; 
+    if(!TrieGetCell(WeaponAbilities, AbilityName, AbilityWeaponsList)){
+        AbilityWeaponsList = ArrayCreate(CWAPI_WeaponAbilityData, 1);
+        TrieSetCell(WeaponAbilities, AbilityName, AbilityWeaponsList);
+    }
+    return AbilityWeaponsList;
 }
 
 CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, const any:...){
@@ -641,8 +654,9 @@ SetWeaponIdleAnim(const UserId, const ItemId){
 
 // Загрузка пушек из кфг
 LoadWeapons(){
-    CustomWeapons = ArrayCreate(CWAPI_WeaponData);
+    CustomWeapons = ArrayCreate(CWAPI_WeaponData, 8);
     WeaponsNames = TrieCreate();
+    WeaponAbilities = TrieCreate();
     new Path[PLATFORM_MAX_PATH];
     get_localinfo("amxx_configsdir", Path, charsmax(Path));
     add(Path, charsmax(Path), "/plugins/CustomWeaponsAPI/Weapons/");
@@ -659,7 +673,7 @@ LoadWeapons(){
     }
 
     new Regex:RegEx_FileName, ret; RegEx_FileName = regex_compile("([a-z0-9]+).json$", ret, "", 0, "i");
-    new JSON:Item;
+    new JSON:Item, JSON:AbilsList;
     new Trie:DefWeaponsNamesList = TrieCreate();
     do{
 
@@ -805,9 +819,15 @@ LoadWeapons(){
 
             TrieSetCell(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName], 0);
         }
-        
+
         TrieSetCell(WeaponsNames, Data[CWAPI_WD_Name], ArrayPushArray(CustomWeapons, Data));
 
+        if(json_object_has_value(Item, "Abilities")){
+            AbilsList = json_object_get_value(Item, "Abilities");
+            LoadWeaponAbilities(Data[CWAPI_WD_Name], AbilsList);
+            json_free(AbilsList);
+        }
+        
         json_free(Item);
     }while(next_file(DirHandler, File, charsmax(File), Type));
 
@@ -816,6 +836,26 @@ LoadWeapons(){
     TrieDestroy(DefWeaponsNamesList);
 
     ExecuteForward(Fwds[F_LoadWeaponsPost]);
+}
+
+LoadWeaponAbilities(const WeaponName[32], const JSON:List){
+    if(json_is_array(List)){
+        new AbilityName[32], Array:WeaponsList, AbilData[CWAPI_WeaponAbilityData];
+        for(new i = 0; i < json_array_get_count(List); i++){
+            json_array_get_string(List, i, AbilityName, charsmax(AbilityName));
+            if(!TrieGetCell(WeaponAbilities, AbilityName, WeaponsList))
+                WeaponsList = ArrayCreate(CWAPI_WeaponAbilityData, 1);
+            
+            copy(AbilData[CWAPI_WAD_WeaponName], charsmax(AbilData[CWAPI_WAD_WeaponName]), WeaponName);
+            ArrayPushArray(WeaponsList, AbilData);
+            
+            if(!TrieKeyExists(WeaponAbilities, AbilityName))
+                TrieSetCell(WeaponAbilities, AbilityName, WeaponsList);
+        }
+    }
+    else if(json_is_object(List)){
+        // TODO: Сделать загрузку списка способностей с параметрами
+    }
 }
 
 InitForwards(){

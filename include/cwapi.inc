@@ -199,46 +199,17 @@ native CWAPI_AddCustomWeapon(const WeaponData[CWAPI_WeaponData]);
 native CWAPI_FindWeapon(const StartWeaponId, const Field, any:...);
 
 /**
- * Вызывается после загрузки всех пушек из конфига
- *
- * @noreturn
- */
-forward CWAPI_LoadWeaponsPost();
-
-/**
  * Возвращает Array массив со списком пушек использующих указанную способность.
- * Надо разрушить массив (ArrayDestroy) после использования
  *
  * @param AbilityName   Название способности
  *
  * @return      Дескриптор Array массива
  */
-stock Array:CWAPI_GetAbilityWeaponsList(const AbilityName[]){
-    new Array:WeaponsList; WeaponsList = ArrayCreate(CWAPI_WeaponAbilityData);
-    
-    new file[PLATFORM_MAX_PATH];
-    get_localinfo("amxx_configsdir", file, charsmax(file));
-    add(file, charsmax(file), fmt("/plugins/CustomWeaponsAPI/Abilities/%s.json", AbilityName));
-    if(!file_exists(file)){
-        set_fail_state("[ERROR] Config file '%s' not found", file);
-        return Invalid_Array;
-    }
-    new JSON:List = json_parse(file, true);
-    if(json_is_array(List)){
-        for(new i = 0; i < json_array_get_count(List); i++){
-            new Data[CWAPI_WeaponAbilityData];
-            json_array_get_string(List, i, Data[CWAPI_WAD_WeaponName], charsmax(Data[CWAPI_WAD_WeaponName]));
-            ArrayPushArray(WeaponsList, Data);
-        }
-    }
-    else if(json_is_object(List)){
-        //...
-    }
-    else{
-        json_free(List);
-        set_fail_state("[ERROR] Invalid config structure. File '%s'", file);
-        return Invalid_Array;
-    }
-    
-    return WeaponsList;
-}
+native Array:CWAPI_GetAbilityWeaponsList(const AbilityName[]);
+
+/**
+ * Вызывается после загрузки всех пушек из конфига
+ *
+ * @noreturn
+ */
+forward CWAPI_LoadWeaponsPost();
