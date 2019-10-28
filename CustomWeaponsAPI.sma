@@ -569,18 +569,13 @@ GiveCustomWeapon(const Id, const WeaponId){
         }
     }
 
-    if(Data[CWAPI_WD_Damage] >= 0)
+    if(Data[CWAPI_WD_Damage] >= 0.0)
         set_member(
             ItemId, m_Weapon_flBaseDamage,
             Data[CWAPI_WD_Damage]
         );
-    else if(Data[CWAPI_WD_Damage] < 0)
-        set_member(
-            ItemId, m_Weapon_flBaseDamage,
-            0.0
-        );
 
-    if(Data[CWAPI_WD_DamageMult] >= 0){
+    if(Data[CWAPI_WD_DamageMult] >= 0.0){
         set_member(
             ItemId, m_Weapon_flBaseDamage,
             Float:get_member(ItemId, m_Weapon_flBaseDamage)*Data[CWAPI_WD_DamageMult]
