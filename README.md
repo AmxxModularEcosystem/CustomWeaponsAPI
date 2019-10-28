@@ -4,7 +4,8 @@
 
 API для создания кастомного оружия
 
-[Ресурс на Dev-CS](https://dev-cs.ru/resources/852/)
+- [Ресурс на Dev-CS](https://dev-cs.ru/resources/852/)
+- [Тема на GoldSrc.ru](https://goldsrc.ru/threads/4202/)
 
 ## Требования
 
