@@ -47,6 +47,11 @@ public plugin_init(){
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Post", true);
     RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_PlayerAddItem", true);
     RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
+    #if REAPI_VERSION >= 511189
+        RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy", false);
+        RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload", false);
+        RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
+    #endif
 
     // Покупка пушки (Только если указана цена)
     register_clcmd("CWAPI_Buy", "Cmd_Buy");
@@ -396,6 +401,76 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
     return HC_CONTINUE;
 }
 
+#if REAPI_VERSION >= 511189
+public Hook_DefaultDeploy(const ItemId, szViewModel[], szWeaponModel[], iAnim, szAnimExt[], skiplocal){
+    if(!IsCustomWeapon(GetWeapId(ItemId)))
+        return;
+    
+    static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
+
+    if(Data[CWAPI_WD_Models][CWAPI_WM_V][0])
+        SetHookChainArg(2, ATYPE_STRING, Data[CWAPI_WD_Models][CWAPI_WM_V]);
+    
+    if(Data[CWAPI_WD_Models][CWAPI_WM_P][0])
+        SetHookChainArg(3, ATYPE_STRING, Data[CWAPI_WD_Models][CWAPI_WM_P]);
+    
+    if(Data[CWAPI_WD_DeployTime] >= 0.0)
+        SetWeaponNextAttack(ItemId, Data[CWAPI_WD_DeployTime]);
+
+    if(Data[CWAPI_WD_Accuracy] >= 0.0)
+        set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
+
+    CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
+}
+
+public Hook_DefaultReload(const ItemId, iClipSize, iAnim, Float:fDelay){
+    static UserId; UserId = get_member(ItemId, m_pPlayer);
+    static WeaponId; WeaponId = GetWeapId(ItemId);
+    if(!is_user_connected(UserId) || !IsCustomWeapon(WeaponId))
+        return HAM_IGNORED;
+
+    if(
+        get_member(ItemId, m_Weapon_iClip) >= iClipSize
+        || !CallWeaponEvent(WeaponId, CWAPI_WE_Reload, ItemId)
+    ){
+        SetWeaponIdleAnim(UserId, ItemId);
+        SetHookChainReturn(ATYPE_INTEGER, false);
+
+        return HC_BREAK;
+    }
+    
+    static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
+    if(Data[CWAPI_WD_ReloadTime] >= 0.0)
+        SetHookChainArg(4, ATYPE_FLOAT, Data[CWAPI_WD_ReloadTime]);
+
+    return HC_CONTINUE;
+}
+
+public Hook_DefaultShotgunReload(const ItemId, iAnim, iStartAnim, Float:fDelay, Float:fStartDelay, const pszReloadSound1[], const pszReloadSound2[]){
+    static UserId; UserId = get_member(ItemId, m_pPlayer);
+    static WeaponId; WeaponId = GetWeapId(ItemId);
+    if(!is_user_connected(UserId) || !IsCustomWeapon(WeaponId))
+        return HAM_IGNORED;
+
+    if(
+        get_member(ItemId, m_Weapon_iClip) >= rg_get_iteminfo(ItemId, ItemInfo_iMaxClip)
+        || !CallWeaponEvent(WeaponId, CWAPI_WE_Reload, ItemId)
+    ){
+        SetWeaponIdleAnim(UserId, ItemId);
+        SetHookChainReturn(ATYPE_BOOL, false);
+
+        return HC_BREAK;
+    }
+    
+    static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
+    if(Data[CWAPI_WD_ReloadTime] >= 0.0){
+        SetHookChainArg(4, ATYPE_FLOAT, Data[CWAPI_WD_ReloadTime]);
+        SetHookChainArg(5, ATYPE_FLOAT, Data[CWAPI_WD_ReloadTime]);
+    }
+    
+    return HC_CONTINUE;
+}
+#else
 public Hook_PlayerItemDeploy(const ItemId){
     if(!IsCustomWeapon(GetWeapId(ItemId)))
         return;
@@ -420,15 +495,6 @@ public Hook_PlayerItemDeploy(const ItemId){
         set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
 
     CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
-
-    return;
-}
-
-public Hook_PlayerItemHolster(const ItemId){
-    if(!IsCustomWeapon(GetWeapId(ItemId)))
-        return;
-
-    CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Holster, ItemId);
 
     return;
 }
@@ -460,6 +526,16 @@ public Hook_PlayerItemReloaded_Post(const ItemId){
         else SetWeaponNextAttack(ItemId, Data[CWAPI_WD_ReloadTime]);
 
     return HAM_IGNORED;
+}
+#endif
+
+public Hook_PlayerItemHolster(const ItemId){
+    if(!IsCustomWeapon(GetWeapId(ItemId)))
+        return;
+
+    CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Holster, ItemId);
+
+    return;
 }
 
 public Hook_PlayerGetMaxSpeed(const ItemId){
@@ -770,20 +846,27 @@ LoadWeapons(){
         Data[CWAPI_WD_HasSecondaryAttack] = json_object_get_bool(Item, "HasSecondaryAttack");
 
         if(!TrieKeyExists(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName])){
+            #if REAPI_VERSION < 511189
             RegisterHam(
                 Ham_Item_Deploy,
                 GetWeapFullName(Data[CWAPI_WD_DefaultName]),
                 "Hook_PlayerItemDeploy", true
             );
             RegisterHam(
-                Ham_Item_Holster,
+                Ham_Weapon_Reload,
                 GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_PlayerItemHolster", true
+                "Hook_PlayerItemReloaded", false
             );
             RegisterHam(
                 Ham_Weapon_Reload,
                 GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_PlayerItemReloaded", false
+                "Hook_PlayerItemReloaded_Post", true
+            );
+            #endif
+            RegisterHam(
+                Ham_Item_Holster,
+                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
+                "Hook_PlayerItemHolster", true
             );
             RegisterHam(
                 Ham_CS_Item_GetMaxSpeed,
@@ -804,11 +887,6 @@ LoadWeapons(){
                 Ham_Weapon_SecondaryAttack,
                 GetWeapFullName(Data[CWAPI_WD_DefaultName]),
                 "Hook_SecondaryAttack", true
-            );
-            RegisterHam(
-                Ham_Weapon_Reload,
-                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_PlayerItemReloaded_Post", true
             );
 
             TrieSetCell(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName], 0);
