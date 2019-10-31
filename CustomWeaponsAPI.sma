@@ -8,7 +8,6 @@
 #pragma semicolon 1
 
 #define DEBUG // Закомментировать чтобы запретить бесплатную выдачу пушек
-//#define SUPPORT_RESTRICT // Поддержка запрещалки пушек
 
 #define WEAPON_PISTOLS_BITSUMM (BIT(_:WEAPON_P228)|BIT(_:WEAPON_GLOCK)|BIT(_:WEAPON_ELITE)|BIT(_:WEAPON_FIVESEVEN)|BIT(_:WEAPON_USP)|BIT(_:WEAPON_GLOCK18)|BIT(_:WEAPON_DEAGLE))
 #define WEAPONS_IMPULSE_OFFSET 4354
@@ -19,11 +18,6 @@
 #define IsGrenade(%0) (equal(%0, "hegrenade") || equal(%0, "smokegrenade") || equal(%0, "flashbang"))
 #define IsWeaponSilenced(%0) bool:((WPNSTATE_M4A1_SILENCED|WPNSTATE_USP_SILENCED)&get_member(%0,m_Weapon_iWeaponState))
 #define IsPistol(%0) (WEAPON_PISTOLS_BITSUMM&BIT(rg_get_iteminfo(%0,ItemInfo_iId)))
-
-#if defined SUPPORT_RESTRICT
-    forward WeaponsRestrict_LoadingWeapons_Post();
-    native WeaponsRestrict_AddWeapon(const WeaponId, const WeaponName[32]);
-#endif
 
 enum {
     CWAPI_ERR_UNDEFINED_EVENT = 0,
@@ -861,17 +855,3 @@ LoadWeaponAbilities(const WeaponName[32], const JSON:List){
 InitForwards(){
     Fwds[F_LoadWeaponsPost] = CreateMultiForward("CWAPI_LoadWeaponsPost", ET_IGNORE);
 }
-
-#if defined SUPPORT_RESTRICT
-    public WeaponsRestrict_LoadingWeapons_Post(){
-        new WeaponName[32], WeaponId, TrieIter:IterHandler;
-        IterHandler = TrieIterCreate(WeaponsNames);
-        while(!TrieIterEnded(IterHandler)){
-            TrieIterGetKey(IterHandler, WeaponName, charsmax(WeaponName));
-            TrieIterGetCell(IterHandler, WeaponId);
-            TrieIterNext(IterHandler);
-        }
-        TrieIterDestroy(IterHandler);
-        WeaponsRestrict_AddWeapon(WeaponId+WEAPONS_IMPULSE_OFFSET, WeaponName);
-    }
-#endif
