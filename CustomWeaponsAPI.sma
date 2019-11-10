@@ -850,7 +850,7 @@ LoadWeapons(){
         Data[CWAPI_WD_HasSecondaryAttack] = json_object_get_bool(Item, "HasSecondaryAttack");
 
         if(!TrieKeyExists(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName])){
-            #if REAPI_VERSION < 511189 && defined USE_NEW_REAPI_HOOKS
+            #if REAPI_VERSION < 511189 && !defined USE_NEW_REAPI_HOOKS
             RegisterHam(
                 Ham_Item_Deploy,
                 GetWeapFullName(Data[CWAPI_WD_DefaultName]),
