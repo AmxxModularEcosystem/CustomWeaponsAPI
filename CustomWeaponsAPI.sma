@@ -48,7 +48,7 @@ public plugin_init(){
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Post", true);
     RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_PlayerAddItem", true);
     RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
-    #if REAPI_VERSION >= 511189 && USE_NEW_REAPI_HOOKS
+    #if REAPI_VERSION >= 511189 && defined USE_NEW_REAPI_HOOKS
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy", false);
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload", false);
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
@@ -402,7 +402,7 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
     return HC_CONTINUE;
 }
 
-#if REAPI_VERSION >= 511189 && USE_NEW_REAPI_HOOKS
+#if REAPI_VERSION >= 511189 && defined USE_NEW_REAPI_HOOKS
 public Hook_DefaultDeploy(const ItemId, szViewModel[], szWeaponModel[], iAnim, szAnimExt[], skiplocal){
     if(!IsCustomWeapon(GetWeapId(ItemId)))
         return;
@@ -847,7 +847,7 @@ LoadWeapons(){
         Data[CWAPI_WD_HasSecondaryAttack] = json_object_get_bool(Item, "HasSecondaryAttack");
 
         if(!TrieKeyExists(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName])){
-            #if REAPI_VERSION < 511189 && USE_NEW_REAPI_HOOKS
+            #if REAPI_VERSION < 511189 && defined USE_NEW_REAPI_HOOKS
             RegisterHam(
                 Ham_Item_Deploy,
                 GetWeapFullName(Data[CWAPI_WD_DefaultName]),
