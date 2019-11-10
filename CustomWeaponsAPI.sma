@@ -8,7 +8,7 @@
 #pragma semicolon 1
 
 #define DEBUG // Закомментировать чтобы запретить бесплатную выдачу пушек
-#define USE_NEW_REAPI_HOOKS // Исползование новых хуков в ReAPI (Почему-то работает криво)
+//#define USE_NEW_REAPI_HOOKS // Исползование новых хуков в ReAPI (Почему-то работает криво)
 
 #define WEAPON_PISTOLS_BITSUMM (BIT(_:WEAPON_P228)|BIT(_:WEAPON_GLOCK)|BIT(_:WEAPON_ELITE)|BIT(_:WEAPON_FIVESEVEN)|BIT(_:WEAPON_USP)|BIT(_:WEAPON_GLOCK18)|BIT(_:WEAPON_DEAGLE))
 #define WEAPONS_IMPULSE_OFFSET 4354
@@ -747,6 +747,9 @@ LoadWeapons(){
     new JSON:Item, JSON:AbilsList;
     new Trie:DefWeaponsNamesList = TrieCreate();
     do{
+
+        if(File[0] == '!')
+            continue;
 
         if(Type != FileType_File)
             continue;
