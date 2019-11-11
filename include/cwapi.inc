@@ -140,12 +140,12 @@ native CWAPI_RegisterHook(const WeaponName[], const CWAPI_WeaponEvents:Event, co
 /**
  * Выдаёт кастомное оружие игроку
  *
- * @param WeaponName        Название оружия указанное в конфиге
  * @param UserId            Идентификатор игрока, которому надо выдать оружие
+ * @param WeaponName        Название оружия указанное в конфиге
  *
  * @return      Идентификатор выданного предмета. -1 в случае ошибки
  */
-native CWAPI_GiveWeapon(const WeaponName[], const UserId);
+native CWAPI_GiveWeapon(const UserId, const WeaponName[]);
 
 /**
  * Возвращает Array массив со списком кастомных пушек.
