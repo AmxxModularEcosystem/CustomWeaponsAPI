@@ -651,6 +651,7 @@ GiveCustomWeapon(const Id, const WeaponId){
             rg_set_iteminfo(ItemId, ItemInfo_iMaxAmmo1, Data[CWAPI_WD_MaxAmmo]);
             rg_set_user_bpammo(Id, DefaultWeaponId, Data[CWAPI_WD_MaxAmmo]);
         }
+        else rg_set_user_bpammo(Id, DefaultWeaponId, rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo1));
     }
 
     if(Data[CWAPI_WD_Damage] >= 0.0)
