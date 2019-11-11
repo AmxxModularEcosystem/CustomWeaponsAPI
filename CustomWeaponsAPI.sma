@@ -744,7 +744,7 @@ LoadWeapons(){
         return;
     }
 
-    new Regex:RegEx_FileName, ret; RegEx_FileName = regex_compile("([a-z0-9]+).json$", ret, "", 0, "i");
+    new Regex:RegEx_FileName, ret; RegEx_FileName = regex_compile("(.+).json$", ret, "", 0, "i");
     new JSON:Item, JSON:AbilsList;
     new Trie:DefWeaponsNamesList = TrieCreate();
     do{
