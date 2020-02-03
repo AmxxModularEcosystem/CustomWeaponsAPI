@@ -3,10 +3,6 @@
 #endif
 #define _cwapi_included
 
-#include <json>
-
-#define json_object_get_type(%0,%1) json_get_type(json_object_get_value(%0,%1));
-
 enum CWAPI_WeaponModels{
     CWAPI_WM_V[PLATFORM_MAX_PATH],
     CWAPI_WM_P[PLATFORM_MAX_PATH],
