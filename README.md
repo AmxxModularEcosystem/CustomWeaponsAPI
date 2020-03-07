@@ -120,7 +120,11 @@ API для создания кастомного оружия
 
 ## [API](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/include/cwapi.inc)
 
-### [Пример использования API](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/CWAPI_Example_FireDeagle.sma)
+### Примеры использования API
+
+- [Хуки событий](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/CWAPI_Test_Hooks.sma)
+- [Способности](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/CWAPI_Ability_Fire.sma)
+- [Поиск пушек по параметрам](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/CWAPI_Test_Search.sma)
 
 ## Благодарность
 [Dev-CS: [ReAPI] Пример кастомного оружия с дополнительними свойствами](https://dev-cs.ru/threads/1983/)
