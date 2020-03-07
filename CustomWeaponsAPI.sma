@@ -938,7 +938,7 @@ LoadWeapons(){
     ExecuteForward(Fwds[F_LoadWeaponsPost]);
 }
 
-LoadWeaponAbilities(const WeaponName[32], const JSON:List){
+LoadWeaponAbilities(const WeaponName[], const JSON:List){
     if(json_is_array(List)){
         new AbilityName[32], Array:WeaponsList, AbilData[CWAPI_WeaponAbilityData];
         for(new i = 0; i < json_array_get_count(List); i++){
