@@ -32,11 +32,17 @@ enum E_Fwds{
     F_LoadWeaponsPost,
 };
 
+enum E_UserMsgs{
+    UM_WeaponList,
+}
+
 new Trie:WeaponAbilities;
 new Trie:WeaponsNames;
 new Array:CustomWeapons;
 
 new Fwds[E_Fwds];
+
+new UserMsgs[E_UserMsgs];
 
 new const PLUG_NAME[] = "Custom Weapons API";
 new const PLUG_VER[] = "0.5.1-beta";
@@ -60,6 +66,8 @@ public plugin_init(){
         // Бесплатная выдача пушки (Для тестов)
         register_clcmd("CWAPI_Give", "Cmd_GiveCustomWeapon");
     #endif
+
+    UserMsgs[UM_WeaponList] = get_user_msgid("WeaponList");
 
     server_print("[%s v%s] loaded.", PLUG_NAME, PLUG_VER);
 }
@@ -295,6 +303,20 @@ _CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Eve
         return PLUGIN_CONTINUE;
     }
 #endif
+
+public Cmd_Select(const UserId) {
+    if(!is_user_alive(UserId))
+        return PLUGIN_HANDLED;
+
+    static WeaponName[40]; read_argv(0, WeaponName, charsmax(WeaponName));
+    if(TrieKeyExists(WeaponsNames, WeaponName[7])){
+        static WeaponId; TrieGetCell(WeaponsNames, WeaponName[7], WeaponId);
+        static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
+        engclient_cmd(UserId, GetWeapFullName(Data[CWAPI_WD_DefaultName]));
+        return PLUGIN_HANDLED_MAIN;
+    }
+    return PLUGIN_CONTINUE;
+}
 
 public Cmd_Buy(const Id){
     if(!is_user_alive(Id)){
@@ -609,6 +631,19 @@ public Hook_SecondaryAttack(ItemId){
     return HAM_IGNORED;
 }
 
+public Hook_AddItemToPlayer_Post(const ItemId, const UserId){
+    static WeaponId; WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId))
+        return HAM_IGNORED;
+
+    static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
+
+    if(Data[CWAPI_WD_HasCustomHud])
+        ShowWeaponListHud(UserId, ItemId, Data[CWAPI_WD_Name]);
+
+    return HAM_IGNORED;
+}
+
 // Выдача пушки
 GiveCustomWeapon(const Id, const WeaponId){
     if(!is_user_alive(Id))
@@ -728,6 +763,21 @@ SetWeaponIdleAnim(const UserId, const ItemId){
     message_end();
 }
 
+ShowWeaponListHud(const UserId, const ItemId, const WeaponName[]){
+    static WeaponId; WeaponId = rg_get_iteminfo(ItemId, ItemInfo_iId);
+    message_begin(MSG_ONE, UserMsgs[UM_WeaponList], .player = UserId);
+    write_string(GetWeapFullName(WeaponName));					// WeaponName
+    write_byte(rg_get_weapon_info(WeaponId, WI_AMMO_TYPE));	    // PrimaryAmmoID
+    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo1));	// PrimaryAmmoMaxAmount
+    write_byte(-1);												// SecondaryAmmoID
+    write_byte(-1);												// SecondaryAmmoMaxAmount
+    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iSlot));		// SlotID (0...N)
+    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iPosition));	// NumberInSlot (1...N)
+    write_byte(WeaponId);                                       // WeaponID
+    write_byte(0);												// Flags
+    message_end();
+}
+
 // Загрузка пушек из кфг
 LoadWeapons(){
     CustomWeapons = ArrayCreate(CWAPI_WeaponData, 8);
@@ -776,6 +826,27 @@ LoadWeapons(){
         }
 
         json_object_get_string(Item, "DefaultName", Data[CWAPI_WD_DefaultName], charsmax(Data[CWAPI_WD_DefaultName]));
+
+        if(file_exists(fmt("sprites/weapon_%s.txt", Data[CWAPI_WD_Name]))){
+            precache_generic(fmt("sprites/weapon_%s.txt", Data[CWAPI_WD_Name]));
+            Data[CWAPI_WD_HasCustomHud] = true;
+            register_clcmd(GetWeapFullName(Data[CWAPI_WD_Name]), "Cmd_Select");
+        }
+        else Data[CWAPI_WD_HasCustomHud] = false;
+
+        if(json_object_has_value(Item, "Hud", JSONArray)){
+            new JSON:Hud = json_object_get_value(Item, "Hud");
+
+            #define GetFullSprName(%1) fmt("sprites/%s.spr",%1)
+            for(new i = 0; i < json_array_get_count(Hud); i++){
+                new SprName[32]; json_array_get_string(Hud, i, SprName, charsmax(SprName));
+                if(file_exists(GetFullSprName(SprName)))
+                    precache_generic(GetFullSprName(SprName));
+                else log_amx("[WARNING] Sprite file '%s' not found.", GetFullSprName(SprName));
+            }
+            
+            json_free(Hud);
+        }
 
         if(json_object_has_value(Item, "Models", JSONObject)){
             new JSON:Models = json_object_get_value(Item, "Models");
@@ -915,6 +986,11 @@ LoadWeapons(){
                 Ham_Weapon_SecondaryAttack,
                 GetWeapFullName(Data[CWAPI_WD_DefaultName]),
                 "Hook_SecondaryAttack", true
+            );
+            RegisterHam(
+                Ham_Item_AddToPlayer,
+                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
+                "Hook_AddItemToPlayer_Post", true
             );
 
             TrieSetCell(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName], 0);
