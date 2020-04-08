@@ -15,9 +15,9 @@
 #define CUSTOM_WEAPONS_COUNT ArraySize(CustomWeapons)
 #define GetWeapId(%0) get_entvar(%0,var_impulse)-CWAPI_IMPULSE_OFFSET
 #define IsCustomWeapon(%0) (0 <= %0 < CUSTOM_WEAPONS_COUNT)
-#define IsGrenade(%0) (equal(%0, "hegrenade") || equal(%0, "smokegrenade") || equal(%0, "flashbang"))
 #define IsWeaponSilenced(%0) bool:((WPNSTATE_M4A1_SILENCED|WPNSTATE_USP_SILENCED)&get_member(%0,m_Weapon_iWeaponState))
 #define IsPistol(%0) (WEAPON_PISTOLS_BITSUMM&BIT(rg_get_iteminfo(%0,ItemInfo_iId)))
+#define IsGrenade(%0) (equal(%0, "hegrenade") || equal(%0, "smokegrenade") || equal(%0, "flashbang"))
 
 enum {
     CWAPI_ERR_UNDEFINED_EVENT = 0,
