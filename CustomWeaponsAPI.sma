@@ -11,10 +11,9 @@
 //#define USE_NEW_REAPI_HOOKS // Исползование новых хуков в ReAPI (Почему-то работает криво)
 
 #define WEAPON_PISTOLS_BITSUMM (BIT(_:WEAPON_P228)|BIT(_:WEAPON_GLOCK)|BIT(_:WEAPON_ELITE)|BIT(_:WEAPON_FIVESEVEN)|BIT(_:WEAPON_USP)|BIT(_:WEAPON_GLOCK18)|BIT(_:WEAPON_DEAGLE))
-#define WEAPONS_IMPULSE_OFFSET 4354
 #define GetWeapFullName(%0) fmt("weapon_%s",%0)
 #define CUSTOM_WEAPONS_COUNT ArraySize(CustomWeapons)
-#define GetWeapId(%0) get_entvar(%0,var_impulse)-WEAPONS_IMPULSE_OFFSET
+#define GetWeapId(%0) get_entvar(%0,var_impulse)-CWAPI_IMPULSE_OFFSET
 #define IsCustomWeapon(%0) (0 <= %0 < CUSTOM_WEAPONS_COUNT)
 #define IsGrenade(%0) (equal(%0, "hegrenade") || equal(%0, "smokegrenade") || equal(%0, "flashbang"))
 #define IsWeaponSilenced(%0) bool:((WPNSTATE_M4A1_SILENCED|WPNSTATE_USP_SILENCED)&get_member(%0,m_Weapon_iWeaponState))
@@ -680,7 +679,7 @@ GiveCustomWeapon(const Id, const WeaponId){
         Id,
         GetWeapFullName(Data[CWAPI_WD_DefaultName]),
         WeaponGiveType,
-        WeaponId+WEAPONS_IMPULSE_OFFSET
+        WeaponId+CWAPI_IMPULSE_OFFSET
     );
 
     if(is_nullent(ItemId))

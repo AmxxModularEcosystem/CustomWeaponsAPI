@@ -3,6 +3,8 @@
 #endif
 #define _cwapi_included
 
+#define CWAPI_IMPULSE_OFFSET 4354
+
 enum CWAPI_WeaponModels{
     CWAPI_WM_V[PLATFORM_MAX_PATH],
     CWAPI_WM_P[PLATFORM_MAX_PATH],
