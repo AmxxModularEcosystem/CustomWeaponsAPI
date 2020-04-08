@@ -205,6 +205,15 @@ native CWAPI_FindWeapon(const StartWeaponId, const Field, any:...);
 native Array:CWAPI_GetAbilityWeaponsList(const AbilityName[]);
 
 /**
+ * Получает индекс кастомного оружия по индексу предмета
+ *
+ * @param ItemId    Индекс предмета
+ *
+ * @return  Индекс кастомного оружия. -1 в случае ошибки.
+ */
+native CWAPI_GetWeaponIdFromEnt(const ItemId);
+
+/**
  * Вызывается после загрузки всех пушек из конфига
  *
  * @noreturn

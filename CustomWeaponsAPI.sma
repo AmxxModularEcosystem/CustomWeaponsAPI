@@ -92,6 +92,7 @@ public plugin_natives(){
     register_native("CWAPI_AddCustomWeapon", "Native_AddCustomWeapon");
     register_native("CWAPI_FindWeapon", "Native_FindWeapon");
     register_native("CWAPI_GetAbilityWeaponsList", "Native_GetAbilityWeaponsList");
+    register_native("CWAPI_GetWeaponIdFromEnt", "Native_GetWeaponIdFromEnt");
 }
 
 public Native_GiveWeapon(){
@@ -234,6 +235,12 @@ public Array:Native_GetAbilityWeaponsList(){
         TrieSetCell(WeaponAbilities, AbilityName, AbilityWeaponsList);
     }
     return AbilityWeaponsList;
+}
+
+public Native_GetWeaponIdFromEnt(){
+    enum {Arg_ItemId = 1}
+    static ItemId; ItemId = get_param(Arg_ItemId);
+    return GetWeapId(ItemId);
 }
 
 CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, const any:...){
