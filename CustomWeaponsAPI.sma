@@ -416,6 +416,9 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
     if(DamageBits & DMG_GRENADE)
         return HC_CONTINUE;
 
+    if(Inflictor == Attacker)
+        return HC_CONTINUE;
+
     if(!is_user_connected(Victim) || !is_user_connected(Attacker))
         return HC_CONTINUE;
         
