@@ -214,6 +214,15 @@ native Array:CWAPI_GetAbilityWeaponsList(const AbilityName[]);
 native CWAPI_GetWeaponIdFromEnt(const ItemId);
 
 /**
+ * Проверяет кастомное ли оружие по его индексу
+ *
+ * @param WeaponId    Индекс оружия
+ *
+ * @return  true если кастомное оружие с таким индексом существует, иначе false.
+ */
+native bool:CWAPI_IsCustomWeapon(const WeaponId);
+
+/**
  * Вызывается после загрузки всех пушек из конфига
  *
  * @noreturn
