@@ -14,7 +14,9 @@ API для создания кастомного оружия
 - [Fix Custom iMaxClip](https://goldsrc.ru/threads/4165/)
   - Необязательно. Исправляет баг с анимацией перезарядки при полном магазине.
 
-## Настройки оружий [`/amxmodx/configs/plugins/CustomWeaponAPI/Weapons/<WeaponName>.json`]
+## Настройки оружий
+
+`/amxmodx/configs/plugins/CustomWeaponAPI/Weapons/<WeaponName>.json`
 
 ### Структура
 <details>
