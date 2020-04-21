@@ -918,43 +918,43 @@ LoadWeapons(){
         Data[CWAPI_WD_ClipSize] = json_object_get_number(Item, "ClipSize");
         Data[CWAPI_WD_Weight] = json_object_get_number(Item, "Weight");
 
-        if(json_object_has_value(Item, "Price"))
+        if(json_object_has_value(Item, "Price", JSONNumber))
             Data[CWAPI_WD_Price] = json_object_get_number(Item, "Price");
         else Data[CWAPI_WD_Price] = -1;
 
-        if(json_object_has_value(Item, "MaxAmmo"))
+        if(json_object_has_value(Item, "MaxAmmo", JSONNumber))
             Data[CWAPI_WD_MaxAmmo] = json_object_get_number(Item, "MaxAmmo");
         else Data[CWAPI_WD_MaxAmmo] = -1;
 
-        if(json_object_has_value(Item, "MaxWalkSpeed"))
+        if(json_object_has_value(Item, "MaxWalkSpeed", JSONNumber))
             Data[CWAPI_WD_MaxWalkSpeed] = json_object_get_real(Item, "MaxWalkSpeed");
         else Data[CWAPI_WD_MaxWalkSpeed] = -1.0;
 
-        if(json_object_has_value(Item, "DamageMult"))
+        if(json_object_has_value(Item, "DamageMult", JSONNumber))
             Data[CWAPI_WD_DamageMult] = json_object_get_real(Item, "DamageMult");
         else Data[CWAPI_WD_DamageMult] = -1.0;
 
-        if(json_object_has_value(Item, "Damage"))
+        if(json_object_has_value(Item, "Damage", JSONNumber))
             Data[CWAPI_WD_Damage] = json_object_get_real(Item, "Damage");
         else Data[CWAPI_WD_Damage] = -1.0;
 
-        if(json_object_has_value(Item, "Accuracy"))
+        if(json_object_has_value(Item, "Accuracy", JSONNumber))
             Data[CWAPI_WD_Accuracy] = json_object_get_real(Item, "Accuracy");
         else Data[CWAPI_WD_Accuracy] = -1.0;
 
-        if(json_object_has_value(Item, "DeployTime"))
+        if(json_object_has_value(Item, "DeployTime", JSONNumber))
             Data[CWAPI_WD_DeployTime] = json_object_get_real(Item, "DeployTime");
         else Data[CWAPI_WD_DeployTime] = -1.0;
 
-        if(json_object_has_value(Item, "ReloadTime"))
+        if(json_object_has_value(Item, "ReloadTime", JSONNumber))
             Data[CWAPI_WD_ReloadTime] = json_object_get_real(Item, "ReloadTime");
         else Data[CWAPI_WD_ReloadTime] = -1.0;
 
-        if(json_object_has_value(Item, "PrimaryAttackRate"))
+        if(json_object_has_value(Item, "PrimaryAttackRate", JSONNumber))
             Data[CWAPI_WD_PrimaryAttackRate] = json_object_get_real(Item, "PrimaryAttackRate");
         else Data[CWAPI_WD_PrimaryAttackRate] = 0.0;
 
-        if(json_object_has_value(Item, "SecondaryAttackRate"))
+        if(json_object_has_value(Item, "SecondaryAttackRate", JSONNumber))
             Data[CWAPI_WD_SecondaryAttackRate] = json_object_get_real(Item, "SecondaryAttackRate");
         else Data[CWAPI_WD_SecondaryAttackRate] = 0.0;
 
