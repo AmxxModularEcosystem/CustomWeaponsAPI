@@ -4,6 +4,7 @@
 #define _cwapi_included
 
 #define CWAPI_IMPULSE_OFFSET 4354
+#define var_CWAPI_ItemOwner var_iuser4
 
 enum CWAPI_WeaponModels{
     CWAPI_WM_V[PLATFORM_MAX_PATH],

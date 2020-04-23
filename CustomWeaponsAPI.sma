@@ -738,6 +738,8 @@ GiveCustomWeapon(const Id, const WeaponId){
             );
     }
 
+    set_entvar(ItemId, var_CWAPI_ItemOwner, Id);
+
     return ItemId;
 }
 
