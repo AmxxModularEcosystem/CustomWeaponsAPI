@@ -870,16 +870,28 @@ LoadWeapons(){
             new JSON:Models = json_object_get_value(Item, "Models");
 
             json_object_get_string(Models, "v", Data[CWAPI_WD_Models][CWAPI_WM_V], PLATFORM_MAX_PATH-1);
-            if(file_exists(Data[CWAPI_WD_Models][CWAPI_WM_V])) precache_model(Data[CWAPI_WD_Models][CWAPI_WM_V]);
-            else formatex(Data[CWAPI_WD_Models][CWAPI_WM_V], PLATFORM_MAX_PATH-1, "");
+            if(Data[CWAPI_WD_Models][CWAPI_WM_V][0])
+                if(file_exists(Data[CWAPI_WD_Models][CWAPI_WM_V])) precache_model(Data[CWAPI_WD_Models][CWAPI_WM_V]);
+                else{
+                    log_amx("[WARNING] Model file `%s` not found. Weapon `%s`.", Data[CWAPI_WD_Models][CWAPI_WM_V], Data[CWAPI_WD_Name]);
+                    formatex(Data[CWAPI_WD_Models][CWAPI_WM_V], PLATFORM_MAX_PATH-1, "");
+                }
 
             json_object_get_string(Models, "p", Data[CWAPI_WD_Models][CWAPI_WM_P], PLATFORM_MAX_PATH-1);
-            if(file_exists(Data[CWAPI_WD_Models][CWAPI_WM_P])) precache_model(Data[CWAPI_WD_Models][CWAPI_WM_P]);
-            else formatex(Data[CWAPI_WD_Models][CWAPI_WM_P], PLATFORM_MAX_PATH-1, "");
+            if(Data[CWAPI_WD_Models][CWAPI_WM_P][0])
+                if(file_exists(Data[CWAPI_WD_Models][CWAPI_WM_P])) precache_model(Data[CWAPI_WD_Models][CWAPI_WM_P]);
+                else{
+                    log_amx("[WARNING] Model file `%s` not found. Weapon `%s`.", Data[CWAPI_WD_Models][CWAPI_WM_P], Data[CWAPI_WD_Name]);
+                    formatex(Data[CWAPI_WD_Models][CWAPI_WM_P], PLATFORM_MAX_PATH-1, "");
+                }
 
             json_object_get_string(Models, "w", Data[CWAPI_WD_Models][CWAPI_WM_W], PLATFORM_MAX_PATH-1);
-            if(file_exists(Data[CWAPI_WD_Models][CWAPI_WM_W])) precache_model(Data[CWAPI_WD_Models][CWAPI_WM_W]);
-            else formatex(Data[CWAPI_WD_Models][CWAPI_WM_W], PLATFORM_MAX_PATH-1, "");
+            if(Data[CWAPI_WD_Models][CWAPI_WM_W][0])
+                if(file_exists(Data[CWAPI_WD_Models][CWAPI_WM_W])) precache_model(Data[CWAPI_WD_Models][CWAPI_WM_W]);
+                else{
+                    log_amx("[WARNING] Model file `%s` not found. Weapon `%s`.", Data[CWAPI_WD_Models][CWAPI_WM_W], Data[CWAPI_WD_Name]);
+                    formatex(Data[CWAPI_WD_Models][CWAPI_WM_W], PLATFORM_MAX_PATH-1, "");
+                }
             
             json_free(Models);
         }
