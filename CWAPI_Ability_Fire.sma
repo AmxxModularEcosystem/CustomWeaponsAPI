@@ -5,10 +5,13 @@
 
 #pragma semicolon 1
 
-#define FIRE_DEAGLE_WEAPON_FULL_NAME fmt("weapon_%s",FIRE_DEAGLE_WEAPON_NAME)
 #define var_FireEnt var_iuser2
 #define var_FireSwitch var_iuser3
+#define var_FireEndTime var_fuser1
 #define GetUserFire(%0) get_entvar(%0,var_FireEnt)
+#define IsFired(%1) (!is_nullent(GetUserFire(%1)))
+#define Cvar(%1) Cvars[Cvar_%1]
+#define Lang(%1) fmt("%l",%1)
 
 /* НАСТРОЙКИ */
 
@@ -18,161 +21,167 @@ new const FIRE_SPRITE[] = "sprites/FireWeapons/fire.spr";
 /* НАСТРОЙКИ */
 
 enum E_Cvars{
-    bool:C_SupportFfaMode,
-    bool:C_GlowFiredPlayer,
-    C_IgniteDuration_Min,
-    C_IgniteDuration_Max,
-    C_IgniteDamage_Min,
-    C_IgniteDamage_Max,
-    C_FireMoveRange,
-    Float:C_FireDamageInterval,
+    Cvar_DamageInterval[24],
+    Cvar_Duration[24],
+    Cvar_Damage[24],
+    Cvar_Glow,
+    Cvar_FireRange,
 }
 
 new Cvars[E_Cvars];
 
-new HudDamager;
-
-
+new const ABILITY_NAME[] = "Fire";
 new const PLUG_NAME[] = "[CWAPI][Ability] Fire";
-new const PLUG_VER[] = "1.1";
+new const PLUG_VER[] = "2.0";
 
 public CWAPI_LoadWeaponsPost(){
     register_plugin(PLUG_NAME, PLUG_VER, "ArKaNeMaN");
+    register_dictionary("CWAPI-Fire.ini");
 
-    new Array:FireWeapons = CWAPI_GetAbilityWeaponsList("Fire");
-    new WeaponAbilityData[CWAPI_WeaponAbilityData];
-    for(new i = 0; i < ArraySize(FireWeapons); i++){
-        ArrayGetArray(FireWeapons, i, WeaponAbilityData);
-        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Damage, "Hook_CWAPI_Damage");
-        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_SecondaryAttack, "Hook_CWAPI_SecondaryAttack");
+    new Array:WeaponsList = CWAPI_GetAbilityWeaponsList(ABILITY_NAME);
+    new AbilityData[CWAPI_WeaponAbilityData];
+    for(new i = 0; i < ArraySize(WeaponsList); i++){
+        ArrayGetArray(WeaponsList, i, AbilityData);
+        CWAPI_RegisterHook(AbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Damage, "@Hook_CWAPI_Damage");
+        CWAPI_RegisterHook(AbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_SecondaryAttack, "@Hook_CWAPI_SecondaryAttack");
     }
-    ArrayDestroy(FireWeapons);
-
-    RegisterHookChain(RG_CSGameRules_PlayerKilled , "Hook_PlayerKilled", false);
-    //RegisterHookChain(RG_RoundEnd , "Hook_RoundEnd", false);
-
-    HudDamager = CreateHudSyncObj();
+    ArrayDestroy(WeaponsList);
+    
+    RegisterHookChain(RG_CSGameRules_PlayerKilled , "@Hook_PlayerKilled", false);
+    RegisterHookChain(RG_RoundEnd , "@Hook_RoundEnd", false);
 
     IntiCvars();
 
     server_print("[%s v%s] loaded.", PLUG_NAME, PLUG_VER);
 }
 
-public Hook_CWAPI_SecondaryAttack(ItemId){
+public plugin_precache(){
+    precache_model(FIRE_SPRITE);
+}
+
+@Hook_CWAPI_SecondaryAttack(ItemId){
     static UserId; UserId = get_member(ItemId, m_pPlayer);
     static FireSwitch; FireSwitch = get_entvar(ItemId, var_FireSwitch);
     set_entvar(ItemId, var_FireSwitch, _:!bool:FireSwitch);
     client_print(UserId, print_center, "Огонь в%sключен", FireSwitch ? "ы" : "");
 }
 
-public Hook_CWAPI_Damage(const ItemId, const Victim, const Float:Damage, const DamageBits){
-    if(!get_entvar(ItemId, var_FireSwitch)) return CWAPI_RET_CONTINUE;
+@Hook_CWAPI_Damage(const ItemId, const Victim, const Float:Damage, const DamageBits){
+    if(!get_entvar(ItemId, var_FireSwitch))
+        return CWAPI_RET_CONTINUE;
 
     static Attacker; Attacker = get_member(ItemId, m_pPlayer);
 
-    if(!is_user_connected(Victim) || !is_user_connected(Attacker) || Victim == Attacker) return CWAPI_RET_CONTINUE;
-    if(get_user_team(Attacker) == get_user_team(Victim) && !Cvars[C_SupportFfaMode]) return CWAPI_RET_CONTINUE;
+    if(IsFired(Victim))
+        RemoveFire(Victim);
 
-    if(GetUserFire(Victim)) PlayerStopFire(Victim);
-    PlayerStartFire(Victim, Attacker, random_num(Cvars[C_IgniteDuration_Min], Cvars[C_IgniteDuration_Max]));
+    StartFire(Victim, Attacker, GetFloat(Cvar(Duration)));
 
     return CWAPI_RET_CONTINUE;
 }
 
-public plugin_precache(){
-    precache_model(FIRE_SPRITE);
+@Hook_RoundEnd(){
+    for(new i = 1; i <= MAX_PLAYERS; i++)
+        RemoveFire(i);
 }
 
-//public Hook_RoundEnd(){
-//    for(new i = 1; i <= MAX_PLAYERS; i++) if(is_user_connected(i) && GetUserFire(i)) PlayerStopFire(i);
-//}
-
-public Hook_PlayerKilled(const Id){
-    if(is_user_connected(Id) && GetUserFire(Id)) PlayerStopFire(Id);
+@Hook_PlayerKilled(const Id){
+    RemoveFire(Id);
 }
 
 public client_disconnected(Id){
-    if(is_user_connected(Id) && GetUserFire(Id)) PlayerStopFire(Id);
+    RemoveFire(Id);
 }
 
-public PlayerStopFire(const Id){
-    if(!is_user_connected(Id)) return;
-    rg_set_user_rendering(Id);
-    if(task_exists(Id)) remove_task(Id);
-    if(task_exists(Id+200)) remove_task(Id+200);
-    static FireEnt; FireEnt = GetUserFire(Id);
-    if(!is_nullent(FireEnt)) set_entvar(FireEnt, var_flags, FL_KILLME);
-    set_entvar(Id, var_FireEnt, 0);
+RemoveFire(const UserId){
+    if(!is_user_connected(UserId))
+        return;
+
+    static FireEnt; FireEnt = GetUserFire(UserId);
+    if(!is_nullent(FireEnt))
+        set_entvar(FireEnt, var_flags, FL_KILLME);
+
+    rg_set_user_rendering(UserId);
+
+    set_entvar(UserId, var_FireEnt, 0);
     return;
 }
 
-PlayerStartFire(const Id, const Igniter, const Dur){
+StartFire(const UserId, const Attacker, const Float:Duration){
+    if(!is_user_alive(UserId) || !is_user_connected(Attacker) || !rg_is_player_can_takedamage(UserId, Attacker))
+        return;
+
     new Ent = rg_create_entity("env_sprite", true);
-    if(is_entity(Ent)){
-        set_entvar(Ent, var_model, FIRE_SPRITE);
-        
-        set_entvar(Ent, var_rendermode, kRenderTransAdd);
-        set_entvar(Ent, var_renderamt, 200.0);
-        
-        set_entvar(Ent, var_framerate, 20.0);
-        set_entvar(Ent, var_spawnflags, SF_SPRITE_STARTON);
-        
-        ExecuteHam(Ham_Spawn, Ent);
+    if(is_nullent(Ent))
+        return;
 
-        set_entvar(Ent, var_owner, Igniter);
-        set_entvar(Ent, var_aiment, Id);
-        set_entvar(Id, var_FireEnt, Ent);
-        set_entvar(Ent, var_movetype, MOVETYPE_FOLLOW);
+    set_entvar(Ent, var_model, FIRE_SPRITE);
+    set_entvar(Ent, var_rendermode, kRenderTransAdd);
+    set_entvar(Ent, var_renderamt, 200.0);
+    set_entvar(Ent, var_framerate, 20.0);
+    set_entvar(Ent, var_spawnflags, SF_SPRITE_STARTON);
+    
+    ExecuteHam(Ham_Spawn, Ent);
 
-        static data[1]; data[0] = Id;
-        set_task(float(Dur), "PlayerStopFire", Id);
-        set_task(Cvars[C_FireDamageInterval], "IgnitePlayer", Id+200, data, 1, "b");
+    set_entvar(Ent, var_owner, Attacker);
+    set_entvar(Ent, var_aiment, UserId);
+    set_entvar(UserId, var_FireEnt, Ent);
+    set_entvar(Ent, var_movetype, MOVETYPE_FOLLOW);
+    set_entvar(Ent, var_FireEndTime, get_gametime() + Duration);
 
-        if(Cvars[C_GlowFiredPlayer]) rg_set_user_rendering(Id, kRenderFxGlowShell, 240, 127, 19, kRenderNormal, 25);
-    }
+    set_entvar(Ent, var_nextthink, get_gametime() + GetFloat(Cvar(DamageInterval)));
+    SetThink(Ent, "@Think_Fire");
+
+    if(Cvar(Glow))
+        rg_set_user_rendering(UserId, kRenderFxGlowShell, 240, 127, 19, kRenderNormal, 25);
 }
 
-public IgnitePlayer(const data[1]){
-    static Id; Id = data[0];
-    if(!is_user_connected(Id)){
-        PlayerStopFire(Id);
-        return PLUGIN_CONTINUE;
+@Think_Fire(const EntId){
+    new UserId = get_entvar(EntId, var_aiment);
+    new Attacker = get_entvar(EntId, var_owner);
+
+    if(!is_user_alive(UserId) || !is_user_connected(Attacker)){
+        RemoveFire(UserId);
+        set_entvar(EntId, var_flags, FL_KILLME);
+        return;
     }
-    static FireEnt; FireEnt = GetUserFire(Id);
-    if(
-        is_user_alive(Id) && 
-        is_entity(FireEnt) && 
-        get_entvar(Id, var_waterlevel) < 2
-    ){
-        static korigin[3]; get_user_origin(Id, korigin);
-        static Igniter; Igniter = get_entvar(FireEnt, var_owner);
-        if(!is_user_connected(Igniter)) Igniter = Id;
+
+    if(get_gametime() >= get_entvar(EntId, var_FireEndTime) || get_entvar(UserId, var_waterlevel) >= 2){
+        RemoveFire(UserId);
+        return;
+    }
+
+    new Float:Origin[3]; get_entvar(EntId, var_origin, Origin);
+    new Float:Damage = GetFloat(Cvar(Damage));
+
+    ExecuteHamB(Ham_TakeDamage, UserId, EntId, Attacker, Damage, DMG_GENERIC);
         
-        static dmg; dmg = random_num(Cvars[C_IgniteDamage_Min], Cvars[C_IgniteDamage_Max]);
-        ExecuteHam(Ham_TakeDamage, Id, FireEnt, Igniter, float(dmg*(is_user_bot(Id) ? 1 : 4)), DMG_BURN);
-        set_hudmessage(240, 127, 30, random_float(0.44, 0.46), random_float(0.59, 0.61));
-        ShowSyncHudMsg(Igniter, HudDamager, "%d", dmg);
-        
-        message_begin(MSG_ONE, get_user_msgid("Damage"), {0, 0, 0}, Id);
-        write_byte(30);
-        write_byte(30);
-        write_long(1<<21);
-        write_coord(korigin[0]);
-        write_coord(korigin[1]);
-        write_coord(korigin[2]);
-        message_end();
-        
-        new players[32], inum = 0, pOrigin[3];
-        get_players(players, inum, "a");
-        for(new i = 0 ; i < inum; ++i){
-            get_user_origin(players[i], pOrigin);
-            if(get_distance(korigin, pOrigin) < Cvars[C_FireMoveRange] && players[i] != Id && !GetUserFire(players[i])){
-                PlayerStartFire(players[i], Igniter, random_num(Cvars[C_IgniteDuration_Min], Cvars[C_IgniteDuration_Max]));
-            }
+    message_begin(MSG_ONE, get_user_msgid("Damage"), _, UserId);
+    write_byte(floatround(Damage));
+    write_byte(floatround(Damage));
+    write_long(DMG_GENERIC);
+    write_coord_f(Origin[0]);
+    write_coord_f(Origin[1]);
+    write_coord_f(Origin[2]);
+    message_end();
+
+    if(Cvar(FireRange) > 0)
+        for(new i = 1; i <= MAX_PLAYERS; i++){
+            if(i == UserId)
+                continue;
+
+            if(!is_user_alive(i))
+                continue;
+
+            if(IsFired(i))
+                continue;
+            
+            new Float:Target[3]; get_entvar(i, var_origin, Target);
+            if(get_distance_f(Origin, Target) <= Cvar(FireRange))
+                StartFire(i, Attacker, GetFloat(Cvar(Duration)));
         }
-    }
-    else PlayerStopFire(Id);
-    return PLUGIN_CONTINUE;
+
+    set_entvar(EntId, var_nextthink, get_gametime() + GetFloat(Cvar(DamageInterval)));
 }
 
 rg_set_user_rendering(const Ent, const Fx = kRenderFxNone, const r = 0, const g = 0, const b = 0, const Render = kRenderNormal, const Amount = 0){
@@ -187,14 +196,43 @@ rg_set_user_rendering(const Ent, const Fx = kRenderFxNone, const r = 0, const g 
 }
 
 IntiCvars(){
-    bind_pcvar_num(create_cvar("FireDeagle_SupportFfaMode", "0", FCVAR_NONE, "Вкл/выкл поддержку FFA режима", true, 0.0, true, 1.0), Cvars[C_SupportFfaMode]);
-    bind_pcvar_num(create_cvar("FireDeagle_GlowFiredPlayer", "1", FCVAR_NONE, "Псевдосвечение горящих игроков", true, 0.0, true, 1.0), Cvars[C_GlowFiredPlayer]);
-    bind_pcvar_num(create_cvar("FireDeagle_IgniteDuration_Min", "4", FCVAR_NONE, "Минимальная длительность горения", true, 1.0), Cvars[C_IgniteDuration_Min]);
-    bind_pcvar_num(create_cvar("FireDeagle_IgniteDuration_Max", "8", FCVAR_NONE, "Максимальная длительность горения", true, 1.0), Cvars[C_IgniteDuration_Max]);
-    bind_pcvar_num(create_cvar("FireDeagle_IgniteDamage_Min", "4", FCVAR_NONE, "Минимальный урон от горения", true, 1.0), Cvars[C_IgniteDamage_Min]);
-    bind_pcvar_num(create_cvar("FireDeagle_IgniteDamage_Max", "8", FCVAR_NONE, "Максимальный урон от горения", true, 1.0), Cvars[C_IgniteDamage_Max]);
-    bind_pcvar_num(create_cvar("FireDeagle_FireMoveRange", "70", FCVAR_NONE, "Радиус распостранения огня", true, 1.0), Cvars[C_FireMoveRange]);
-    bind_pcvar_float(create_cvar("FireDeagle_FireDamageInterval", "1.0", FCVAR_NONE, "Время между нанесениями урона огнём", true, 1.0), Cvars[C_FireDamageInterval]);
 
-    AutoExecConfig(true, "FireDeagle", "CWAPI");
+    bind_pcvar_string(create_cvar(
+        "CWAPI_Fire_DamageInterval", "0.8 1.2",
+        FCVAR_NONE, Lang("CVAR_DAMAGE_INTERVAL")
+    ), Cvar(DamageInterval), charsmax(Cvar(DamageInterval)));
+
+    bind_pcvar_string(create_cvar(
+        "CWAPI_Fire_Duration", "4.0 8.0",
+        FCVAR_NONE, Lang("CVAR_DURATION")
+    ), Cvar(Duration), charsmax(Cvar(Duration)));
+
+    bind_pcvar_string(create_cvar(
+        "CWAPI_Fire_Damage", "4.0 8.0",
+        FCVAR_NONE, Lang("CVAR_DAMAGE")
+    ), Cvar(Damage), charsmax(Cvar(Damage)));
+
+    bind_pcvar_num(create_cvar(
+        "CWAPI_Fire_Glow", "1",
+        FCVAR_NONE, Lang("CVAR_GLOW"),
+        true, 0.0, true, 1.0
+    ), Cvar(Glow));
+
+    bind_pcvar_num(create_cvar(
+        "CWAPI_Fire_FireRange", "70",
+        FCVAR_NONE, Lang("CVAR_FIRE_RANGE"),
+        true, 0.0
+    ), Cvar(FireRange));
+
+    AutoExecConfig(true, "Fire", "CustomWeaponsAPI/Modules");
+}
+
+Float:GetFloat(const Str[]){
+    new strNums[2][11];
+    new Count = parse(Str, strNums[0], charsmax(strNums[]), strNums[1], charsmax(strNums[]));
+    if(Count == 1)
+        return str_to_float(strNums[0]);
+    else if(Count < 1)
+        return 0.0;
+    else return random_float(str_to_float(strNums[0]), str_to_float(strNums[1]));
 }
