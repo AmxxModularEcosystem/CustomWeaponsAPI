@@ -522,10 +522,10 @@ public Hook_PlayerItemDeploy(const ItemId){
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
 
     if(Data[CWAPI_WD_Models][CWAPI_WM_V][0])
-        set_entvar(Id, var_viewmodel, Data[CWAPI_WD_Models][CWAPI_WM_V][0]);
+        set_entvar(Id, var_viewmodel, Data[CWAPI_WD_Models][CWAPI_WM_V]);
     
     if(Data[CWAPI_WD_Models][CWAPI_WM_P][0])
-        set_entvar(Id, var_weaponmodel, Data[CWAPI_WD_Models][CWAPI_WM_P][0]);
+        set_entvar(Id, var_weaponmodel, Data[CWAPI_WD_Models][CWAPI_WM_P]);
     
     if(Data[CWAPI_WD_DeployTime] >= 0.0)
         SetWeaponNextAttack(ItemId, Data[CWAPI_WD_DeployTime]);
