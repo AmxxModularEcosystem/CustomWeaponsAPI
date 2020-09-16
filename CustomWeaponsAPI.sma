@@ -7,7 +7,7 @@
 
 #pragma semicolon 1
 
-//#define DEBUG // Закомментировать чтобы запретить бесплатную выдачу пушек
+#define DEBUG // Закомментировать чтобы запретить бесплатную выдачу пушек
 //#define USE_NEW_REAPI_HOOKS // Использование новых хуков в ReAPI (Почему-то работает криво)
 
 #define WEAPON_PISTOLS_BITSUMM (BIT(_:WEAPON_P228)|BIT(_:WEAPON_GLOCK)|BIT(_:WEAPON_ELITE)|BIT(_:WEAPON_FIVESEVEN)|BIT(_:WEAPON_USP)|BIT(_:WEAPON_GLOCK18)|BIT(_:WEAPON_DEAGLE))

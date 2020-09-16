@@ -7,7 +7,7 @@
 new Menu_Shop;
 
 new const PLUG_NAME[] = "[CWAPI] Shop";
-new const PLUG_VER[] = "1.0.1";
+new const PLUG_VER[] = "1.1.0";
 
 public CWAPI_LoadWeaponsPost(){
     register_plugin(PLUG_NAME, PLUG_VER, "ArKaNeMaN");
@@ -21,7 +21,6 @@ public CWAPI_LoadWeaponsPost(){
     new WeaponData[CWAPI_WeaponData];
     for(new i = 0; i < ArraySize(WeaponsList); i++){
         ArrayGetArray(WeaponsList, i, WeaponData);
-        //log_amx("Create menu: Add Item: i = %d | Name = %s | Price = %d", i, WeaponData[CWAPI_WD_Name], WeaponData[CWAPI_WD_Price]);
         if(WeaponData[CWAPI_WD_Price] < 1) continue;
         menu_additem(Menu_Shop, fmt("\r[$%d] \y%s", WeaponData[CWAPI_WD_Price], WeaponData[CWAPI_WD_Name]), WeaponData[CWAPI_WD_Name]);
     }
