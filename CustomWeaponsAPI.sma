@@ -68,6 +68,8 @@ public plugin_init(){
 
     UserMsgs[UM_WeaponList] = get_user_msgid("WeaponList");
 
+    create_cvar("CWAPI_VERSION", PLUG_VER, FCVAR_SERVER);
+
     server_print("[%s v%s] loaded.", PLUG_NAME, PLUG_VER);
 }
 
