@@ -40,7 +40,6 @@ new Trie:WeaponsNames;
 new Array:CustomWeapons;
 
 new Fwds[E_Fwds];
-
 new UserMsgs[E_UserMsgs];
 
 new const PLUG_NAME[] = "Custom Weapons API";
@@ -700,8 +699,10 @@ GiveCustomWeapon(const Id, const WeaponId){
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
 
     static GiveType:WeaponGiveType;
-    if(equal(Data[CWAPI_WD_DefaultName], "knife")) WeaponGiveType = GT_REPLACE;
-    else if(IsGrenade(Data[CWAPI_WD_DefaultName])) WeaponGiveType = GT_APPEND;
+    if(equal(Data[CWAPI_WD_DefaultName], "knife"))
+        WeaponGiveType = GT_REPLACE;
+    else if(IsGrenade(Data[CWAPI_WD_DefaultName]))
+        WeaponGiveType = GT_APPEND;
     else WeaponGiveType = GT_DROP_AND_REPLACE;
 
     static ItemId; ItemId = rg_give_custom_item(
@@ -714,7 +715,8 @@ GiveCustomWeapon(const Id, const WeaponId){
     if(is_nullent(ItemId))
         return -1;
 
-    static WeaponIdType:DefaultWeaponId; DefaultWeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
+    static WeaponIdType:DefaultWeaponId;
+    DefaultWeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
 
     if(Data[CWAPI_WD_HasSecondaryAttack])
         set_member(ItemId, m_Weapon_bHasSecondaryAttack, Data[CWAPI_WD_HasSecondaryAttack]);
