@@ -66,6 +66,9 @@ public plugin_init(){
         register_clcmd("CWAPI_Give", "Cmd_GiveCustomWeapon");
     #endif
 
+    // CWAPI_Srv_Give <UserId> <WeaponName>
+    register_srvcmd("CWAPI_Srv_Give", "@SrvCmd_Give");
+
     UserMsgs[UM_WeaponList] = get_user_msgid("WeaponList");
 
     create_cvar("CWAPI_VERSION", PLUG_VER, FCVAR_SERVER);
@@ -318,6 +321,27 @@ _CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Eve
         return PLUGIN_CONTINUE;
     }
 #endif
+
+@SrvCmd_Give(){
+    enum {Arg_UserId = 1, Arg_WeaponName}
+    new UserId = read_argv_int(Arg_UserId);
+    new WeaponName[32]; read_argv(Arg_WeaponName, WeaponName, charsmax(WeaponName));
+
+    if(!is_user_alive(UserId)){
+        log_amx("[ERROR] [CMD] User #%d not found or not alive.", UserId);
+        return PLUGIN_HANDLED;
+    }
+
+    if(!TrieKeyExists(WeaponsNames, WeaponName)){
+        log_amx("[ERROR] [CMD] Weapon `%s` not found.", WeaponName);
+        return PLUGIN_HANDLED;
+    }
+
+    new WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
+    GiveCustomWeapon(UserId, WeaponId);
+
+    return PLUGIN_CONTINUE;
+}
 
 public Cmd_Select(const UserId) {
     if(!is_user_alive(UserId))
