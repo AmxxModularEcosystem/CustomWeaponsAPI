@@ -43,7 +43,7 @@ new Fwds[E_Fwds];
 new UserMsgs[E_UserMsgs];
 
 new const PLUG_NAME[] = "Custom Weapons API";
-new const PLUG_VER[] = "0.5.2-beta";
+new const PLUG_VER[] = "0.5.3-beta";
 
 public plugin_init(){
     register_dictionary("cwapi.txt");
@@ -52,7 +52,7 @@ public plugin_init(){
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Post", true);
     RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_PlayerAddItem", true);
     RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
-    #if REAPI_VERSION >= 511189 && defined USE_NEW_REAPI_HOOKS
+    #if defined USE_NEW_REAPI_HOOKS
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy", false);
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload", false);
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
@@ -465,7 +465,7 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
     return HC_CONTINUE;
 }
 
-#if REAPI_VERSION >= 511189 && defined USE_NEW_REAPI_HOOKS
+#if defined USE_NEW_REAPI_HOOKS
 public Hook_DefaultDeploy(const ItemId, szViewModel[], szWeaponModel[], iAnim, szAnimExt[], skiplocal){
     if(!IsCustomWeapon(GetWeapId(ItemId)))
         return;
@@ -546,9 +546,11 @@ public Hook_PlayerItemDeploy(const ItemId){
     
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
 
+    //log_amx("[DEBUG] Hook_PlayerItemDeploy: Data[CWAPI_WD_Models][CWAPI_WM_V] = %s", Data[CWAPI_WD_Models][CWAPI_WM_V]);
     if(Data[CWAPI_WD_Models][CWAPI_WM_V][0])
         set_entvar(Id, var_viewmodel, Data[CWAPI_WD_Models][CWAPI_WM_V]);
     
+    //log_amx("[DEBUG] Hook_PlayerItemDeploy: Data[CWAPI_WD_Models][CWAPI_WM_P] = %s", Data[CWAPI_WD_Models][CWAPI_WM_P]);
     if(Data[CWAPI_WD_Models][CWAPI_WM_P][0])
         set_entvar(Id, var_weaponmodel, Data[CWAPI_WD_Models][CWAPI_WM_P]);
     
@@ -1003,7 +1005,7 @@ LoadWeapons(){
         Data[CWAPI_WD_HasSecondaryAttack] = json_object_get_bool(Item, "HasSecondaryAttack");
 
         if(!TrieKeyExists(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName])){
-            #if REAPI_VERSION < 511189 && !defined USE_NEW_REAPI_HOOKS
+            #if !defined USE_NEW_REAPI_HOOKS
             RegisterHam(
                 Ham_Item_Deploy,
                 GetWeapFullName(Data[CWAPI_WD_DefaultName]),
