@@ -43,7 +43,7 @@ new Fwds[E_Fwds];
 new UserMsgs[E_UserMsgs];
 
 new const PLUG_NAME[] = "Custom Weapons API";
-new const PLUG_VER[] = "0.5.3-beta";
+new const PLUG_VER[] = "0.5.4-beta";
 
 public plugin_init(){
     register_dictionary("cwapi.txt");
