@@ -237,7 +237,7 @@ public Array:Native_GetAbilityWeaponsList(){
     new AbilityName[32]; get_string(Arg_AbilityName, AbilityName, charsmax(AbilityName));
     new Array:AbilityWeaponsList; 
     if(!TrieGetCell(WeaponAbilities, AbilityName, AbilityWeaponsList)){
-        AbilityWeaponsList = ArrayCreate(CWAPI_WeaponAbilityData, 1);
+        AbilityWeaponsList = ArrayCreate(CWAPI_WeaponAbilityData, 2);
         TrieSetCell(WeaponAbilities, AbilityName, AbilityWeaponsList);
     }
     return AbilityWeaponsList;
@@ -1075,22 +1075,45 @@ LoadWeapons(){
 }
 
 LoadWeaponAbilities(const WeaponName[], const JSON:List){
+    new AbilData[CWAPI_WeaponAbilityData];
+    copy(AbilData[CWAPI_WAD_WeaponName], charsmax(AbilData[CWAPI_WAD_WeaponName]), WeaponName);
+
     if(json_is_array(List)){
-        new AbilityName[32], Array:WeaponsList, AbilData[CWAPI_WeaponAbilityData];
+        AbilData[CWAPI_WAD_CustomData] = Invalid_Trie;
+        new AbilityName[32], Array:WeaponsList;
+
         for(new i = 0; i < json_array_get_count(List); i++){
             json_array_get_string(List, i, AbilityName, charsmax(AbilityName));
             if(!TrieGetCell(WeaponAbilities, AbilityName, WeaponsList))
-                WeaponsList = ArrayCreate(CWAPI_WeaponAbilityData, 1);
+                WeaponsList = ArrayCreate(CWAPI_WeaponAbilityData, 2);
             
-            copy(AbilData[CWAPI_WAD_WeaponName], charsmax(AbilData[CWAPI_WAD_WeaponName]), WeaponName);
             ArrayPushArray(WeaponsList, AbilData);
-            
-            if(!TrieKeyExists(WeaponAbilities, AbilityName))
-                TrieSetCell(WeaponAbilities, AbilityName, WeaponsList);
+            TrieSetCell(WeaponAbilities, AbilityName, WeaponsList);
         }
     }
     else if(json_is_object(List)){
-        // TODO: Сделать загрузку списка способностей с параметрами
+        AbilData[CWAPI_WAD_CustomData] = TrieCreate();
+        new JSON:Abil, AbilityName[32], Array:WeaponsList, ParamName[32], ParamValue[32];
+
+        for(new i = 0; i < json_object_get_count(List); i++){
+            json_object_get_name(List, i, AbilityName, charsmax(AbilityName));
+
+            if(!TrieGetCell(WeaponAbilities, AbilityName, WeaponsList))
+                WeaponsList = ArrayCreate(CWAPI_WeaponAbilityData, 4);
+
+            Abil = json_object_get_value(List, AbilityName);
+            if(json_is_object(Abil))
+                for(new j = 0; j < json_object_get_count(Abil); j++){
+                    json_object_get_name(Abil, j, ParamName, charsmax(ParamName));
+
+                    json_object_get_string(Abil, ParamName, ParamValue, charsmax(ParamValue));
+                    TrieSetString(AbilData[CWAPI_WAD_CustomData], ParamName, ParamValue);
+                }
+            json_free(Abil);
+
+            ArrayPushArray(WeaponsList, AbilData);
+            TrieSetCell(WeaponAbilities, AbilityName, WeaponsList);
+        }
     }
 }
 

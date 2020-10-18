@@ -123,8 +123,10 @@ enum {
 
 enum _:CWAPI_WeaponAbilityData{
     CWAPI_WAD_WeaponName[32],
-    //Trie:CWAPI_WAD_AdditionalData,
+    Trie:CWAPI_WAD_CustomData,
 }
+
+/*===========[ Natives ]===========*/
 
 /**
  * Регистрирует хук события оружия
@@ -225,9 +227,91 @@ native CWAPI_GetWeaponIdFromEnt(const ItemId);
  */
 native bool:CWAPI_IsCustomWeapon(const WeaponId);
 
+/*===========[ Forwards ]===========*/
+
 /**
  * Вызывается после загрузки всех пушек из конфига
  *
  * @noreturn
  */
 forward CWAPI_LoadWeaponsPost();
+
+/*===========[ Stocks ]===========*/
+
+/**
+ * Получает целочисленное значение из массива параметров способности.
+ *
+ * @param Params    Дескриптор Trie массива с параметрами способности (CWAPI_WAD_CustomData).
+ * @param Name      Название параметра.
+ * @param Default   Значение по умолчанию. Будет возвращено, если параметр не задан.
+ *
+ * @return  Значение параметра.
+ */
+stock CWAPI_GetAbilParamInt(Trie:Params, const Name[], const Default = 0){
+    new Buf[11];
+    if(Params != Invalid_Trie && TrieGetString(Params, Name, Buf, charsmax(Buf)))
+        return str_to_num(Buf);
+    else return Default;
+}
+
+/**
+ * Получает булевое значение из массива параметров способности.
+ *
+ * @param Params    Дескриптор Trie массива с параметрами способности (CWAPI_WAD_CustomData).
+ * @param Name      Название параметра.
+ * @param Default   Значение по умолчанию. Будет возвращено, если параметр не задан.
+ *
+ * @return  Значение параметра.
+ */
+stock bool:CWAPI_GetAbilParamBool(Trie:Params, const Name[], const bool:Default = false){
+    return bool:CWAPI_GetAbilParamInt(Params, Name, _:Default);
+}
+
+/**
+ * Получает дробное значение из массива параметров способности.
+ *
+ * @param Params    Дескриптор Trie массива с параметрами способности (CWAPI_WAD_CustomData).
+ * @param Name      Название параметра.
+ * @param Default   Значение по умолчанию. Будет возвращено, если параметр не задан.
+ *
+ * @return  Значение параметра.
+ */
+stock Float:CWAPI_GetAbilParamFloat(Trie:Params, const Name[], const Float:Default = 0.0){
+    new Buf[11];
+    if(Params != Invalid_Trie && TrieGetString(Params, Name, Buf, charsmax(Buf)))
+        return str_to_float(Buf);
+    else return Default;
+}
+
+/**
+ * Получает флаги доступа в виде битсуммы из массива параметров способности.
+ *
+ * @param Params    Дескриптор Trie массива с параметрами способности (CWAPI_WAD_CustomData).
+ * @param Name      Название параметра.
+ * @param Default   Значение по умолчанию. Будет возвращено, если параметр не задан.
+ *
+ * @return  Значение параметра.
+ */
+stock CWAPI_GetAbilParamFlags(Trie:Params, const Name[], const Default = ADMIN_ALL){
+    new Buf[16];
+    if(Params != Invalid_Trie && TrieGetString(Params, Name, Buf, charsmax(Buf)))
+        return read_flags(Buf);
+    else return Default;
+}
+
+/**
+ * Получает строку из массива параметров способности.
+ *
+ * @param Params    Дескриптор Trie массива с параметрами способности (CWAPI_WAD_CustomData).
+ * @param Name      Название параметра.
+ * @param Out       Буфер для записи полученного значения.
+ * @param Len       Длина буфера для записи полученного значения.
+ * @param Default   Значение по умолчанию. Будет записано в Out, если параметр не задан.
+ *
+ * @return  Длина полученной строки.
+ */
+stock CWAPI_GetAbilParamString(Trie:Params, const Name[], Out[], Len, const Default[] = ""){
+    if(Params == Invalid_Trie || !TrieGetString(Params, Name, Out, Len))
+        copy(Out, Len, Default);
+    return strlen(Out);
+}
