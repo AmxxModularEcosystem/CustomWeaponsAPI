@@ -99,6 +99,12 @@ API для создания кастомного оружия
 * Пример: `CWAPI_Give Gold_Ak47`
 * _Работает, только если плагин скомпилирован с дефайном `DEBUG`_
 
+### CWAPI_Srv_Give \<UserId\> \<WeaponName\>
+* Серверная команда
+* Выдача кастомного оружия игроку
+* Пример: `CWAPI_Srv_Give 1 Gold_Ak47`
+* Нужна в основном для плагинов типа спавн-бонус.
+
 ## [API](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/include/cwapi.inc)
 
 ### Примеры использования API
