@@ -87,6 +87,8 @@ public plugin_precache(){
 }
 
 public plugin_natives(){
+    register_library("CustomWeaponsAPI");
+    
     register_native("CWAPI_RegisterHook", "Native_RegisterHook");
     register_native("CWAPI_GiveWeapon", "Native_GiveWeapon");
     register_native("CWAPI_GetWeaponsList", "Native_GetWeaponsList");
