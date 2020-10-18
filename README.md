@@ -19,9 +19,6 @@ API для создания кастомного оружия
 `/amxmodx/configs/plugins/CustomWeaponAPI/Weapons/<WeaponName>.json`
 
 ### Структура
-<details>
-    <summary>Спойлер</summary>
-
 ```js
 {
     "DefaultName": [String] Название дефолтного оружие, на котором будет основано кастомное,
@@ -68,50 +65,10 @@ API для создания кастомного оружия
     ]
 }
 ```
+
 *Если она есть изначально, то отключить её нельзя.
 
 **Нужно выбрать один из способов указания списка способностей
-</details>
-
-### Пример
-<details>
-    <summary>Спойлер</summary>
-
-`/amxmodx/configs/plugins/CustomWeaponAPI/Weapons/AugA3War.json`:
-
-```json
-{
-    "DefaultName": "aug",
-    "ClipSize": 40,
-    "MaxAmmo": 240,
-    "Models": {
-        "v": "models/CustomWeapons/AugA3War/v_aug.mdl",
-        "p": "models/CustomWeapons/AugA3War/p_aug.mdl",
-        "w": "models/CustomWeapons/AugA3War/w_aug.mdl"
-    },
-    "Sounds": {
-        "Shot": "CustomWeapons/AugA3War/aug-1.wav",
-        "OnlyPrecache": [
-            "weapons/AUG/Mercury/bolt.wav",
-            "weapons/AUG/Mercury/boltback.wav",
-            "weapons/AUG/Mercury/boltrelease.wav",
-            "weapons/AUG/Mercury/bullet.wav",
-            "weapons/AUG/Mercury/draw.wav",
-            "weapons/AUG/Mercury/magin.wav",
-            "weapons/AUG/Mercury/magout.wav",
-            "weapons/AUG/Mercury/magtap.wav"
-        ]
-    },
-    "MaxWalkSpeed": 800,
-    "DamageMult": 1.15,
-    "Weight": 120,
-    "Price": 7500,
-    "DeployTime": 1.6,
-    "PrimaryAttackRate": 0.12,
-    "SecondaryAttackRate": 0.5
-}
-```
-</details>
 
 ### Кастомные спрайты инвентаря
 
@@ -135,11 +92,11 @@ API для создания кастомного оружия
 
 ### CWAPI_Buy \<WeaponName\>
 * Покупка кастомного оружия
-* Пример: `CWAPI_Buy NoveskeDiplomat`
+* Пример: `CWAPI_Buy Gold_Ak47`
 
 ### CWAPI_Give \<WeaponName\>
 * Выдача себе кастомного оружия
-* Пример: `CWAPI_Give NoveskeDiplomat`
+* Пример: `CWAPI_Give Gold_Ak47`
 * _Работает, только если плагин скомпилирован с дефайном `DEBUG`_
 
 ## [API](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/include/cwapi.inc)
@@ -147,10 +104,10 @@ API для создания кастомного оружия
 ### Примеры использования API
 
 - [Хуки событий](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/CWAPI_Test_Hooks.sma)
-- [Способности](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/CWAPI_Ability_Fire.sma)
+- [Способности с параметрами](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/CWAPI_Test_AbilParams.sma)
 - [Поиск пушек по параметрам](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/CWAPI_Test_Search.sma)
 
 ## Благодарность
 [Dev-CS: [ReAPI] Пример кастомного оружия с дополнительними свойствами](https://dev-cs.ru/threads/1983/)
 
-[Noveske Diplomat WAR-custom - Ripper](https://dev-cs.ru/resources/805/) - использовал эту модель для тестов
+[Dev-CS: За помощь на форуме](https://dev-cs.ru/threads/7718/)
