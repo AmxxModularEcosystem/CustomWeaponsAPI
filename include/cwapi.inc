@@ -190,8 +190,6 @@ native CWAPI_AddCustomWeapon(const WeaponData[CWAPI_WeaponData]);
 /**
  * Поиск кастомного оружия
  *
- * @note        Если указываются модели, то они должны быть в прекеше.
- *
  * @param StartWeaponId    Индекс оружия, с которого начинать поиск
  * @param Field            Параметр по которому искать оружие (Из CWAPI_WeaponData)
  * @param Value            Нужное значение параметра
