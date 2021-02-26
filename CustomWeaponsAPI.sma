@@ -1,4 +1,5 @@
 #include <amxmodx>
+#define MEMBER_UNSAFE
 #include <reapi>
 #include <hamsandwich>
 #include <json>
