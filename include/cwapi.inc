@@ -5,9 +5,9 @@
 
 #define CWAPI_VER_MAJOR 0
 #define CWAPI_VER_MINOR 7
-#define CWAPI_VER_PATCH 0
+#define CWAPI_VER_PATCH 1
 
-#define CWAPI_VER_TO_STR(%1.%2.%3) fmt("%d.%d.%d",%1,%2,%1)
+#define CWAPI_VER_TO_STR(%1.%2.%3) fmt("%d.%d.%d",%1,%2,%3)
 #define CWAPI_VER_TO_NUM(%1.%2.%3) ((%1*10000)+(%2*100)+%3)
 
 #define CWAPI_VERSION CWAPI_VER_TO_STR(CWAPI_VER_MAJOR.CWAPI_VER_MINOR.CWAPI_VER_PATCH)
@@ -180,7 +180,7 @@ native CWAPI_GiveWeapon(const UserId, const WeaponName[], const CWAPI_GiveType:T
  *
  * @return      Идентификатор выданного предмета. -1 в случае ошибки
  */
-native CWAPI_GiveWeaponById(const UserId, const WeaponName[], const CWAPI_GiveType:Type = CWAPI_GT_SMART);
+native CWAPI_GiveWeaponById(const UserId, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_SMART);
 
 /**
  * Возвращает Array массив со списком кастомных пушек.
