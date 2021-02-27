@@ -108,7 +108,6 @@ public plugin_natives(){
     register_native("CWAPI_GetAbilityWeaponsList", "Native_GetAbilityWeaponsList");
 
     register_native("CWAPI_GetWeaponIdFromEnt", "Native_GetWeaponIdFromEnt");
-    register_native("CWAPI_GetWeaponIdFromEnt", "Native_GetWeaponIdFromEnt");
 }
 
 public Native_GiveWeapon(){
