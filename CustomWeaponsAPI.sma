@@ -19,6 +19,8 @@
 #define IsWeaponSilenced(%0) bool:((WPNSTATE_M4A1_SILENCED|WPNSTATE_USP_SILENCED)&get_member(%0,m_Weapon_iWeaponState))
 #define IsPistol(%0) (WEAPON_PISTOLS_BITSUMM&BIT(rg_get_iteminfo(%0,ItemInfo_iId)))
 #define IsGrenade(%0) (equal(%0, "hegrenade") || equal(%0, "smokegrenade") || equal(%0, "flashbang"))
+new const _STR_NUM[] = "%d";
+#define IntToStr(%0) fmt(_STR_NUM,%0)
 
 enum {
     CWAPI_ERR_UNDEFINED_EVENT = 0,
@@ -44,7 +46,7 @@ new Fwds[E_Fwds];
 new UserMsgs[E_UserMsgs];
 
 new const PLUG_NAME[] = "Custom Weapons API";
-new const PLUG_VER[] = "0.6.0-beta";
+#define PLUG_VER CWAPI_VERSION
 
 public plugin_init(){
     register_dictionary("cwapi.txt");
@@ -71,13 +73,13 @@ public plugin_init(){
 
     UserMsgs[UM_WeaponList] = get_user_msgid("WeaponList");
 
-    create_cvar("CWAPI_VERSION", PLUG_VER, FCVAR_SERVER);
-
     server_print("[%s v%s] loaded.", PLUG_NAME, PLUG_VER);
 }
 
 public plugin_precache(){
     register_plugin(PLUG_NAME, PLUG_VER, "ArKaNeMaN");
+    create_cvar(CWAPI_VERSION_CVAR, PLUG_VER, FCVAR_SERVER);
+    create_cvar(CWAPI_VERSION_NUM_CVAR, IntToStr(CWAPI_VERSION_NUM), FCVAR_SERVER);
     
     InitForwards();
     LoadWeapons();
@@ -88,7 +90,7 @@ public plugin_precache(){
 }
 
 public plugin_natives(){
-    register_library("CustomWeaponsAPI");
+    register_library(CWAPI_LIBRARY);
     
     register_native("CWAPI_RegisterHook", "Native_RegisterHook");
     register_native("CWAPI_AddCustomWeapon", "Native_AddCustomWeapon");

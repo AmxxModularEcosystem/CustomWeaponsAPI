@@ -3,6 +3,20 @@
 #endif
 #define _cwapi_included
 
+#define CWAPI_VER_MAJOR 0
+#define CWAPI_VER_MINOR 7
+#define CWAPI_VER_PATCH 0
+
+#define CWAPI_VER_TO_STR(%1.%2.%3) fmt("%d.%d.%d",%1,%2,%1)
+#define CWAPI_VER_TO_NUM(%1.%2.%3) ((%1*10000)+(%2*100)+%3)
+
+#define CWAPI_VERSION CWAPI_VER_TO_STR(CWAPI_VER_MAJOR.CWAPI_VER_MINOR.CWAPI_VER_PATCH)
+#define CWAPI_VERSION_NUM CWAPI_VER_TO_NUM(CWAPI_VER_MAJOR.CWAPI_VER_MINOR.CWAPI_VER_PATCH)
+
+stock const CWAPI_LIBRARY[] = "CustomWeaponsAPI";
+stock const CWAPI_VERSION_CVAR[] = "CWAPI_VERSION";
+stock const CWAPI_VERSION_NUM_CVAR[] = "CWAPI_VERSION_NUM";
+
 #define CWAPI_IMPULSE_OFFSET 4354
 #define var_CWAPI_ItemOwner var_iuser4
 
@@ -331,4 +345,41 @@ stock CWAPI_GetAbilParamString(Trie:Params, const Name[], Out[], Len, const Defa
     if(Params == Invalid_Trie || !TrieGetString(Params, Name, Out, Len))
         copy(Out, Len, Default);
     return strlen(Out);
+}
+
+/**
+ * Проверяет наличие запущенного CustomWeaponsAPI и его версию.
+ *
+ * @note Если оба параметра не указаны, то будет проверено только наличие плагина.
+ *
+ * @param Min    Минимальная версия.
+ * @param Max    Максимальная версия.
+ *
+ * @return  true, если CWAPI запущен и текущая версия входит в указанный диапазон.
+ */
+stock bool:CWAPI_CheckVersion(const Min = -1, const Max = -1){
+    if(!LibraryExists(CWAPI_LIBRARY, LibType_Library))
+        return false;
+
+    new CurVer = CWAPI_GetVersion();
+    if(
+        (Min != -1 && CurVer < Min)
+        || (Max != -1 && CurVer > Max)
+    ) return false;
+
+    return true;
+}
+#define CWAPI_CheckVersionV1(%1) CWAPI_CheckVersion(CWAPI_VER_TO_NUM(%1))
+#define CWAPI_CheckVersionV2(%1,%2) CWAPI_CheckVersion(CWAPI_VER_TO_NUM(%1),CWAPI_VER_TO_NUM(%2))
+
+/**
+ * Возвращает текущую версию Custom Weapons API
+ *
+ * @return Значение CWAPI_VERSION_NUM с которым был скомпилирован CWAPI
+ */
+stock CWAPI_GetVersion(){
+    static pCvar;
+    if(!pCvar)
+        pCvar = get_cvar_pointer(CWAPI_VERSION_NUM_CVAR);
+    return get_pcvar_num(pCvar);
 }
