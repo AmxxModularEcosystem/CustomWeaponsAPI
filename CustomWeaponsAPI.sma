@@ -115,7 +115,7 @@ public Native_GiveWeapon(){
     enum {Arg_UserId = 1, Arg_WeaponName, Arg_GiveType};
     static UserId; UserId = get_param(Arg_UserId);
     static WeaponName[32]; get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
-    new CWAPI_GiveType:Type = CWAPI_GiveType:get_param_byref(Arg_GiveType);
+    new CWAPI_GiveType:Type = CWAPI_GiveType:get_param(Arg_GiveType);
 
     if(!TrieKeyExists(WeaponsNames, WeaponName)){
         log_error(CWAPI_ERR_WEAPON_NOT_FOUND, "Weapon '%s' not found", WeaponName);
@@ -129,7 +129,7 @@ public Native_GiveWeaponById(){
     enum {Arg_UserId = 1, Arg_WeaponId, Arg_GiveType};
     new UserId; UserId = get_param(Arg_UserId);
     new WeaponId; WeaponId = get_param(Arg_WeaponId);
-    new CWAPI_GiveType:Type = CWAPI_GiveType:get_param_byref(Arg_GiveType);
+    new CWAPI_GiveType:Type = CWAPI_GiveType:get_param(Arg_GiveType);
 
     if(!IsCustomWeapon(WeaponId)){
         log_error(CWAPI_ERR_WEAPON_NOT_FOUND, "Weapon #%d not found", WeaponId);
