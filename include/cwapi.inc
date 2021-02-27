@@ -156,9 +156,17 @@ native CWAPI_RegisterHook(const WeaponName[], const CWAPI_WeaponEvents:Event, co
  * @return      Идентификатор выданного предмета. -1 в случае ошибки
  */
 native CWAPI_GiveWeapon(const UserId, const WeaponName[], const CWAPI_GiveType:Type = CWAPI_GT_SMART);
+
+/**
+ * Выдаёт кастомное оружие игроку
+ *
+ * @param UserId    Идентификатор игрока, которому надо выдать оружие
+ * @param WeaponId  Индекс к астомного оружия
+ * @param Type      Тип выдачи (см. CWAPI_GiveType)
  *
  * @return      Идентификатор выданного предмета. -1 в случае ошибки
  */
+native CWAPI_GiveWeaponById(const UserId, const WeaponName[], const CWAPI_GiveType:Type = CWAPI_GT_SMART);
 
 /**
  * Возвращает Array массив со списком кастомных пушек.

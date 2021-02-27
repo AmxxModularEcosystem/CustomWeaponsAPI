@@ -94,6 +94,7 @@ public plugin_natives(){
     register_native("CWAPI_AddCustomWeapon", "Native_AddCustomWeapon");
     
     register_native("CWAPI_GiveWeapon", "Native_GiveWeapon");
+    register_native("CWAPI_GiveWeaponById", "Native_GiveWeaponById");
 
     register_native("CWAPI_IsCustomWeapon", "Native_IsCustomWeapon");
     register_native("CWAPI_GetWeaponId", "Native_GetWeaponId");
@@ -117,6 +118,20 @@ public Native_GiveWeapon(){
         return -1;
     }
     static WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
+    return GiveCustomWeapon(UserId, WeaponId, Type);
+}
+
+public Native_GiveWeaponById(){
+    enum {Arg_UserId = 1, Arg_WeaponId, Arg_GiveType};
+    new UserId; UserId = get_param(Arg_UserId);
+    new WeaponId; WeaponId = get_param(Arg_WeaponId);
+    new CWAPI_GiveType:Type = CWAPI_GiveType:get_param_byref(Arg_GiveType);
+
+    if(!IsCustomWeapon(WeaponId)){
+        log_error(CWAPI_ERR_WEAPON_NOT_FOUND, "Weapon #%d not found", WeaponId);
+        return -1;
+    }
+
     return GiveCustomWeapon(UserId, WeaponId, Type);
 }
 
