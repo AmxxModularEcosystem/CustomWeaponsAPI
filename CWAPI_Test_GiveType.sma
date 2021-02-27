@@ -21,6 +21,7 @@ public CWAPI_LoadWeaponsPost(){
     read_argv(1, WeaponName, charsmax(WeaponName));
 
     CWAPI_GiveWeapon(UserId, WeaponName, CWAPI_GT_SMART);
+    client_print_color(UserId, print_team_default, "Умная выдача оружия - ^4%s", WeaponName);
 }
 
 @Cmd_GiveAppend(const UserId){
@@ -28,6 +29,7 @@ public CWAPI_LoadWeaponsPost(){
     read_argv(1, WeaponName, charsmax(WeaponName));
 
     CWAPI_GiveWeapon(UserId, WeaponName, CWAPI_GT_APPEND);
+    client_print_color(UserId, print_team_default, "Добавление оружия - ^4%s", WeaponName);
 }
 
 @Cmd_GiveReplace(const UserId){
@@ -35,6 +37,7 @@ public CWAPI_LoadWeaponsPost(){
     read_argv(1, WeaponName, charsmax(WeaponName));
 
     CWAPI_GiveWeapon(UserId, WeaponName, CWAPI_GT_REPLACE);
+    client_print_color(UserId, print_team_default, "Замена оружия - ^4%s", WeaponName);
 }
 
 @Cmd_GiveDrop(const UserId){
@@ -42,4 +45,5 @@ public CWAPI_LoadWeaponsPost(){
     read_argv(1, WeaponName, charsmax(WeaponName));
 
     CWAPI_GiveWeapon(UserId, WeaponName, CWAPI_GT_DROP);
+    client_print_color(UserId, print_team_default, "Выбрасывание перед выдачей - ^4%s", WeaponName);
 }
