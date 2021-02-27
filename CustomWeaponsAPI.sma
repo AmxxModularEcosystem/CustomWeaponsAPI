@@ -45,8 +45,10 @@ new Array:CustomWeapons;
 new Fwds[E_Fwds];
 new UserMsgs[E_UserMsgs];
 
-new const PLUG_NAME[] = "Custom Weapons API";
-#define PLUG_VER CWAPI_VERSION
+public stock const PluginName[] = "Custom Weapons API";
+public stock const PluginAuthor[] = "ArKaNeMaN";
+public stock const PluginURL[] = "https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI";
+public stock const PluginDescription[] = "API for create custom weapons";
 
 public plugin_init(){
     register_dictionary("cwapi.txt");
@@ -73,12 +75,12 @@ public plugin_init(){
 
     UserMsgs[UM_WeaponList] = get_user_msgid("WeaponList");
 
-    server_print("[%s v%s] loaded.", PLUG_NAME, PLUG_VER);
+    server_print("[%s v%s] loaded.", PluginName, CWAPI_VERSION);
 }
 
 public plugin_precache(){
-    register_plugin(PLUG_NAME, PLUG_VER, "ArKaNeMaN");
-    create_cvar(CWAPI_VERSION_CVAR, PLUG_VER, FCVAR_SERVER);
+    register_plugin(PluginName, CWAPI_VERSION, PluginAuthor);
+    create_cvar(CWAPI_VERSION_CVAR, CWAPI_VERSION, FCVAR_SERVER);
     create_cvar(CWAPI_VERSION_NUM_CVAR, IntToStr(CWAPI_VERSION_NUM), FCVAR_SERVER);
     
     InitForwards();
@@ -86,7 +88,7 @@ public plugin_precache(){
     if(CUSTOM_WEAPONS_COUNT < 1)
         set_fail_state("[WARNING] No loaded weapons");
 
-    server_print("[%s v%s] %d custom weapons loaded.", PLUG_NAME, PLUG_VER, CUSTOM_WEAPONS_COUNT);
+    server_print("[%s v%s] %d custom weapons loaded.", PluginName, CWAPI_VERSION, CUSTOM_WEAPONS_COUNT);
 }
 
 public plugin_natives(){
