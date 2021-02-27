@@ -91,28 +91,33 @@ public plugin_natives(){
     register_library("CustomWeaponsAPI");
     
     register_native("CWAPI_RegisterHook", "Native_RegisterHook");
-    register_native("CWAPI_GiveWeapon", "Native_GiveWeapon");
-    register_native("CWAPI_GetWeaponsList", "Native_GetWeaponsList");
-    register_native("CWAPI_GetWeaponData", "Native_GetWeaponData");
-    register_native("CWAPI_GetWeaponId", "Native_GetWeaponId");
     register_native("CWAPI_AddCustomWeapon", "Native_AddCustomWeapon");
+    
+    register_native("CWAPI_GiveWeapon", "Native_GiveWeapon");
+
+    register_native("CWAPI_IsCustomWeapon", "Native_IsCustomWeapon");
+    register_native("CWAPI_GetWeaponId", "Native_GetWeaponId");
+    register_native("CWAPI_GetWeaponData", "Native_GetWeaponData");
+    register_native("CWAPI_GetWeaponsList", "Native_GetWeaponsList");
     register_native("CWAPI_FindWeapon", "Native_FindWeapon");
     register_native("CWAPI_GetAbilityWeaponsList", "Native_GetAbilityWeaponsList");
+
     register_native("CWAPI_GetWeaponIdFromEnt", "Native_GetWeaponIdFromEnt");
-    register_native("CWAPI_IsCustomWeapon", "Native_IsCustomWeapon");
+    register_native("CWAPI_GetWeaponIdFromEnt", "Native_GetWeaponIdFromEnt");
 }
 
 public Native_GiveWeapon(){
-    enum {Arg_UserId = 1, Arg_WeaponName};
+    enum {Arg_UserId = 1, Arg_WeaponName, Arg_GiveType};
     static UserId; UserId = get_param(Arg_UserId);
     static WeaponName[32]; get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
+    new CWAPI_GiveType:Type = CWAPI_GiveType:get_param_byref(Arg_GiveType);
 
     if(!TrieKeyExists(WeaponsNames, WeaponName)){
         log_error(CWAPI_ERR_WEAPON_NOT_FOUND, "Weapon '%s' not found", WeaponName);
         return -1;
     }
     static WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
-    return GiveCustomWeapon(UserId, WeaponId);
+    return GiveCustomWeapon(UserId, WeaponId, Type);
 }
 
 public Native_RegisterHook(const PluginId, const Params){
@@ -315,7 +320,7 @@ _CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Eve
         static WeaponName[32]; read_argv(1, WeaponName, charsmax(WeaponName));
         if(TrieKeyExists(WeaponsNames, WeaponName)){
             static WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
-            if(GiveCustomWeapon(Id, WeaponId) != -1) client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_GIVE_SUCCESS", WeaponName);
+            if(GiveCustomWeapon(Id, WeaponId, CWAPI_GT_SMART) != -1) client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_GIVE_SUCCESS", WeaponName);
             else client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_GIVE_ERROR");
             return PLUGIN_HANDLED;
         }
@@ -340,7 +345,7 @@ _CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Eve
     }
 
     new WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
-    GiveCustomWeapon(UserId, WeaponId);
+    GiveCustomWeapon(UserId, WeaponId, CWAPI_GT_SMART);
 
     return PLUGIN_CONTINUE;
 }
@@ -387,7 +392,7 @@ public Cmd_Buy(const Id){
         client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_BUY_NO_MONEY", WeaponName);
         return PLUGIN_HANDLED;
     }
-    if(GiveCustomWeapon(Id, WeaponId) != -1){
+    if(GiveCustomWeapon(Id, WeaponId, CWAPI_GT_SMART) != -1){
         rg_add_account(Id, -Data[CWAPI_WD_Price], AS_ADD);
         client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_BUY_SUCCESS", WeaponName, Data[CWAPI_WD_Price]);
     }
@@ -689,7 +694,7 @@ public Hook_AddItemToPlayer_Post(const ItemId, const UserId){
 }
 
 // Выдача пушки
-GiveCustomWeapon(const Id, const WeaponId){
+GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_SMART){
     if(!is_user_alive(Id))
         return -1;
 
@@ -702,11 +707,14 @@ GiveCustomWeapon(const Id, const WeaponId){
     static Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
 
     static GiveType:WeaponGiveType;
-    if(equal(Data[CWAPI_WD_DefaultName], "knife"))
-        WeaponGiveType = GT_REPLACE;
-    else if(IsGrenade(Data[CWAPI_WD_DefaultName]))
-        WeaponGiveType = GT_APPEND;
-    else WeaponGiveType = GT_DROP_AND_REPLACE;
+    if(Type == CWAPI_GT_SMART){
+        if(equal(Data[CWAPI_WD_DefaultName], "knife"))
+            WeaponGiveType = GT_REPLACE;
+        else if(IsGrenade(Data[CWAPI_WD_DefaultName]))
+            WeaponGiveType = GT_APPEND;
+        else WeaponGiveType = GT_DROP_AND_REPLACE;
+    }
+    else WeaponGiveType = GiveType:Type;
 
     static ItemId; ItemId = rg_give_custom_item(
         Id,

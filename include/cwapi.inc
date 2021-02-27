@@ -126,6 +126,13 @@ enum _:CWAPI_WeaponAbilityData{
     Trie:CWAPI_WAD_CustomData,
 }
 
+enum CWAPI_GiveType{
+    CWAPI_GT_SMART = -1, // Для ножей GT_REPLACE, для гранат GT_APPEND, для остального GT_DROP_AND_REPLACE
+    CWAPI_GT_APPEND, // Аналог GT_APPEND
+    CWAPI_GT_REPLACE, // Аналог GT_REPLACE
+    CWAPI_GT_DROP, // Аналог GT_DROP_AND_REPLACE
+}
+
 /*===========[ Natives ]===========*/
 
 /**
@@ -142,12 +149,16 @@ native CWAPI_RegisterHook(const WeaponName[], const CWAPI_WeaponEvents:Event, co
 /**
  * Выдаёт кастомное оружие игроку
  *
- * @param UserId            Идентификатор игрока, которому надо выдать оружие
- * @param WeaponName        Название оружия указанное в конфиге
+ * @param UserId      Идентификатор игрока, которому надо выдать оружие
+ * @param WeaponName  Название оружия указанное в конфиге
+ * @param Type        Тип выдачи (см. CWAPI_GiveType)
  *
  * @return      Идентификатор выданного предмета. -1 в случае ошибки
  */
-native CWAPI_GiveWeapon(const UserId, const WeaponName[]);
+native CWAPI_GiveWeapon(const UserId, const WeaponName[], const CWAPI_GiveType:Type = CWAPI_GT_SMART);
+ *
+ * @return      Идентификатор выданного предмета. -1 в случае ошибки
+ */
 
 /**
  * Возвращает Array массив со списком кастомных пушек.
