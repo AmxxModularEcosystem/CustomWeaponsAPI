@@ -1,5 +1,6 @@
-# Custom Weapons API <img width=40 src="https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/Icon-96.png?raw=true" alt="CWAPI-Icon"/>
+<img width=48 src="https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/IconBar-96.png?raw=true" alt="CWAPI-IconBar"/>
 
+---
 
 ## Описание
 
