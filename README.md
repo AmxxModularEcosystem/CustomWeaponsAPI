@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/Icon-96.png?raw=true" alt="CWAPI-Icon"/>
+</p>
+
 # Custom Weapons API
 
 ## Описание
