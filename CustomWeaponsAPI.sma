@@ -886,6 +886,10 @@ LoadWeapons(){
 
         format(File, charsmax(File), "%s%s", Path, File);
         Item = json_parse(File, true, true);
+        if(Item == Invalid_JSON){
+            log_amx("[WARNING] Invalid JSON syntax. File '%s'.", File);
+            continue;
+        }
 
         if(!json_is_object(Item)){
             json_free(Item);
