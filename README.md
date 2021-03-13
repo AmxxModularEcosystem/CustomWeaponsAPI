@@ -19,6 +19,7 @@ API для создания кастомного оружия
 `/amxmodx/configs/plugins/CustomWeaponAPI/Weapons/<WeaponName>.json`
 
 ### Структура
+
 ```js
 {
     "DefaultName": [String] Название дефолтного оружие, на котором будет основано кастомное,
@@ -90,19 +91,22 @@ API для создания кастомного оружия
 ## Команды
 
 ### CWAPI_Buy \<WeaponName\>
-* Покупка кастомного оружия
-* Пример: `CWAPI_Buy Gold_Ak47`
+
+- Покупка кастомного оружия
+- Пример: `CWAPI_Buy Gold_Ak47`
 
 ### CWAPI_Give \<WeaponName\>
-* Выдача себе кастомного оружия
-* Пример: `CWAPI_Give Gold_Ak47`
-* _Работает, только если плагин скомпилирован с дефайном `DEBUG`_
+
+- Выдача себе кастомного оружия
+- Пример: `CWAPI_Give Gold_Ak47`
+- _Работает, только если плагин скомпилирован с дефайном `DEBUG`_
 
 ### CWAPI_Srv_Give \<UserId\> \<WeaponName\>
-* Серверная команда
-* Выдача кастомного оружия игроку
-* Пример: `CWAPI_Srv_Give 1 Gold_Ak47`
-* Нужна в основном для плагинов типа спавн-бонус.
+
+- Серверная команда
+- Выдача кастомного оружия игроку
+- Пример: `CWAPI_Srv_Give 1 Gold_Ak47`
+- Нужна в основном для плагинов типа спавн-бонус.
 
 ## [API](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/include/cwapi.inc)
 
@@ -113,6 +117,7 @@ API для создания кастомного оружия
 - [Поиск пушек по параметрам](https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/CWAPI_Test_Search.sma)
 
 ## Благодарность
+
 [Dev-CS: [ReAPI] Пример кастомного оружия с дополнительними свойствами](https://dev-cs.ru/threads/1983/)
 
 [Dev-CS: За помощь на форуме](https://dev-cs.ru/threads/7718/)
