@@ -811,9 +811,9 @@ GetItemFromWeaponBox(const WeaponBox){
 }
 
 // В зоне закупки ли игрок
-bool:IsUserInBuyZone(const Id){
-    static Signal[UnifiedSignals]; get_member(Id, m_signals, Signal);
-    return (Signal[US_Signal] & _:SIGNAL_BUY);
+bool:IsUserInBuyZone(const UserId){
+    static Signal[UnifiedSignals]; get_member(UserId, m_signals, Signal);
+    return bool:(SignalState:Signal[US_Signal] & SIGNAL_BUY);
 }
 
 // Установка времени до следующего выстрела
