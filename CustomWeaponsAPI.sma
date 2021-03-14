@@ -300,14 +300,14 @@ public bool:Native_IsCustomWeapon(){
 }
 
 CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, const any:...){
-    new Data[CWAPI_WeaponData];
-    ArrayGetArray(CustomWeapons, WeaponId, Data);
-    if(Data[CWAPI_WD_CustomHandlers][Event] == Invalid_Array)
+    static WData[CWAPI_WeaponData];
+    ArrayGetArray(CustomWeapons, WeaponId, WData);
+    if(WData[CWAPI_WD_CustomHandlers][Event] == Invalid_Array)
         return true;
     
-    new FwdId, Return, Status;
-    for(new i = 0; i < ArraySize(Data[CWAPI_WD_CustomHandlers][Event]); i++){
-        FwdId = ArrayGetCell(Data[CWAPI_WD_CustomHandlers][Event], i);
+    static FwdId, Return, Status;
+    for(new i = 0; i < ArraySize(WData[CWAPI_WD_CustomHandlers][Event]); i++){
+        FwdId = ArrayGetCell(WData[CWAPI_WD_CustomHandlers][Event], i);
 
         Return = CWAPI_RET_CONTINUE;
         switch(Event){
@@ -509,8 +509,10 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
     if(Inflictor != Attacker)
         return HC_CONTINUE;
 
-    if(!is_user_connected(Victim) || !is_user_connected(Attacker))
-        return HC_CONTINUE;
+    if(
+        !is_user_connected(Victim)
+        || !is_user_connected(Attacker)
+    ) return HC_CONTINUE;
         
     new ItemId = get_member(Attacker, m_pActiveItem);
 
@@ -518,9 +520,21 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
         return HC_CONTINUE;
 
     new WeaponId = GetWeapId(ItemId);
-
     if(!IsCustomWeapon(WeaponId))
         return HC_CONTINUE;
+
+    new Data[CWAPI_WeaponData];
+    ArrayGetArray(CustomWeapons, WeaponId, Data);
+
+    if(equal(Data[CWAPI_WD_DefaultName], "knife")){
+        if(Data[CWAPI_WD_Damage] >= 0.0)
+            Damage = Data[CWAPI_WD_Damage];
+
+        if(Data[CWAPI_WD_DamageMult] >= 0.0)
+            Damage *= Data[CWAPI_WD_DamageMult];
+
+        SetHookChainArg(4, ATYPE_FLOAT, Damage);
+    }
 
     if(!CallWeaponEvent(WeaponId, CWAPI_WE_Damage, ItemId, Victim, Damage, DamageBits)){
         SetHookChainReturn(ATYPE_INTEGER, 0);
@@ -607,10 +621,12 @@ public Hook_DefaultShotgunReload(const ItemId, iAnim, iStartAnim, Float:fDelay, 
     
     return HC_CONTINUE;
 }
+
 #else
 
 public Hook_PlayerItemDeploy(const ItemId){
-    if(!IsCustomWeapon(GetWeapId(ItemId)))
+    new WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId))
         return;
     
     new Id = get_member(ItemId, m_pPlayer);
@@ -619,7 +635,7 @@ public Hook_PlayerItemDeploy(const ItemId){
         return;
     
     new Data[CWAPI_WeaponData];
-    ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
+    ArrayGetArray(CustomWeapons, WeaponId, Data);
 
     if(Data[CWAPI_WD_Models][CWAPI_WM_V][0])
         set_entvar(Id, var_viewmodel, Data[CWAPI_WD_Models][CWAPI_WM_V]);
@@ -630,7 +646,7 @@ public Hook_PlayerItemDeploy(const ItemId){
     if(Data[CWAPI_WD_DeployTime] >= 0.0)
         SetWeaponNextAttack(ItemId, Data[CWAPI_WD_DeployTime]);
 
-    CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
+    CallWeaponEvent(WeaponId, CWAPI_WE_Deploy, ItemId);
 
     return;
 }
