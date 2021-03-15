@@ -4,13 +4,12 @@
 
 API для создания кастомного оружия
 
-- [Ресурс на Dev-CS](https://dev-cs.ru/resources/852/)
-- [Тема на GoldSrc.ru](https://goldsrc.ru/threads/4202/)
+[Ресурс на Dev-CS](https://dev-cs.ru/resources/852/)
 
 ## Требования
 
 - [AmxModX 1.9.0](https://www.amxmodx.org/downloads-new.php)
-- [ReAPI 5.8.0.163 или новее](http://teamcity.rehlds.org/project.html?projectId=Reapi)
+- [ReAPI 5.15.x или новее](https://github.com/s1lentq/reapi/releases/latest)
 - [Fix Custom iMaxClip](https://goldsrc.ru/threads/4165/)
   - Необязательно. Исправляет баг с анимацией перезарядки при полном магазине.
 
