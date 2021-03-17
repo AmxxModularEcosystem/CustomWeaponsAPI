@@ -76,6 +76,8 @@ public plugin_init(){
     RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_PlayerAddItem", true);
     RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
     #if USE_NEW_REAPI_HOOKS
+        RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Pre", false);
+        RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
     #endif
 
@@ -298,6 +300,7 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
 }
 
 #if USE_NEW_REAPI_HOOKS
+public Hook_DefaultDeploy_Pre(const ItemId, szViewModel[], szWeaponModel[], iAnim, szAnimExt[], skiplocal){
     if(!IsCustomWeapon(GetWeapId(ItemId)))
         return;
     
@@ -319,14 +322,12 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
     CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
 }
 
-public Hook_DefaultReload(const ItemId, iClipSize, iAnim, Float:fDelay){
-    new UserId = get_member(ItemId, m_pPlayer);
+public Hook_DefaultReload_Pre(const ItemId, iClipSize, iAnim, Float:fDelay){
     new WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId))
+        return HC_CONTINUE;
 
-    if(
-        !is_user_connected(UserId)
-        || !IsCustomWeapon(WeaponId)
-    ) return HAM_IGNORED;
+    new UserId = get_member(ItemId, m_pPlayer);
 
     if(
         get_member(ItemId, m_Weapon_iClip) >= iClipSize
@@ -348,13 +349,11 @@ public Hook_DefaultReload(const ItemId, iClipSize, iAnim, Float:fDelay){
 }
 
 public Hook_DefaultShotgunReload(const ItemId, iAnim, iStartAnim, Float:fDelay, Float:fStartDelay, const pszReloadSound1[], const pszReloadSound2[]){
-    new UserId = get_member(ItemId, m_pPlayer);
     new WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId))
+        return HC_CONTINUE;
 
-    if(
-        !is_user_connected(UserId)
-        || !IsCustomWeapon(WeaponId)
-    ) return HAM_IGNORED;
+    new UserId = get_member(ItemId, m_pPlayer);
 
     if(
         get_member(ItemId, m_Weapon_iClip) >= rg_get_iteminfo(ItemId, ItemInfo_iMaxClip)
@@ -468,21 +467,27 @@ public Hook_PlayerGetMaxSpeed(const ItemId){
 }
 
 public Hook_PrimaryAttack_Pre(ItemId){
-    if(!IsCustomWeapon(GetWeapId(ItemId)))
+    new WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId))
         return;
 
     if(get_member(ItemId, m_Weapon_iClip) < 1)
         return;
 
-    if(IsPistol(ItemId) && get_member(ItemId, m_Weapon_iShotsFired)+1 > 1)
-        return;
+    if(
+        IsPistol(ItemId)
+        && get_member(ItemId, m_Weapon_iShotsFired)+1 > 1
+    ) return;
+
+    new Data[CWAPI_WeaponData];
+    ArrayGetArray(CustomWeapons, WeaponId, Data);
     
-    CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_PrimaryAttack, ItemId);
+    CallWeaponEvent(WeaponId, CWAPI_WE_PrimaryAttack, ItemId);
     
     return;
 }
 
-public Hook_PrimaryAttack(ItemId){
+public Hook_PrimaryAttack_Post(ItemId){
     new WeaponId = GetWeapId(ItemId);
 
     if(!IsCustomWeapon(WeaponId))
@@ -660,8 +665,10 @@ SetWeaponIdleAnim(const UserId, const ItemId){
     new Anim = 0;
     if(!IsWeaponSilenced(ItemId)){
         new WeaponIdType:WeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
-        if(WeaponId == WEAPON_M4A1) Anim = 7;
-        else if(WeaponId == WEAPON_USP) Anim = 8;
+        if(WeaponId == WEAPON_M4A1)
+            Anim = 7;
+        else if(WeaponId == WEAPON_USP)
+            Anim = 8;
     }
 
     set_entvar(UserId, var_weaponanim, Anim);
