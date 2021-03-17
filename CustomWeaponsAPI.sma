@@ -94,267 +94,6 @@ public plugin_precache(){
     server_print("[%s v%s] %d custom weapons loaded.", PluginName, CWAPI_VERSION, CUSTOM_WEAPONS_COUNT);
 }
 
-public plugin_natives(){
-    register_library(CWAPI_LIBRARY);
-    
-    register_native("CWAPI_RegisterHook", "Native_RegisterHook");
-    register_native("CWAPI_AddCustomWeapon", "Native_AddCustomWeapon");
-    
-    register_native("CWAPI_GiveWeapon", "Native_GiveWeapon");
-    register_native("CWAPI_GiveWeaponById", "Native_GiveWeaponById");
-
-    register_native("CWAPI_IsCustomWeapon", "Native_IsCustomWeapon");
-    register_native("CWAPI_GetWeaponId", "Native_GetWeaponId");
-    register_native("CWAPI_GetWeaponData", "Native_GetWeaponData");
-    register_native("CWAPI_GetWeaponsList", "Native_GetWeaponsList");
-    register_native("CWAPI_FindWeapon", "Native_FindWeapon");
-    register_native("CWAPI_GetAbilityWeaponsList", "Native_GetAbilityWeaponsList");
-
-    register_native("CWAPI_GetWeaponIdFromEnt", "Native_GetWeaponIdFromEnt");
-}
-
-public Native_GiveWeapon(){
-    enum {Arg_UserId = 1, Arg_WeaponName, Arg_GiveType};
-    new UserId = get_param(Arg_UserId);
-
-    new WeaponName[32];
-    get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
-
-    new CWAPI_GiveType:Type = CWAPI_GiveType:get_param(Arg_GiveType);
-
-    if(!TrieKeyExists(WeaponsNames, WeaponName)){
-        log_error(CWAPI_ERR_WEAPON_NOT_FOUND, "Weapon '%s' not found", WeaponName);
-        return -1;
-    }
-
-    new WeaponId;
-    TrieGetCell(WeaponsNames, WeaponName, WeaponId);
-
-    return GiveCustomWeapon(UserId, WeaponId, Type);
-}
-
-public Native_GiveWeaponById(){
-    enum {Arg_UserId = 1, Arg_WeaponId, Arg_GiveType};
-    new UserId = get_param(Arg_UserId);
-    new WeaponId = get_param(Arg_WeaponId);
-    new CWAPI_GiveType:Type = CWAPI_GiveType:get_param(Arg_GiveType);
-
-    if(!IsCustomWeapon(WeaponId)){
-        log_error(CWAPI_ERR_WEAPON_NOT_FOUND, "Weapon #%d not found", WeaponId);
-        return -1;
-    }
-
-    return GiveCustomWeapon(UserId, WeaponId, Type);
-}
-
-public Native_RegisterHook(const PluginId, const Params){
-    enum {Arg_WeaponName = 1, Arg_Event, Arg_FuncName};
-    new WeaponName[32];
-    get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
-
-    new CWAPI_WeaponEvents:Event = CWAPI_WeaponEvents:get_param(Arg_Event);
-
-    new FuncName[64];
-    get_string(Arg_FuncName, FuncName, charsmax(FuncName));
-
-    if(!TrieKeyExists(WeaponsNames, WeaponName))
-        return -1;
-
-    new WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
-    new Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
-
-    if(Data[CWAPI_WD_CustomHandlers][Event] == Invalid_Array){
-        Data[CWAPI_WD_CustomHandlers][Event] = ArrayCreate();
-        ArraySetArray(CustomWeapons, WeaponId, Data);
-    }
-    
-    new FwdId = _CreateOneForward(PluginId, FuncName, Event);
-    new HandlerId = ArrayPushCell(Data[CWAPI_WD_CustomHandlers][Event], _:FwdId);
-
-    return HandlerId;
-}
-
-public Array:Native_GetWeaponsList(){
-    return ArrayClone(CustomWeapons);
-}
-
-public Native_GetWeaponData(){
-    enum {Arg_WeaponId = 1, Arg_WeaponData};
-    new WeaponData[CWAPI_WeaponData];
-    ArrayGetArray(CustomWeapons, get_param(Arg_WeaponId), WeaponData);
-
-    return set_array(Arg_WeaponData, WeaponData, CWAPI_WeaponData);
-}
-
-public Native_GetWeaponId(){
-    enum {Arg_WeaponName = 1};
-    new WeaponName[32];
-    get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
-
-    new WeaponId;
-    if(!TrieGetCell(WeaponsNames, WeaponName, WeaponId))
-        return -1;
-
-    return WeaponId;
-}
-
-public Native_AddCustomWeapon(){
-    enum {Arg_WeaponData = 1}
-    new Data[CWAPI_WeaponData]; get_array(Arg_WeaponData, Data, CWAPI_WeaponData);
-
-    if(TrieKeyExists(WeaponsNames, Data[CWAPI_WD_Name])){
-        log_error(CWAPI_ERR_DUPLICATE_WEAPON_NAME, "Weapon '%s' already exists.", Data[CWAPI_WD_Name]);
-        return -1;
-    }
-
-    for(new i = 1; i < _:CWAPI_WeaponEvents; i++)
-        if(Data[CWAPI_WD_CustomHandlers][CWAPI_WeaponEvents:i] != Invalid_Array)
-            ArrayDestroy(Data[CWAPI_WD_CustomHandlers][CWAPI_WeaponEvents:i]);
-
-    new WeaponId = ArrayPushArray(CustomWeapons, Data);
-    TrieSetCell(WeaponsNames, Data[CWAPI_WD_Name], WeaponId);
-    return WeaponId;
-}
-
-public Native_FindWeapon(){
-    enum {Arg_StartWeaponId = 1, Arg_Field, Arg_Value};
-    new StartWeaponId = get_param(Arg_StartWeaponId)+1;
-    new Field = get_param(Arg_Field);
-
-    new Data[CWAPI_WeaponData];
-    switch(Field){
-        case CWAPI_WD_DefaultName: {
-            new Value[32];
-            get_string(Arg_Value, Value, charsmax(Value));
-
-            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
-                ArrayGetArray(CustomWeapons, WeaponId, Data);
-                if(equal(Data[Field], Value)){
-                    return WeaponId;
-                }
-            }
-        }
-        case CWAPI_WD_Price,
-        CWAPI_WD_Weight,
-        CWAPI_WD_MaxAmmo, 
-        CWAPI_WD_ClipSize: {
-            new Value = get_param_byref(Arg_Value);
-
-            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
-                ArrayGetArray(CustomWeapons, WeaponId, Data);
-                if(Data[Field] == Value)
-                    return WeaponId;
-            }
-        }
-        case CWAPI_WD_MaxWalkSpeed,
-        CWAPI_WD_DamageMult,
-        CWAPI_WD_Accuracy,
-        CWAPI_WD_DeployTime,
-        CWAPI_WD_ReloadTime,
-        CWAPI_WD_PrimaryAttackRate,
-        CWAPI_WD_SecondaryAttackRate,
-        CWAPI_WD_Damage: {
-            new Float:Value = get_float_byref(Arg_Value);
-
-            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
-                ArrayGetArray(CustomWeapons, WeaponId, Data);
-                if(Data[Field] == Value)
-                    return WeaponId;
-            }
-        }
-        case CWAPI_WD_HasSecondaryAttack: {
-            new bool:Value = bool:get_param_byref(Arg_Value);
-            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
-                ArrayGetArray(CustomWeapons, WeaponId, Data);
-                if(bool:Data[Field] == Value)
-                    return WeaponId;
-            }
-        }
-        default: {
-            log_error(CWAPI_ERR_UNDEFINED_WEAPON_FIELD, "Undefined weapon field or not allowed for search.");
-        }
-    }
-    return -1;
-}
-
-public Array:Native_GetAbilityWeaponsList(){
-    enum {Arg_AbilityName = 1};
-    new AbilityName[32]; get_string(Arg_AbilityName, AbilityName, charsmax(AbilityName));
-    new Array:AbilityWeaponsList; 
-    if(!TrieGetCell(WeaponAbilities, AbilityName, AbilityWeaponsList)){
-        AbilityWeaponsList = ArrayCreate(CWAPI_WeaponAbilityData, 2);
-        TrieSetCell(WeaponAbilities, AbilityName, AbilityWeaponsList);
-    }
-    return AbilityWeaponsList;
-}
-
-public Native_GetWeaponIdFromEnt(){
-    enum {Arg_ItemId = 1}
-    new ItemId = get_param(Arg_ItemId);
-    return GetWeapId(ItemId);
-}
-
-public bool:Native_IsCustomWeapon(){
-    enum {Arg_WeaponId = 1}
-    new WeaponId = get_param(Arg_WeaponId);
-    return IsCustomWeapon(WeaponId);
-}
-
-CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, const any:...){
-    static WData[CWAPI_WeaponData];
-    ArrayGetArray(CustomWeapons, WeaponId, WData);
-    if(WData[CWAPI_WD_CustomHandlers][Event] == Invalid_Array)
-        return true;
-    
-    static FwdId, Return, Status;
-    for(new i = 0; i < ArraySize(WData[CWAPI_WD_CustomHandlers][Event]); i++){
-        FwdId = ArrayGetCell(WData[CWAPI_WD_CustomHandlers][Event], i);
-
-        Return = CWAPI_RET_CONTINUE;
-        switch(Event){
-            case CWAPI_WE_PrimaryAttack: Status = ExecuteForward(FwdId, Return, ItemId);
-            case CWAPI_WE_SecondaryAttack: Status = ExecuteForward(FwdId, Return, ItemId);
-            case CWAPI_WE_Reload: Status = ExecuteForward(FwdId, Return, ItemId);
-            case CWAPI_WE_Deploy: Status = ExecuteForward(FwdId, Return, ItemId);
-            case CWAPI_WE_Holster: Status = ExecuteForward(FwdId, Return, ItemId);
-            case CWAPI_WE_Damage: Status = ExecuteForward(FwdId, Return, ItemId, _:getarg(3), Float:getarg(4), _:getarg(5));
-            case CWAPI_WE_Droped: Status = ExecuteForward(FwdId, Return, ItemId, getarg(3));
-            case CWAPI_WE_AddItem: Status = ExecuteForward(FwdId, Return, ItemId, getarg(3));
-            case CWAPI_WE_Take: Status = ExecuteForward(FwdId, Return, ItemId, getarg(3));
-            default: {
-                log_error(CWAPI_ERR_UNDEFINED_EVENT, "Undefined weapon event '%d'.", _:Event);
-                Status = 0;
-            }
-        }
-
-        if(!Status)
-            log_error(CWAPI_ERR_CANT_EXECUTE_FWD, "Can't execute event forward.");
-
-        if(Return == CWAPI_RET_HANDLED)
-            break;
-    }
-
-    if(Return == CWAPI_RET_HANDLED)
-        return false;
-
-    return true;
-}
-
-_CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Event){
-    switch(Event){
-        case CWAPI_WE_PrimaryAttack: return CreateOneForward(PluginId, FuncName, FP_CELL);
-        case CWAPI_WE_SecondaryAttack: return CreateOneForward(PluginId, FuncName, FP_CELL);
-        case CWAPI_WE_Reload: return CreateOneForward(PluginId, FuncName, FP_CELL);
-        case CWAPI_WE_Deploy: return CreateOneForward(PluginId, FuncName, FP_CELL);
-        case CWAPI_WE_Holster: return CreateOneForward(PluginId, FuncName, FP_CELL);
-        case CWAPI_WE_Damage: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL, FP_FLOAT, FP_CELL);
-        case CWAPI_WE_Droped: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
-        case CWAPI_WE_AddItem: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
-        case CWAPI_WE_Take: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
-    }
-    return log_error(CWAPI_ERR_UNDEFINED_EVENT, "Undefined weapon event '%d'", _:Event);
-}
-
 #if DEBUG
     public Cmd_GiveCustomWeapon(const Id){
         new WeaponName[32];
@@ -880,6 +619,8 @@ GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_
     return ItemId;
 }
 
+// UTILS
+
 // Получение ID итема из WeaponBox'а
 GetItemFromWeaponBox(const WeaponBox){
     for(new i = 0, ItemId; i < MAX_ITEM_TYPES; i++){
@@ -934,7 +675,8 @@ ShowWeaponListHud(const UserId, const ItemId, const WeaponName[]){
     message_end();
 }
 
-// Загрузка пушек из кфг
+// CONFIGS
+
 LoadWeapons(){
     CustomWeapons = ArrayCreate(CWAPI_WeaponData, 8);
     WeaponsNames = TrieCreate();
@@ -1231,4 +973,269 @@ LoadWeaponAbilities(const WeaponName[], const JSON:List){
 
 InitForwards(){
     Fwds[F_LoadWeaponsPost] = CreateMultiForward("CWAPI_LoadWeaponsPost", ET_IGNORE);
+}
+
+// EVENTS
+
+CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, const any:...){
+    static WData[CWAPI_WeaponData];
+    ArrayGetArray(CustomWeapons, WeaponId, WData);
+    if(WData[CWAPI_WD_CustomHandlers][Event] == Invalid_Array)
+        return true;
+    
+    static FwdId, Return, Status;
+    for(new i = 0; i < ArraySize(WData[CWAPI_WD_CustomHandlers][Event]); i++){
+        FwdId = ArrayGetCell(WData[CWAPI_WD_CustomHandlers][Event], i);
+
+        Return = CWAPI_RET_CONTINUE;
+        switch(Event){
+            case CWAPI_WE_PrimaryAttack: Status = ExecuteForward(FwdId, Return, ItemId);
+            case CWAPI_WE_SecondaryAttack: Status = ExecuteForward(FwdId, Return, ItemId);
+            case CWAPI_WE_Reload: Status = ExecuteForward(FwdId, Return, ItemId);
+            case CWAPI_WE_Deploy: Status = ExecuteForward(FwdId, Return, ItemId);
+            case CWAPI_WE_Holster: Status = ExecuteForward(FwdId, Return, ItemId);
+            case CWAPI_WE_Damage: Status = ExecuteForward(FwdId, Return, ItemId, _:getarg(3), Float:getarg(4), _:getarg(5));
+            case CWAPI_WE_Droped: Status = ExecuteForward(FwdId, Return, ItemId, getarg(3));
+            case CWAPI_WE_AddItem: Status = ExecuteForward(FwdId, Return, ItemId, getarg(3));
+            case CWAPI_WE_Take: Status = ExecuteForward(FwdId, Return, ItemId, getarg(3));
+            default: {
+                log_error(CWAPI_ERR_UNDEFINED_EVENT, "Undefined weapon event '%d'.", _:Event);
+                Status = 0;
+            }
+        }
+
+        if(!Status)
+            log_error(CWAPI_ERR_CANT_EXECUTE_FWD, "Can't execute event forward.");
+
+        if(Return == CWAPI_RET_HANDLED)
+            break;
+    }
+
+    if(Return == CWAPI_RET_HANDLED)
+        return false;
+
+    return true;
+}
+
+_CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Event){
+    switch(Event){
+        case CWAPI_WE_PrimaryAttack: return CreateOneForward(PluginId, FuncName, FP_CELL);
+        case CWAPI_WE_SecondaryAttack: return CreateOneForward(PluginId, FuncName, FP_CELL);
+        case CWAPI_WE_Reload: return CreateOneForward(PluginId, FuncName, FP_CELL);
+        case CWAPI_WE_Deploy: return CreateOneForward(PluginId, FuncName, FP_CELL);
+        case CWAPI_WE_Holster: return CreateOneForward(PluginId, FuncName, FP_CELL);
+        case CWAPI_WE_Damage: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL, FP_FLOAT, FP_CELL);
+        case CWAPI_WE_Droped: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
+        case CWAPI_WE_AddItem: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
+        case CWAPI_WE_Take: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
+    }
+    return log_error(CWAPI_ERR_UNDEFINED_EVENT, "Undefined weapon event '%d'", _:Event);
+}
+
+// NATIVES
+
+public plugin_natives(){
+    register_library(CWAPI_LIBRARY);
+    
+    register_native("CWAPI_RegisterHook", "Native_RegisterHook");
+    register_native("CWAPI_AddCustomWeapon", "Native_AddCustomWeapon");
+    
+    register_native("CWAPI_GiveWeapon", "Native_GiveWeapon");
+    register_native("CWAPI_GiveWeaponById", "Native_GiveWeaponById");
+
+    register_native("CWAPI_IsCustomWeapon", "Native_IsCustomWeapon");
+    register_native("CWAPI_GetWeaponId", "Native_GetWeaponId");
+    register_native("CWAPI_GetWeaponData", "Native_GetWeaponData");
+    register_native("CWAPI_GetWeaponsList", "Native_GetWeaponsList");
+    register_native("CWAPI_FindWeapon", "Native_FindWeapon");
+    register_native("CWAPI_GetAbilityWeaponsList", "Native_GetAbilityWeaponsList");
+
+    register_native("CWAPI_GetWeaponIdFromEnt", "Native_GetWeaponIdFromEnt");
+}
+
+public Native_GiveWeapon(){
+    enum {Arg_UserId = 1, Arg_WeaponName, Arg_GiveType};
+    new UserId = get_param(Arg_UserId);
+
+    new WeaponName[32];
+    get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
+
+    new CWAPI_GiveType:Type = CWAPI_GiveType:get_param(Arg_GiveType);
+
+    if(!TrieKeyExists(WeaponsNames, WeaponName)){
+        log_error(CWAPI_ERR_WEAPON_NOT_FOUND, "Weapon '%s' not found", WeaponName);
+        return -1;
+    }
+
+    new WeaponId;
+    TrieGetCell(WeaponsNames, WeaponName, WeaponId);
+
+    return GiveCustomWeapon(UserId, WeaponId, Type);
+}
+
+public Native_GiveWeaponById(){
+    enum {Arg_UserId = 1, Arg_WeaponId, Arg_GiveType};
+    new UserId = get_param(Arg_UserId);
+    new WeaponId = get_param(Arg_WeaponId);
+    new CWAPI_GiveType:Type = CWAPI_GiveType:get_param(Arg_GiveType);
+
+    if(!IsCustomWeapon(WeaponId)){
+        log_error(CWAPI_ERR_WEAPON_NOT_FOUND, "Weapon #%d not found", WeaponId);
+        return -1;
+    }
+
+    return GiveCustomWeapon(UserId, WeaponId, Type);
+}
+
+public Native_RegisterHook(const PluginId, const Params){
+    enum {Arg_WeaponName = 1, Arg_Event, Arg_FuncName};
+    new WeaponName[32];
+    get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
+
+    new CWAPI_WeaponEvents:Event = CWAPI_WeaponEvents:get_param(Arg_Event);
+
+    new FuncName[64];
+    get_string(Arg_FuncName, FuncName, charsmax(FuncName));
+
+    if(!TrieKeyExists(WeaponsNames, WeaponName))
+        return -1;
+
+    new WeaponId; TrieGetCell(WeaponsNames, WeaponName, WeaponId);
+    new Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
+
+    if(Data[CWAPI_WD_CustomHandlers][Event] == Invalid_Array){
+        Data[CWAPI_WD_CustomHandlers][Event] = ArrayCreate();
+        ArraySetArray(CustomWeapons, WeaponId, Data);
+    }
+    
+    new FwdId = _CreateOneForward(PluginId, FuncName, Event);
+    new HandlerId = ArrayPushCell(Data[CWAPI_WD_CustomHandlers][Event], _:FwdId);
+
+    return HandlerId;
+}
+
+public Array:Native_GetWeaponsList(){
+    return ArrayClone(CustomWeapons);
+}
+
+public Native_GetWeaponData(){
+    enum {Arg_WeaponId = 1, Arg_WeaponData};
+    new WeaponData[CWAPI_WeaponData];
+    ArrayGetArray(CustomWeapons, get_param(Arg_WeaponId), WeaponData);
+
+    return set_array(Arg_WeaponData, WeaponData, CWAPI_WeaponData);
+}
+
+public Native_GetWeaponId(){
+    enum {Arg_WeaponName = 1};
+    new WeaponName[32];
+    get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
+
+    new WeaponId;
+    if(!TrieGetCell(WeaponsNames, WeaponName, WeaponId))
+        return -1;
+
+    return WeaponId;
+}
+
+public Native_AddCustomWeapon(){
+    enum {Arg_WeaponData = 1}
+    new Data[CWAPI_WeaponData]; get_array(Arg_WeaponData, Data, CWAPI_WeaponData);
+
+    if(TrieKeyExists(WeaponsNames, Data[CWAPI_WD_Name])){
+        log_error(CWAPI_ERR_DUPLICATE_WEAPON_NAME, "Weapon '%s' already exists.", Data[CWAPI_WD_Name]);
+        return -1;
+    }
+
+    for(new i = 1; i < _:CWAPI_WeaponEvents; i++)
+        if(Data[CWAPI_WD_CustomHandlers][CWAPI_WeaponEvents:i] != Invalid_Array)
+            ArrayDestroy(Data[CWAPI_WD_CustomHandlers][CWAPI_WeaponEvents:i]);
+
+    new WeaponId = ArrayPushArray(CustomWeapons, Data);
+    TrieSetCell(WeaponsNames, Data[CWAPI_WD_Name], WeaponId);
+    return WeaponId;
+}
+
+public Native_FindWeapon(){
+    enum {Arg_StartWeaponId = 1, Arg_Field, Arg_Value};
+    new StartWeaponId = get_param(Arg_StartWeaponId)+1;
+    new Field = get_param(Arg_Field);
+
+    new Data[CWAPI_WeaponData];
+    switch(Field){
+        case CWAPI_WD_DefaultName: {
+            new Value[32];
+            get_string(Arg_Value, Value, charsmax(Value));
+
+            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+                ArrayGetArray(CustomWeapons, WeaponId, Data);
+                if(equal(Data[Field], Value)){
+                    return WeaponId;
+                }
+            }
+        }
+        case CWAPI_WD_Price,
+        CWAPI_WD_Weight,
+        CWAPI_WD_MaxAmmo, 
+        CWAPI_WD_ClipSize: {
+            new Value = get_param_byref(Arg_Value);
+
+            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+                ArrayGetArray(CustomWeapons, WeaponId, Data);
+                if(Data[Field] == Value)
+                    return WeaponId;
+            }
+        }
+        case CWAPI_WD_MaxWalkSpeed,
+        CWAPI_WD_DamageMult,
+        CWAPI_WD_Accuracy,
+        CWAPI_WD_DeployTime,
+        CWAPI_WD_ReloadTime,
+        CWAPI_WD_PrimaryAttackRate,
+        CWAPI_WD_SecondaryAttackRate,
+        CWAPI_WD_Damage: {
+            new Float:Value = get_float_byref(Arg_Value);
+
+            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+                ArrayGetArray(CustomWeapons, WeaponId, Data);
+                if(Data[Field] == Value)
+                    return WeaponId;
+            }
+        }
+        case CWAPI_WD_HasSecondaryAttack: {
+            new bool:Value = bool:get_param_byref(Arg_Value);
+            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+                ArrayGetArray(CustomWeapons, WeaponId, Data);
+                if(bool:Data[Field] == Value)
+                    return WeaponId;
+            }
+        }
+        default: {
+            log_error(CWAPI_ERR_UNDEFINED_WEAPON_FIELD, "Undefined weapon field or not allowed for search.");
+        }
+    }
+    return -1;
+}
+
+public Array:Native_GetAbilityWeaponsList(){
+    enum {Arg_AbilityName = 1};
+    new AbilityName[32]; get_string(Arg_AbilityName, AbilityName, charsmax(AbilityName));
+    new Array:AbilityWeaponsList; 
+    if(!TrieGetCell(WeaponAbilities, AbilityName, AbilityWeaponsList)){
+        AbilityWeaponsList = ArrayCreate(CWAPI_WeaponAbilityData, 2);
+        TrieSetCell(WeaponAbilities, AbilityName, AbilityWeaponsList);
+    }
+    return AbilityWeaponsList;
+}
+
+public Native_GetWeaponIdFromEnt(){
+    enum {Arg_ItemId = 1}
+    new ItemId = get_param(Arg_ItemId);
+    return GetWeapId(ItemId);
+}
+
+public bool:Native_IsCustomWeapon(){
+    enum {Arg_WeaponId = 1}
+    new WeaponId = get_param(Arg_WeaponId);
+    return IsCustomWeapon(WeaponId);
 }
