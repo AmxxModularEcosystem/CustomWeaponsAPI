@@ -12,7 +12,7 @@
 #define DEBUG 1
 
 // Использование новых хуков в ReAPI (Почему-то работает криво)
-//#define USE_NEW_REAPI_HOOKS
+#define USE_NEW_REAPI_HOOKS 0
 
 #define WEAPON_PISTOLS_BITSUMM (BIT(_:WEAPON_P228)|BIT(_:WEAPON_GLOCK)|BIT(_:WEAPON_ELITE)|BIT(_:WEAPON_FIVESEVEN)|BIT(_:WEAPON_USP)|BIT(_:WEAPON_GLOCK18)|BIT(_:WEAPON_DEAGLE))
 #define GetWeapFullName(%0) fmt("weapon_%s",%0)
@@ -41,6 +41,21 @@ enum E_UserMsgs{
     UM_WeaponList,
 }
 
+enum _E_Ham_WeaponHook{Ham:Ham_WH_Hook, Ham_WH_Func[64], bool:Ham_WH_Post,}
+new const _WEAPON_HOOKS[][_E_Ham_WeaponHook] = {
+    #if !USE_NEW_REAPI_HOOKS
+    {Ham_Item_Deploy, "Hook_PlayerItemDeploy", true},
+    {Ham_Weapon_Reload, "Hook_PlayerItemReloaded", false},
+    {Ham_Weapon_Reload, "Hook_PlayerItemReloaded_Post", true},
+    #endif
+    {Ham_Item_Holster, "Hook_PlayerItemHolster", true},
+    {Ham_CS_Item_GetMaxSpeed, "Hook_PlayerGetMaxSpeed", false},
+    {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Post", true},
+    {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Pre", false},
+    {Ham_Weapon_SecondaryAttack, "Hook_SecondaryAttack", true},
+    {Ham_Item_AddToPlayer, "Hook_AddItemToPlayer_Post", true},
+};
+
 new Trie:WeaponAbilities;
 new Trie:WeaponsNames;
 new Array:CustomWeapons;
@@ -60,9 +75,7 @@ public plugin_init(){
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Post", true);
     RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_PlayerAddItem", true);
     RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
-    #if defined USE_NEW_REAPI_HOOKS
-        RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy", false);
-        RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload", false);
+    #if USE_NEW_REAPI_HOOKS
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
     #endif
 
@@ -284,8 +297,7 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
     return HC_CONTINUE;
 }
 
-#if defined USE_NEW_REAPI_HOOKS
-public Hook_DefaultDeploy(const ItemId, szViewModel[], szWeaponModel[], iAnim, szAnimExt[], skiplocal){
+#if USE_NEW_REAPI_HOOKS
     if(!IsCustomWeapon(GetWeapId(ItemId)))
         return;
     
@@ -813,99 +825,34 @@ LoadWeapons(){
             json_free(Sounds);
         }
 
+        #define json_object_get_real_def(%1,%2,%3) json_object_has_value(%1,%2,JSONNumber)?json_object_get_real(%1,%2):%3
+        #define json_object_get_num_def(%1,%2,%3) json_object_has_value(%1,%2,JSONNumber)?json_object_get_number(%1,%2):%3
+
         Data[CWAPI_WD_ClipSize] = json_object_get_number(Item, "ClipSize");
         Data[CWAPI_WD_Weight] = json_object_get_number(Item, "Weight");
 
-        if(json_object_has_value(Item, "Price", JSONNumber))
-            Data[CWAPI_WD_Price] = json_object_get_number(Item, "Price");
-        else Data[CWAPI_WD_Price] = -1;
+        Data[CWAPI_WD_Price] = json_object_get_num_def(Item, "Price", -1);
+        Data[CWAPI_WD_MaxAmmo] = json_object_get_num_def(Item, "MaxAmmo", -1);
 
-        if(json_object_has_value(Item, "MaxAmmo", JSONNumber))
-            Data[CWAPI_WD_MaxAmmo] = json_object_get_number(Item, "MaxAmmo");
-        else Data[CWAPI_WD_MaxAmmo] = -1;
-
-        if(json_object_has_value(Item, "MaxWalkSpeed", JSONNumber))
-            Data[CWAPI_WD_MaxWalkSpeed] = json_object_get_real(Item, "MaxWalkSpeed");
-        else Data[CWAPI_WD_MaxWalkSpeed] = -1.0;
-
-        if(json_object_has_value(Item, "DamageMult", JSONNumber))
-            Data[CWAPI_WD_DamageMult] = json_object_get_real(Item, "DamageMult");
-        else Data[CWAPI_WD_DamageMult] = -1.0;
-
-        if(json_object_has_value(Item, "Damage", JSONNumber))
-            Data[CWAPI_WD_Damage] = json_object_get_real(Item, "Damage");
-        else Data[CWAPI_WD_Damage] = -1.0;
-
-        if(json_object_has_value(Item, "Accuracy", JSONNumber))
-            Data[CWAPI_WD_Accuracy] = json_object_get_real(Item, "Accuracy");
-        else Data[CWAPI_WD_Accuracy] = -1.0;
-
-        if(json_object_has_value(Item, "DeployTime", JSONNumber))
-            Data[CWAPI_WD_DeployTime] = json_object_get_real(Item, "DeployTime");
-        else Data[CWAPI_WD_DeployTime] = -1.0;
-
-        if(json_object_has_value(Item, "ReloadTime", JSONNumber))
-            Data[CWAPI_WD_ReloadTime] = json_object_get_real(Item, "ReloadTime");
-        else Data[CWAPI_WD_ReloadTime] = -1.0;
-
-        if(json_object_has_value(Item, "PrimaryAttackRate", JSONNumber))
-            Data[CWAPI_WD_PrimaryAttackRate] = json_object_get_real(Item, "PrimaryAttackRate");
-        else Data[CWAPI_WD_PrimaryAttackRate] = 0.0;
-
-        if(json_object_has_value(Item, "SecondaryAttackRate", JSONNumber))
-            Data[CWAPI_WD_SecondaryAttackRate] = json_object_get_real(Item, "SecondaryAttackRate");
-        else Data[CWAPI_WD_SecondaryAttackRate] = 0.0;
+        Data[CWAPI_WD_MaxWalkSpeed] = json_object_get_real_def(Item, "MaxWalkSpeed", -1.0);
+        Data[CWAPI_WD_DamageMult] = json_object_get_real_def(Item, "DamageMult", -1.0);
+        Data[CWAPI_WD_Damage] = json_object_get_real_def(Item, "Damage", -1.0);
+        Data[CWAPI_WD_Accuracy] = json_object_get_real_def(Item, "Accuracy", -1.0);
+        Data[CWAPI_WD_DeployTime] = json_object_get_real_def(Item, "DeployTime", -1.0);
+        Data[CWAPI_WD_ReloadTime] = json_object_get_real_def(Item, "ReloadTime", -1.0);
+        Data[CWAPI_WD_PrimaryAttackRate] = json_object_get_real_def(Item, "PrimaryAttackRate", 0.0);
+        Data[CWAPI_WD_SecondaryAttackRate] = json_object_get_real_def(Item, "SecondaryAttackRate", 0.0);
 
         Data[CWAPI_WD_HasSecondaryAttack] = json_object_get_bool(Item, "HasSecondaryAttack");
 
         if(!TrieKeyExists(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName])){
-            #if !defined USE_NEW_REAPI_HOOKS
-            RegisterHam(
-                Ham_Item_Deploy,
-                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_PlayerItemDeploy", true
-            );
-            RegisterHam(
-                Ham_Weapon_Reload,
-                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_PlayerItemReloaded", false
-            );
-            RegisterHam(
-                Ham_Weapon_Reload,
-                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_PlayerItemReloaded_Post", true
-            );
-            #endif
-            RegisterHam(
-                Ham_Item_Holster,
-                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_PlayerItemHolster", true
-            );
-            RegisterHam(
-                Ham_CS_Item_GetMaxSpeed,
-                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_PlayerGetMaxSpeed", false
-            );
-            RegisterHam(
-                Ham_Weapon_PrimaryAttack,
-                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_PrimaryAttack", true
-            );
-            RegisterHam(
-                Ham_Weapon_PrimaryAttack,
-                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_PrimaryAttack_Pre", false
-            );
-            RegisterHam(
-                Ham_Weapon_SecondaryAttack,
-                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_SecondaryAttack", true
-            );
-            RegisterHam(
-                Ham_Item_AddToPlayer,
-                GetWeapFullName(Data[CWAPI_WD_DefaultName]),
-                "Hook_AddItemToPlayer_Post", true
-            );
+            for(new i = 0; i < sizeof _WEAPON_HOOKS; i++){
+                RegisterHam(
+                    _WEAPON_HOOKS[i][Ham_WH_Hook],
+                    GetWeapFullName(Data[CWAPI_WD_DefaultName]),
+                    _WEAPON_HOOKS[i][Ham_WH_Func], _WEAPON_HOOKS[i][Ham_WH_Post]
+                );
+            }
 
             TrieSetCell(DefWeaponsNamesList, Data[CWAPI_WD_DefaultName], 0);
         }
