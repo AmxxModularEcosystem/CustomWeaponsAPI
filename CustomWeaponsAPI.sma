@@ -248,6 +248,7 @@ public Native_FindWeapon(){
         }
         case CWAPI_WD_MaxWalkSpeed,
         CWAPI_WD_DamageMult,
+        CWAPI_WD_Accuracy,
         CWAPI_WD_DeployTime,
         CWAPI_WD_ReloadTime,
         CWAPI_WD_PrimaryAttackRate,
@@ -561,6 +562,9 @@ public Hook_DefaultDeploy(const ItemId, szViewModel[], szWeaponModel[], iAnim, s
     if(Data[CWAPI_WD_DeployTime] >= 0.0)
         SetWeaponNextAttack(ItemId, Data[CWAPI_WD_DeployTime]);
 
+    if(Data[CWAPI_WD_Accuracy] >= 0.0)
+        set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
+
     CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
 }
 
@@ -645,6 +649,9 @@ public Hook_PlayerItemDeploy(const ItemId){
     
     if(Data[CWAPI_WD_DeployTime] >= 0.0)
         SetWeaponNextAttack(ItemId, Data[CWAPI_WD_DeployTime]);
+
+    if(Data[CWAPI_WD_Accuracy] >= 0.0)
+        set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
 
     CallWeaponEvent(WeaponId, CWAPI_WE_Deploy, ItemId);
 
@@ -1086,6 +1093,10 @@ LoadWeapons(){
         if(json_object_has_value(Item, "Damage", JSONNumber))
             Data[CWAPI_WD_Damage] = json_object_get_real(Item, "Damage");
         else Data[CWAPI_WD_Damage] = -1.0;
+
+        if(json_object_has_value(Item, "Accuracy", JSONNumber))
+            Data[CWAPI_WD_Accuracy] = json_object_get_real(Item, "Accuracy");
+        else Data[CWAPI_WD_Accuracy] = -1.0;
 
         if(json_object_has_value(Item, "DeployTime", JSONNumber))
             Data[CWAPI_WD_DeployTime] = json_object_get_real(Item, "DeployTime");
