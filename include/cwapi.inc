@@ -99,7 +99,7 @@ enum CWAPI_WeaponEvents{
     /**
     * Описание: Вызывается при убийстве при помощи оружия. ПОКА НЕ РАБОТАЕТ
     * 
-    * Параметры: (const ItemId)
+    * Параметры: (const ItemId, const VictimId)
     */
     CWAPI_WE_Kill,
 };

@@ -22,6 +22,7 @@ public CWAPI_LoadWeaponsPost(){
         CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Droped, "Hook_CWAPI_Droped");
         CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_AddItem, "Hook_CWAPI_AddItem");
         CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Take, "Hook_CWAPI_Take");
+        CWAPI_RegisterHook(WeaponAbilityData[CWAPI_WAD_WeaponName], CWAPI_WE_Kill, "Hook_CWAPI_Kill");
     }
     ArrayDestroy(TestWeapons);
 
@@ -64,6 +65,14 @@ public Hook_CWAPI_Damage(const ItemId, const Victim, const FLoat:Damage, const D
     static UserId; UserId = get_member(ItemId, m_pPlayer);
     client_print(UserId, print_center, "HookTest: Damage [Damage = %.1f | Victim = %n | DamageBits = %d]", Damage, Victim, DamageBits);
     client_print(UserId, print_console, "HookTest: Damage [Damage = %.1f | Victim = %n | DamageBits = %d]", Damage, Victim, DamageBits);
+    return CWAPI_RET_CONTINUE;
+}
+
+public Hook_CWAPI_Kill(const ItemId, const Victim){
+    if(!is_user_connected(Victim)) return CWAPI_RET_CONTINUE;
+    static UserId; UserId = get_member(ItemId, m_pPlayer);
+    client_print(UserId, print_center, "HookTest: Kill [Victim = %n]", Victim);
+    client_print(UserId, print_console, "HookTest: Kill [Victim = %n]", Victim);
     return CWAPI_RET_CONTINUE;
 }
 

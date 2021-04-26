@@ -75,6 +75,7 @@ public plugin_init(){
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Post", true);
     RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_PlayerAddItem", true);
     RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
+    RegisterHookChain(RG_CSGameRules_PlayerKilled, "Hook_PlayerKilled", true);
     #if USE_NEW_REAPI_HOOKS
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Pre", false);
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
@@ -258,18 +259,18 @@ public Hook_PlayerAddItem(const UserId, const ItemId){
 }
 
 public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, DamageBits){
-    if(DamageBits & DMG_GRENADE)
-        return HC_CONTINUE;
+    // if(DamageBits & DMG_GRENADE)
+    //     return HC_CONTINUE;
 
-    if(Inflictor != Attacker)
-        return HC_CONTINUE;
+    // if(Inflictor != Attacker)
+    //     return HC_CONTINUE;
 
     if(
         !is_user_connected(Victim)
         || !is_user_connected(Attacker)
     ) return HC_CONTINUE;
         
-    new ItemId = get_member(Attacker, m_pActiveItem);
+    new ItemId = GetAttackerWeapon(Attacker, Inflictor);
 
     if(is_nullent(ItemId))
         return HC_CONTINUE;
@@ -296,6 +297,26 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
         return HC_SUPERCEDE;
     }
 
+    return HC_CONTINUE;
+}
+
+public Hook_PlayerKilled(const Victim, const Attacker, const Inflictor){
+
+    if(
+        !is_user_connected(Victim)
+        || !is_user_connected(Attacker)
+    ) return HC_CONTINUE;
+        
+    new ItemId = GetAttackerWeapon(Attacker, Inflictor);
+
+    if(is_nullent(ItemId))
+        return HC_CONTINUE;
+
+    new WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId))
+        return HC_CONTINUE;
+
+    CallWeaponEvent(WeaponId, CWAPI_WE_Kill, ItemId, Victim);
     return HC_CONTINUE;
 }
 
@@ -638,6 +659,18 @@ GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_
 
 // UTILS
 
+GetAttackerWeapon(const AttackerId, const InflictorId){
+    if(InflictorId != AttackerId)
+        return 0;
+        // return FClassnameIs(InflictorId, "grenade") ? get_entvar(InflictorId, var_impulse) : 0;
+        // TODO: Сделать поддержку гранат
+
+    if(is_user_connected(AttackerId))
+        return get_member(AttackerId, m_pActiveItem);
+
+    return 0;
+}
+
 // Получение ID итема из WeaponBox'а
 GetItemFromWeaponBox(const WeaponBox){
     for(new i = 0, ItemId; i < MAX_ITEM_TYPES; i++){
@@ -952,6 +985,7 @@ CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, co
             case CWAPI_WE_Droped: Status = ExecuteForward(FwdId, Return, ItemId, getarg(3));
             case CWAPI_WE_AddItem: Status = ExecuteForward(FwdId, Return, ItemId, getarg(3));
             case CWAPI_WE_Take: Status = ExecuteForward(FwdId, Return, ItemId, getarg(3));
+            case CWAPI_WE_Kill: Status = ExecuteForward(FwdId, Return, ItemId, _:getarg(3));
             default: {
                 log_error(CWAPI_ERR_UNDEFINED_EVENT, "Undefined weapon event '%d'.", _:Event);
                 Status = 0;
@@ -982,6 +1016,7 @@ _CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Eve
         case CWAPI_WE_Droped: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
         case CWAPI_WE_AddItem: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
         case CWAPI_WE_Take: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
+        case CWAPI_WE_Kill: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
     }
     return log_error(CWAPI_ERR_UNDEFINED_EVENT, "Undefined weapon event '%d'", _:Event);
 }
