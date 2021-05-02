@@ -259,12 +259,6 @@ public Hook_PlayerAddItem(const UserId, const ItemId){
 }
 
 public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, DamageBits){
-    // if(DamageBits & DMG_GRENADE)
-    //     return HC_CONTINUE;
-
-    // if(Inflictor != Attacker)
-    //     return HC_CONTINUE;
-
     if(
         !is_user_connected(Victim)
         || !is_user_connected(Attacker)
@@ -278,19 +272,6 @@ public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, Da
     new WeaponId = GetWeapId(ItemId);
     if(!IsCustomWeapon(WeaponId))
         return HC_CONTINUE;
-
-    new Data[CWAPI_WeaponData];
-    ArrayGetArray(CustomWeapons, WeaponId, Data);
-
-    if(equal(Data[CWAPI_WD_DefaultName], "knife")){
-        if(Data[CWAPI_WD_Damage] >= 0.0)
-            Damage = Data[CWAPI_WD_Damage];
-
-        if(Data[CWAPI_WD_DamageMult] >= 0.0)
-            Damage *= Data[CWAPI_WD_DamageMult];
-
-        SetHookChainArg(4, ATYPE_FLOAT, Damage);
-    }
 
     if(!CallWeaponEvent(WeaponId, CWAPI_WE_Damage, ItemId, Victim, Damage, DamageBits)){
         SetHookChainReturn(ATYPE_INTEGER, 0);
@@ -635,7 +616,23 @@ GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_
             Float:get_member(ItemId, m_Weapon_flBaseDamage)*Data[CWAPI_WD_DamageMult]
         );
 
-        if(DefaultWeaponId == WEAPON_M4A1)
+        if(DefaultWeaponId == WEAPON_KNIFE){
+            set_member(
+                ItemId, m_Knife_flStabBaseDamage,
+                Float:get_member(ItemId, m_Knife_flStabBaseDamage)*Data[CWAPI_WD_DamageMult]
+            );
+
+            set_member(
+                ItemId, m_Knife_flSwingBaseDamage,
+                Float:get_member(ItemId, m_Knife_flSwingBaseDamage)*Data[CWAPI_WD_DamageMult]
+            );
+
+            set_member(
+                ItemId, m_Knife_flSwingBaseDamage_Fast,
+                Float:get_member(ItemId, m_Knife_flSwingBaseDamage_Fast)*Data[CWAPI_WD_DamageMult]
+            );
+        }
+        else if(DefaultWeaponId == WEAPON_M4A1)
             set_member(
                 ItemId, m_M4A1_flBaseDamageSil,
                 Float:get_member(ItemId, m_M4A1_flBaseDamageSil)*Data[CWAPI_WD_DamageMult]
