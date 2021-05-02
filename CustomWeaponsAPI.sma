@@ -99,8 +99,8 @@ public plugin_init(){
 
 public plugin_precache(){
     register_plugin(PluginName, CWAPI_VERSION, PluginAuthor);
-    create_cvar(CWAPI_VERSION_CVAR, CWAPI_VERSION, FCVAR_SERVER);
-    create_cvar(CWAPI_VERSION_NUM_CVAR, IntToStr(CWAPI_VERSION_NUM), FCVAR_SERVER);
+    set_pcvar_string(create_cvar(CWAPI_VERSION_CVAR, CWAPI_VERSION, FCVAR_SERVER), CWAPI_VERSION);
+    set_pcvar_num(create_cvar(CWAPI_VERSION_NUM_CVAR, IntToStr(CWAPI_VERSION_NUM), FCVAR_SERVER), CWAPI_VERSION_NUM);
     
     InitForwards();
     LoadWeapons();
