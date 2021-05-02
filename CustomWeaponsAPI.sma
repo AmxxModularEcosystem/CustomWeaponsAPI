@@ -1109,8 +1109,16 @@ public Array:Native_GetWeaponsList(){
 
 public Native_GetWeaponData(){
     enum {Arg_WeaponId = 1, Arg_WeaponData};
+
+    new WeaponId = get_param(Arg_WeaponId);
+
+    if(!IsCustomWeapon(WeaponId)){
+        log_error(CWAPI_ERR_WEAPON_NOT_FOUND, "Weapon #%d not found", WeaponId);
+        return -1;
+    }
+
     new WeaponData[CWAPI_WeaponData];
-    ArrayGetArray(CustomWeapons, get_param(Arg_WeaponId), WeaponData);
+    ArrayGetArray(CustomWeapons, WeaponId, WeaponData);
 
     return set_array(Arg_WeaponData, WeaponData, CWAPI_WeaponData);
 }
