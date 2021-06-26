@@ -683,7 +683,7 @@ GetItemFromWeaponBox(const WeaponBox){
     return NULLENT;
 }
 
-#if defined CHECK_BUYZONE
+#if CHECK_BUYZONE
 // В зоне закупки ли игрок
 bool:IsUserInBuyZone(const UserId){
     new Signal[UnifiedSignals];
