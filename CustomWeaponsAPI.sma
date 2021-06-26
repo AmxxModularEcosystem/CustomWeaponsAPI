@@ -9,10 +9,13 @@
 #pragma semicolon 1
 
 // Поставить тут 0 чтобы нельзя было выдавать пушки
-#define DEBUG 1
+#define DEBUG 0
 
 // Использование новых хуков в ReAPI (Почему-то работает криво)
 #define USE_NEW_REAPI_HOOKS 0
+
+// Проверка на нахождение в зоне закупки при покупке командой CWAPI_Buy
+#define CHECK_BUYZONE 1
 
 #define WEAPON_PISTOLS_BITSUMM (BIT(_:WEAPON_P228)|BIT(_:WEAPON_GLOCK)|BIT(_:WEAPON_ELITE)|BIT(_:WEAPON_FIVESEVEN)|BIT(_:WEAPON_USP)|BIT(_:WEAPON_GLOCK18)|BIT(_:WEAPON_DEAGLE))
 #define GetWeapFullName(%0) fmt("weapon_%s",%0)
@@ -178,10 +181,12 @@ public Cmd_Buy(const Id){
         return PLUGIN_HANDLED;
     }
 
+    #if CHECK_BUYZONE
     if(!IsUserInBuyZone(Id)){
         client_print(Id, print_center, "%L", LANG_PLAYER, "OUT_OF_BUYZONE");
         return PLUGIN_HANDLED;
     }
+    #endif
 
     new WeaponName[32];
     read_argv(1, WeaponName, charsmax(WeaponName));
