@@ -683,12 +683,14 @@ GetItemFromWeaponBox(const WeaponBox){
     return NULLENT;
 }
 
+#if defined CHECK_BUYZONE
 // В зоне закупки ли игрок
 bool:IsUserInBuyZone(const UserId){
     new Signal[UnifiedSignals];
     get_member(UserId, m_signals, Signal);
     return ((SignalState:Signal[US_State] & SIGNAL_BUY) == SIGNAL_BUY);
 }
+#endif
 
 // Установка времени до следующего выстрела
 SetWeaponNextAttack(ItemId, Float:Rate){
