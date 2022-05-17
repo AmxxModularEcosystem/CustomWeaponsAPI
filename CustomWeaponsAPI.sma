@@ -9,7 +9,7 @@
 #pragma semicolon 1
 
 // Поставить тут 0 чтобы нельзя было выдавать пушки
-#define DEBUG 0
+#define DEBUG 1
 
 // Использование новых хуков в ReAPI (Почему-то работает криво)
 #define USE_NEW_REAPI_HOOKS 0
@@ -81,7 +81,9 @@ public plugin_init(){
     RegisterHookChain(RG_CSGameRules_PlayerKilled, "Hook_PlayerKilled", true);
     #if USE_NEW_REAPI_HOOKS
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Pre", false);
+        RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Post", true);
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
+        RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Post", true);
         RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
     #endif
 
@@ -326,7 +328,7 @@ public Hook_DefaultDeploy_Pre(const ItemId, szViewModel[], szWeaponModel[], iAni
     if(Data[CWAPI_WD_Accuracy] >= 0.0)
         set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
 
-    CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
+    // CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
 }
 
 public Hook_DefaultReload_Pre(const ItemId, iClipSize, iAnim, Float:fDelay){
@@ -351,6 +353,34 @@ public Hook_DefaultReload_Pre(const ItemId, iClipSize, iAnim, Float:fDelay){
 
     if(Data[CWAPI_WD_ReloadTime] >= 0.0)
         SetHookChainArg(4, ATYPE_FLOAT, Data[CWAPI_WD_ReloadTime]);
+
+    return HC_CONTINUE;
+}
+
+public Hook_DefaultDeploy_Post(const ItemId, szViewModel[], szWeaponModel[], iAnim, szAnimExt[], skiplocal){
+    new WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId))
+        return;
+    
+    new Data[CWAPI_WeaponData];
+    ArrayGetArray(CustomWeapons, WeaponId, Data);
+
+    if(Data[CWAPI_WD_Accuracy] >= 0.0)
+        set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
+
+    CallWeaponEvent(WeaponId, CWAPI_WE_Deploy, ItemId);
+}
+
+public Hook_DefaultReload_Post(const ItemId, iClipSize, iAnim, Float:fDelay){
+    new WeaponId = GetWeapId(ItemId);
+    if(!IsCustomWeapon(WeaponId))
+        return HC_CONTINUE;
+
+    new Data[CWAPI_WeaponData];
+    ArrayGetArray(CustomWeapons, WeaponId, Data);
+
+    if(Data[CWAPI_WD_Accuracy] >= 0.0)
+        set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
 
     return HC_CONTINUE;
 }
@@ -509,7 +539,7 @@ public Hook_PrimaryAttack_Post(ItemId){
     new Data[CWAPI_WeaponData];
     ArrayGetArray(CustomWeapons, WeaponId, Data);
 
-    CallWeaponEvent(WeaponId, CWAPI_WE_PrimaryAttack, ItemId);
+    // CallWeaponEvent(WeaponId, CWAPI_WE_PrimaryAttack, ItemId);
 
     if(Data[CWAPI_WD_PrimaryAttackRate] > 0.0)
         SetWeaponNextAttack(ItemId, Data[CWAPI_WD_PrimaryAttackRate]);
@@ -767,6 +797,7 @@ LoadWeapons(){
             continue;
 
         new Data[CWAPI_WeaponData];
+        Data[CWAPI_WD_CustomHandlers] = Invalid_Array;
 
         regex_substr(RegEx_FileName, 1, Data[CWAPI_WD_Name], charsmax(Data[CWAPI_WD_Name]));
 
@@ -1027,6 +1058,12 @@ _CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Eve
 
 // NATIVES
 
+#define NATIVE_CHECK_WEAPONS_LOADED(%1) \
+    if(CustomWeapons == Invalid_Array){ \
+        log_error(0, "[ERROR] Custom weapons not loaded yet."); \
+        return %1; \
+    }
+
 public plugin_natives(){
     register_library(CWAPI_LIBRARY);
     
@@ -1047,6 +1084,8 @@ public plugin_natives(){
 }
 
 public Native_GiveWeapon(){
+    NATIVE_CHECK_WEAPONS_LOADED(-1)
+
     enum {Arg_UserId = 1, Arg_WeaponName, Arg_GiveType};
     new UserId = get_param(Arg_UserId);
 
@@ -1067,6 +1106,8 @@ public Native_GiveWeapon(){
 }
 
 public Native_GiveWeaponById(){
+    NATIVE_CHECK_WEAPONS_LOADED(-1)
+
     enum {Arg_UserId = 1, Arg_WeaponId, Arg_GiveType};
     new UserId = get_param(Arg_UserId);
     new WeaponId = get_param(Arg_WeaponId);
@@ -1081,6 +1122,8 @@ public Native_GiveWeaponById(){
 }
 
 public Native_RegisterHook(const PluginId, const Params){
+    NATIVE_CHECK_WEAPONS_LOADED(-1)
+
     enum {Arg_WeaponName = 1, Arg_Event, Arg_FuncName};
     new WeaponName[32];
     get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
@@ -1108,10 +1151,14 @@ public Native_RegisterHook(const PluginId, const Params){
 }
 
 public Array:Native_GetWeaponsList(){
+    NATIVE_CHECK_WEAPONS_LOADED(Invalid_Array)
+
     return ArrayClone(CustomWeapons);
 }
 
 public Native_GetWeaponData(){
+    NATIVE_CHECK_WEAPONS_LOADED(-1)
+
     enum {Arg_WeaponId = 1, Arg_WeaponData};
 
     new WeaponId = get_param(Arg_WeaponId);
@@ -1128,6 +1175,8 @@ public Native_GetWeaponData(){
 }
 
 public Native_GetWeaponId(){
+    NATIVE_CHECK_WEAPONS_LOADED(-1)
+
     enum {Arg_WeaponName = 1};
     new WeaponName[32];
     get_string(Arg_WeaponName, WeaponName, charsmax(WeaponName));
@@ -1140,6 +1189,8 @@ public Native_GetWeaponId(){
 }
 
 public Native_AddCustomWeapon(){
+    NATIVE_CHECK_WEAPONS_LOADED(-1)
+
     enum {Arg_WeaponData = 1}
     new Data[CWAPI_WeaponData]; get_array(Arg_WeaponData, Data, CWAPI_WeaponData);
 
@@ -1158,6 +1209,8 @@ public Native_AddCustomWeapon(){
 }
 
 public Native_FindWeapon(){
+    NATIVE_CHECK_WEAPONS_LOADED(-1)
+
     enum {Arg_StartWeaponId = 1, Arg_Field, Arg_Value};
     new StartWeaponId = get_param(Arg_StartWeaponId)+1;
     new Field = get_param(Arg_Field);
@@ -1219,6 +1272,8 @@ public Native_FindWeapon(){
 }
 
 public Array:Native_GetAbilityWeaponsList(){
+    NATIVE_CHECK_WEAPONS_LOADED(Invalid_Array)
+
     enum {Arg_AbilityName = 1};
     new AbilityName[32]; get_string(Arg_AbilityName, AbilityName, charsmax(AbilityName));
     new Array:AbilityWeaponsList; 
@@ -1236,6 +1291,8 @@ public Native_GetWeaponIdFromEnt(){
 }
 
 public bool:Native_IsCustomWeapon(){
+    NATIVE_CHECK_WEAPONS_LOADED(false)
+
     enum {Arg_WeaponId = 1}
     new WeaponId = get_param(Arg_WeaponId);
     return IsCustomWeapon(WeaponId);
