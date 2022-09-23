@@ -1,11 +1,3 @@
-.gitattributes
-include/*
-compiled/*
-compile.exe
-amxxpc32.dll
-compile.dat
-amxxpc.exe
-TODO.txt
-!cwapi.inc
-*.lnk
 *.amxx
+*.zip
+.build

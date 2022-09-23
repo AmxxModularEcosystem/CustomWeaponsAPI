@@ -9,7 +9,9 @@
 #pragma semicolon 1
 
 // Поставить тут 0 чтобы нельзя было выдавать пушки
-#define DEBUG 1
+#if !defined DEBUG
+    #define DEBUG 0
+#endif
 
 // Использование новых хуков в ReAPI (Почему-то работает криво)
 #define USE_NEW_REAPI_HOOKS 0
@@ -549,17 +551,14 @@ public Hook_PlayerGetMaxSpeed(const ItemId) {
 
 public Hook_PrimaryAttack_Pre(ItemId) {
     new WeaponId = GetWeapId(ItemId);
-    if (!IsCustomWeapon(WeaponId)) {
-        return;
-    }
-
-    if (get_member(ItemId, m_Weapon_iClip) < 1) {
-        return;
-    }
 
     if (
-        IsPistol(ItemId)
-        && get_member(ItemId, m_Weapon_iShotsFired)+1 > 1
+        !IsCustomWeapon(WeaponId)
+        || get_member(ItemId, m_Weapon_iClip) < 1
+        || (
+            IsPistol(ItemId)
+            && get_member(ItemId, m_Weapon_iShotsFired)+1 > 1
+        )
     ) {
         return;
     }
@@ -574,15 +573,14 @@ public Hook_PrimaryAttack_Pre(ItemId) {
 public Hook_PrimaryAttack_Post(ItemId) {
     new WeaponId = GetWeapId(ItemId);
 
-    if (!IsCustomWeapon(WeaponId)) {
-        return HAM_IGNORED;
-    }
-
-    if (get_member(ItemId, m_Weapon_fFireOnEmpty)) {
-        return HAM_IGNORED;
-    }
-
-    if (IsPistol(ItemId) && get_member(ItemId, m_Weapon_iShotsFired) > 1) {
+    if (
+        !IsCustomWeapon(WeaponId)
+        || get_member(ItemId, m_Weapon_fFireOnEmpty)
+        || (
+            IsPistol(ItemId)
+            && get_member(ItemId, m_Weapon_iShotsFired) > 1
+        )
+    ) {
         return HAM_IGNORED;
     }
 

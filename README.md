@@ -1,4 +1,4 @@
-<img height=64 src="https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/IconBar-96.png?raw=true" alt="CWAPI-IconBar"/>
+<img height=64 src="https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI/blob/master/.github/IconBar-96.png?raw=true" alt="CWAPI-IconBar"/>
 
 ## Описание
 
