@@ -59,9 +59,9 @@ new const _WEAPON_HOOKS[][_E_Ham_WeaponHook] = {
     {Ham_Item_AddToPlayer, "Hook_AddItemToPlayer_Post", true},
 };
 
-new Trie:WeaponAbilities;
-new Trie:WeaponsNames;
-new Array:CustomWeapons;
+new Trie:WeaponAbilities = Invalid_Trie;
+new Trie:WeaponsNames = Invalid_Trie;
+new Array:CustomWeapons = Invalid_Array;
 
 new Fwds[E_Fwds];
 new UserMsgs[E_UserMsgs];
