@@ -19,7 +19,7 @@
 
 #define WEAPON_PISTOLS_BITSUMM (BIT(_:WEAPON_P228)|BIT(_:WEAPON_GLOCK)|BIT(_:WEAPON_ELITE)|BIT(_:WEAPON_FIVESEVEN)|BIT(_:WEAPON_USP)|BIT(_:WEAPON_GLOCK18)|BIT(_:WEAPON_DEAGLE))
 #define GetWeapFullName(%0) fmt("weapon_%s",%0)
-#define CUSTOM_WEAPONS_COUNT ArraySize(CustomWeapons)
+#define CUSTOM_WEAPONS_COUNT ArraySizeSafe(CustomWeapons)
 #define GetWeapId(%0) get_entvar(%0,var_impulse)-CWAPI_IMPULSE_OFFSET
 #define IsCustomWeapon(%0) (0 <= %0 < CUSTOM_WEAPONS_COUNT)
 #define IsWeaponSilenced(%0) bool:((WPNSTATE_M4A1_SILENCED|WPNSTATE_USP_SILENCED)&get_member(%0,m_Weapon_iWeaponState))
@@ -1006,7 +1006,7 @@ CallWeaponEvent(const WeaponId, const CWAPI_WeaponEvents:Event, const ItemId, co
         return true;
     
     static FwdId, Return, Status;
-    for(new i = 0; i < ArraySize(WData[CWAPI_WD_CustomHandlers][Event]); i++){
+    for(new i = 0, iMax = ArraySizeSafe(WData[CWAPI_WD_CustomHandlers][Event]); i < iMax; i++){
         FwdId = ArrayGetCell(WData[CWAPI_WD_CustomHandlers][Event], i);
 
         Return = CWAPI_RET_CONTINUE;
@@ -1054,6 +1054,14 @@ _CreateOneForward(const PluginId, const FuncName[], const CWAPI_WeaponEvents:Eve
         case CWAPI_WE_Kill: return CreateOneForward(PluginId, FuncName, FP_CELL, FP_CELL);
     }
     return log_error(CWAPI_ERR_UNDEFINED_EVENT, "Undefined weapon event '%d'", _:Event);
+}
+
+ArraySizeSafe(const Array:a) {
+    if (a == Invalid_Array) {
+        return 0;
+    }
+
+    return ArraySize(a);
 }
 
 // NATIVES
@@ -1221,7 +1229,7 @@ public Native_FindWeapon(){
             new Value[32];
             get_string(Arg_Value, Value, charsmax(Value));
 
-            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+            for(new WeaponId = StartWeaponId, iMax = ArraySizeSafe(CustomWeapons); WeaponId < iMax; WeaponId++){
                 ArrayGetArray(CustomWeapons, WeaponId, Data);
                 if(equal(Data[Field], Value)){
                     return WeaponId;
@@ -1234,7 +1242,7 @@ public Native_FindWeapon(){
         CWAPI_WD_ClipSize: {
             new Value = get_param_byref(Arg_Value);
 
-            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+            for(new WeaponId = StartWeaponId, iMax = ArraySizeSafe(CustomWeapons); WeaponId < iMax; WeaponId++){
                 ArrayGetArray(CustomWeapons, WeaponId, Data);
                 if(Data[Field] == Value)
                     return WeaponId;
@@ -1250,7 +1258,7 @@ public Native_FindWeapon(){
         CWAPI_WD_Damage: {
             new Float:Value = get_float_byref(Arg_Value);
 
-            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+            for(new WeaponId = StartWeaponId, iMax = ArraySizeSafe(CustomWeapons); WeaponId < iMax; WeaponId++){
                 ArrayGetArray(CustomWeapons, WeaponId, Data);
                 if(Data[Field] == Value)
                     return WeaponId;
@@ -1258,7 +1266,7 @@ public Native_FindWeapon(){
         }
         case CWAPI_WD_HasSecondaryAttack: {
             new bool:Value = bool:get_param_byref(Arg_Value);
-            for(new WeaponId = StartWeaponId; WeaponId < ArraySize(CustomWeapons); WeaponId++){
+            for(new WeaponId = StartWeaponId, iMax = ArraySizeSafe(CustomWeapons); WeaponId < iMax; WeaponId++){
                 ArrayGetArray(CustomWeapons, WeaponId, Data);
                 if(bool:Data[Field] == Value)
                     return WeaponId;
