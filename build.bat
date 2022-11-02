@@ -15,9 +15,9 @@ if not "%PACKAGE_COMPILED_PLUGINS_USE%" == "1" goto after-compile
 
 echo Prepare for compiling plugins...
 
-call :makedir %PLUGINS_LIST_PATH%
 call :del %PLUGINS_LIST%
 if "%PACKAGE_PLUINGS_LIST_USE%" == "1" (
+    call :makedir %PLUGINS_LIST_PATH%
     echo. 2>%PLUGINS_LIST%
 )
 
