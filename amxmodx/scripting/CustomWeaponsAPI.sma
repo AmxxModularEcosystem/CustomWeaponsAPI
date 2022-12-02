@@ -627,6 +627,7 @@ public Hook_SecondaryAttack(ItemId) {
 public Hook_AddItemToPlayer_Post(const ItemId, const UserId) {
     new WeaponId = GetWeapId(ItemId);
     if (!IsCustomWeapon(WeaponId)) {
+        ShowWeaponListHud(UserId, ItemId);
         return HAM_IGNORED;
     }
 
@@ -634,15 +635,15 @@ public Hook_AddItemToPlayer_Post(const ItemId, const UserId) {
     ArrayGetArray(CustomWeapons, WeaponId, Data);
 
     if (Data[CWAPI_WD_HasCustomHud]) {
-        ShowWeaponListHud(UserId, ItemId, Data[CWAPI_WD_Name]);
+        ShowWeaponListHud(UserId, ItemId);
     }
 
     return HAM_IGNORED;
 }
 
 // Выдача пушки
-GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_SMART) {
-    if (!is_user_alive(Id)) {
+GiveCustomWeapon(const UserId, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_SMART) {
+    if (!is_user_alive(UserId)) {
         return -1;
     }
 
@@ -650,7 +651,7 @@ GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_
         return -1;
     }
 
-    if (!CallWeaponEvent(WeaponId, CWAPI_WE_Take, WeaponId, Id)) {
+    if (!CallWeaponEvent(WeaponId, CWAPI_WE_Take, WeaponId, UserId)) {
         return -1;
     }
 
@@ -670,10 +671,10 @@ GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_
     }
 
     new ItemId = rg_give_custom_item(
-        Id,
+        UserId,
         GetWeapFullName(Data[CWAPI_WD_DefaultName]),
         WeaponGiveType,
-        WeaponId+CWAPI_IMPULSE_OFFSET
+        WeaponId + CWAPI_IMPULSE_OFFSET
     );
 
     if (is_nullent(ItemId)) {
@@ -682,9 +683,9 @@ GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_
 
     new WeaponIdType:DefaultWeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
 
-    if (Data[CWAPI_WD_HasCustomHud]) {
-        rg_set_iteminfo(ItemId, ItemInfo_pszName, GetWeapFullName(Data[CWAPI_WD_Name]));
-    }
+    // if (Data[CWAPI_WD_HasCustomHud]) {
+    rg_set_iteminfo(ItemId, ItemInfo_pszName, GetWeapFullName(Data[CWAPI_WD_Name]));
+    // }
 
     if (Data[CWAPI_WD_HasSecondaryAttack]) {
         set_member(ItemId, m_Weapon_bHasSecondaryAttack, Data[CWAPI_WD_HasSecondaryAttack]);
@@ -697,14 +698,14 @@ GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_
     if (DefaultWeaponId != WEAPON_KNIFE) {
         if (Data[CWAPI_WD_ClipSize]) {
             rg_set_iteminfo(ItemId, ItemInfo_iMaxClip, Data[CWAPI_WD_ClipSize]);
-            rg_set_user_ammo(Id, DefaultWeaponId, Data[CWAPI_WD_ClipSize]);
+            rg_set_user_ammo(UserId, DefaultWeaponId, Data[CWAPI_WD_ClipSize]);
         }
 
         if (Data[CWAPI_WD_MaxAmmo] >= 0) {
             rg_set_iteminfo(ItemId, ItemInfo_iMaxAmmo1, Data[CWAPI_WD_MaxAmmo]);
-            rg_set_user_bpammo(Id, DefaultWeaponId, Data[CWAPI_WD_MaxAmmo]);
+            rg_set_user_bpammo(UserId, DefaultWeaponId, Data[CWAPI_WD_MaxAmmo]);
         } else {
-            rg_set_user_bpammo(Id, DefaultWeaponId, rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo1));
+            rg_set_user_bpammo(UserId, DefaultWeaponId, rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo1));
         }
     }
 
@@ -754,7 +755,9 @@ GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_
         }
     }
 
-    set_entvar(ItemId, var_CWAPI_ItemOwner, Id);
+    set_entvar(ItemId, var_CWAPI_ItemOwner, UserId);
+
+    ShowWeaponListHud(UserId, ItemId);
 
     return ItemId;
 }
@@ -820,18 +823,22 @@ SetWeaponIdleAnim(const UserId, const ItemId) {
     message_end();
 }
 
-ShowWeaponListHud(const UserId, const ItemId, const WeaponName[]) {
-    new WeaponId = rg_get_iteminfo(ItemId, ItemInfo_iId);
+ShowWeaponListHud(const UserId, const ItemId) {
+    new sWeaponName[32];
+    rg_get_iteminfo(ItemId, ItemInfo_pszName, sWeaponName, charsmax(sWeaponName));
+
+    log_amx("[DEBUG] ShowWeaponListHud(%n, %d): sWeaponName = %s", UserId, ItemId, sWeaponName);
+
     message_begin(MSG_ONE, UserMsgs[UM_WeaponList], .player = UserId);
-    write_string(GetWeapFullName(WeaponName));					// WeaponName
-    write_byte(rg_get_weapon_info(WeaponId, WI_AMMO_TYPE));	    // PrimaryAmmoID
-    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo1));	// PrimaryAmmoMaxAmount
-    write_byte(-1);												// SecondaryAmmoID
-    write_byte(-1);												// SecondaryAmmoMaxAmount
-    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iSlot));		// SlotID (0...N)
-    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iPosition));	// NumberInSlot (1...N)
-    write_byte(WeaponId);                                       // WeaponID
-    write_byte(0);												// Flags
+    write_string(sWeaponName);
+    write_byte(get_member(ItemId, m_Weapon_iPrimaryAmmoType));
+    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo1));
+    write_byte(get_member(ItemId, m_Weapon_iSecondaryAmmoType));
+    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo2));
+    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iSlot));
+    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iPosition));
+    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iId));
+    write_byte(rg_get_iteminfo(ItemId, ItemInfo_iFlags));
     message_end();
 }
 
@@ -888,8 +895,8 @@ LoadWeapons() {
 
         json_object_get_string(Item, "DefaultName", Data[CWAPI_WD_DefaultName], charsmax(Data[CWAPI_WD_DefaultName]));
 
-        if (file_exists(fmt("sprites/weapon_%s.txt", Data[CWAPI_WD_Name]))) {
-            precache_generic(fmt("sprites/weapon_%s.txt", Data[CWAPI_WD_Name]));
+        if (file_exists(fmt("sprites/%s.txt", GetWeapFullName(Data[CWAPI_WD_Name])))) {
+            precache_generic(fmt("sprites/%s.txt", GetWeapFullName(Data[CWAPI_WD_Name])));
             Data[CWAPI_WD_HasCustomHud] = true;
             register_clcmd(GetWeapFullName(Data[CWAPI_WD_Name]), "Cmd_Select");
         } else {
