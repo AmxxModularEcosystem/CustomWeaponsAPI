@@ -5,7 +5,7 @@
 
 #define CWAPI_VER_MAJOR 0
 #define CWAPI_VER_MINOR 7
-#define CWAPI_VER_PATCH 3
+#define CWAPI_VER_PATCH 4
 
 #define CWAPI_VER_TO_STR(%1.%2.%3) fmt("%d.%d.%d",%1,%2,%3)
 #define CWAPI_VER_TO_NUM(%1.%2.%3) ((%1*10000)+(%2*100)+%3)
