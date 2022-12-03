@@ -827,8 +827,6 @@ ShowWeaponListHud(const UserId, const ItemId) {
     new sWeaponName[32];
     rg_get_iteminfo(ItemId, ItemInfo_pszName, sWeaponName, charsmax(sWeaponName));
 
-    log_amx("[DEBUG] ShowWeaponListHud(%n, %d): sWeaponName = %s", UserId, ItemId, sWeaponName);
-
     message_begin(MSG_ONE, UserMsgs[UM_WeaponList], .player = UserId);
     write_string(sWeaponName);
     write_byte(get_member(ItemId, m_Weapon_iPrimaryAmmoType));
