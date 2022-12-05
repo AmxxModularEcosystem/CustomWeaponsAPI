@@ -53,9 +53,9 @@ CWeapons_Count() {
 
 static T_CustomWeapon:CWeapons__Create(const WeaponData[S_CustomWeapon]) {
     new Weapon[S_CustomWeapon] = WeaponData;
-    Weapon[CWeapon_Events] = Events_Init(E_CWeapon_Event);
 
-    CWeapons_Hooks_RegForWeapon(Weapon[CWeapon_Name]);
+    Weapon[CWeapon_Events] = Events_Init(E_CWeapon_Event);
+    CWeapons_Hooks_RegForWeapon(Weapon[CWeapon_Reference]);
 
     ArrayMapPushArray(gCustomWeapons, Weapon, Weapon[CWeapon_Name]);
 }
