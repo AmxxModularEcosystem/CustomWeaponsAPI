@@ -9,7 +9,10 @@
 stock const CWAPI_VERSION[] = _CWAPI_VERSION;
 stock const CWAPI_LIBRARY[] = "CustomWeaponsAPI";
 stock const CWAPI_VERSION_CVAR[] = "CWAPI_VERSION";
+stock const CWAPI_CONFIGS_FOLDER[] = "CustomWeaponsAPI";
 
+#define CWAPI_WEAPON_NAME_MAX_LEN 32
+#define CWAPI_CALLBACK_MAX_LEN 32
 #define CWAPI_IMPULSE_OFFSET 4354
 #define var_CWAPI_ItemOwner var_iuser4
 
@@ -39,7 +42,7 @@ enum {
     CWAPI_STOP_MAIN,
 };
 
-enum CWAPI_GiveType{
+enum CWAPI_GiveType {
     CWAPI_GT_SMART = -1, // Для ножей GT_REPLACE, для гранат GT_APPEND, для остального GT_DROP_AND_REPLACE
     CWAPI_GT_APPEND, // Аналог GT_APPEND
     CWAPI_GT_REPLACE, // Аналог GT_REPLACE
@@ -50,3 +53,8 @@ native CWAPI_Init();
 
 forward CWAPI_OnLoad();
 forward CWAPI_OnLoaded();
+
+
+native CWAPI_Weapons_Find(const sWeaponName[]);
+native CWAPI_Weapons_FindByItem(const ItemId);
+native CWAPI_Weapons_AddEventListener(const T_CustomWeapon:iWeapon, const E_CWeapon_Event:iEvent, const iPlugin, const sCallback[]);

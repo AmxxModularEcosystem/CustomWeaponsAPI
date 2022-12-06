@@ -1,8 +1,10 @@
 #include <amxmodx>
 #include <reapi>
+#include <json>
 #include "Cwapi/ArrayMap"
 #include "Cwapi/Events"
 #include "Cwapi/Utils"
+#include "Cwapi/CfgUtils"
 
 enum S_CWeapon_Models {
     CWeapon_Model_View[PLATFORM_MAX_PATH],
@@ -12,11 +14,11 @@ enum S_CWeapon_Models {
 
 enum _:S_CustomWeapon {
     CWeapon_Reference[32],
-    CWeapon_Name[32],
+    CWeapon_Name[CWAPI_WEAPON_NAME_MAX_LEN],
     CWeapon_Models[S_CWeapon_Models],
     Float:CWeapon_DamageMult,
     CWeapon_Weight,
-    CWeapon_ClipSize,
+    CWeapon_MaxClip,
     CWeapon_MaxAmmo,
 
     // Float:CWeapon_MaxWalkSpeed,
@@ -52,12 +54,18 @@ CWeapons_Count() {
 }
 
 static T_CustomWeapon:CWeapons__Create(const WeaponData[S_CustomWeapon]) {
-    new Weapon[S_CustomWeapon] = WeaponData;
+    // TODO: Is ref weapon name valid
+    // if () {
+    //     return Invalid_CustomWeapon;
+    // }
+
+    new Weapon[S_CustomWeapon];
+    Weapon = WeaponData;
 
     Weapon[CWeapon_Events] = Events_Init(E_CWeapon_Event);
     CWeapons_Hooks_RegForWeapon(Weapon[CWeapon_Reference]);
 
-    ArrayMapPushArray(gCustomWeapons, Weapon, Weapon[CWeapon_Name]);
+    return T_CustomWeapon:ArrayMapPushArray(gCustomWeapons, Weapon, Weapon[CWeapon_Name]);
 }
 
 bool:CWeapons_IsValidIndex(const any:iWeapon) {
@@ -76,17 +84,17 @@ T_CustomWeapon:CWeapons_Find(const sWeaponName[]) {
         return Invalid_CustomWeapon;
     }
     
-    return ArrayMapGetIndex(gCustomWeapons, sWeaponName);
+    return T_CustomWeapon:ArrayMapGetIndex(gCustomWeapons, sWeaponName);
 }
 
-bool:CWeapons_GetByName(const sWeaponName[], Weapon[S_CustomWeapon]) {
-    if (!CWeapons_IsValidName(sWeaponName)) {
-        return false;
-    }
+// bool:CWeapons_GetByName(const sWeaponName[], Weapon[S_CustomWeapon]) {
+//     if (!CWeapons_IsValidName(sWeaponName)) {
+//         return false;
+//     }
     
-    ArrayMapGetArray(gCustomWeapons, sWeaponName, Weapon);
-    return true;
-}
+//     ArrayMapGetArray(gCustomWeapons, sWeaponName, Weapon);
+//     return true;
+// }
 
 bool:CWeapons_Get(const T_CustomWeapon:iWeapon, Weapon[S_CustomWeapon]) {
     if (!CWeapons_IsValidIndex(iWeapon)) {
@@ -153,12 +161,65 @@ CWeapons_AddEventListener(
     Events_PushListener(Weapon[CWeapon_Events], iEvent, iListener);
 }
 
-// CWeapons_LoadFromFile(const sFile[]) {
-//     // ...
-// }
+T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = false) {
+    new JSON:jWeapon = CfgUtils_GetJson(sFile, true, bAbsolutePath);
+
+    if (jWeapon == Invalid_JSON) {
+        log_error(0, "[ERROR] Invalid JSON syntax. File '%s'.", CfgUtils_GetPath(sFile));
+        return Invalid_CustomWeapon;
+    }
+
+    if (!json_is_object(jWeapon)) {
+        // TODO: Прикрутить оболочку жисона и слать ошибки через неё
+        log_error(0, "[ERROR] Invalid config structure. File '%s'.", CfgUtils_GetPath(sFile));
+        CfgUtils_JsonFree(jWeapon);
+        return Invalid_CustomWeapon;
+    }
+
+    new WeaponData[S_CustomWeapon];
+
+    CfgUtils_GetFileName(sFile, WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]));
+
+    JsonObject_ReadStringOr(jWeapon, "Reference", WeaponData[CWeapon_Reference], charsmax(WeaponData[CWeapon_Reference])) {
+        log_error(0, "[ERROR] Invalid config structure. File '%s'.", CfgUtils_GetPath(sFile));
+        CfgUtils_JsonFree(jWeapon);
+        return Invalid_CustomWeapon;
+    }
+
+    WeaponData[CWeapon_MaxClip] = JsonObject_ReadInt(jWeapon, "MaxClip", -1);
+    WeaponData[CWeapon_MaxAmmo] = JsonObject_ReadInt(jWeapon, "MaxAmmo", -1);
+    WeaponData[CWeapon_Weight] = JsonObject_ReadInt(jWeapon, "Weight", -1);
+    WeaponData[CWeapon_DamageMult] = JsonObject_ReadFloat(jWeapon, "DamageMult", -1.0);
+
+    new Models[S_CWeapon_Models];
+    JsonObject_ReadAndPrecacheModel(
+        jWeapon, "Models.View",
+        Models[CWeapon_Model_View], charsmax(Models[CWeapon_Model_View]),
+        .bDotNot = true
+    );
+
+    JsonObject_ReadAndPrecacheModel(
+        jWeapon, "Models.World",
+        Models[CWeapon_Model_World], charsmax(Models[CWeapon_Model_World]),
+        .bDotNot = true
+    );
+
+    JsonObject_ReadAndPrecacheModel(
+        jWeapon, "Models.Player",
+        Models[CWeapon_Model_Player], charsmax(Models[CWeapon_Model_Player]),
+        .bDotNot = true
+    );
+
+    WeaponData[CWeapon_Models] = Models;
+    
+    CfgUtils_JsonFree(jWeapon);
+
+    return CWeapons__Create(WeaponData);
+}
 
 // CWeapons_LoadFromDir(const sPath[]) {
 //     // ...
 // }
 
 #include "Cwapi/Core/CWeapons/Hooks"
+#include "Cwapi/Core/CWeapons/Natives"

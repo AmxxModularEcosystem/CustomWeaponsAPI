@@ -1,0 +1,37 @@
+#include <amxmodx>
+#include "Cwapi/Natives"
+
+CWeapons_Natives_Reg() {
+    Natives_Reg("Weapons_Find");
+    Natives_Reg("Weapons_FindByItem");
+    Natives_Reg("Weapons_AddEventListener");
+}
+
+T_CustomWeapon:@_Weapons_Find() {
+    enum {Arg_sWeaponName = 1}
+
+    new sWeaponName[CWAPI_WEAPON_NAME_MAX_LEN];
+    get_string(Arg_sWeaponName, sWeaponName, charsmax(sWeaponName));
+
+    return CWeapons_Find(sWeaponName);
+}
+
+T_CustomWeapon:@_Weapons_FindByItem() {
+    enum {Arg_ItemId = 1}
+
+    new ItemId = get_param(Arg_ItemId);
+
+    return CWeapons_FindByItem(ItemId);
+}
+
+@_Weapons_AddEventListener(const iPlugin) {
+    enum {Arg_iWeapon = 1, Arg_iEvent, Arg_sCallback}
+
+    new T_CustomWeapon:iWeapon = T_CustomWeapon:get_param(Arg_iWeapon);
+    new E_CWeapon_Event:iEvent = E_CWeapon_Event:get_param(Arg_iEvent);
+
+    new sCallback[CWAPI_CALLBACK_MAX_LEN];
+    get_string(Arg_sCallback, sCallback, charsmax(sCallback));
+
+    CWeapons_AddEventListener(iWeapon, iEvent, iPlugin, sCallback);
+}
