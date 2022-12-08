@@ -5,6 +5,7 @@ CWeapons_Natives_Reg() {
     Natives_Reg("Weapons_Find");
     Natives_Reg("Weapons_FindByItem");
     Natives_Reg("Weapons_AddEventListener");
+    Natives_Reg("Weapons_Give");
 }
 
 T_CustomWeapon:@_Weapons_Find() {
@@ -34,4 +35,13 @@ T_CustomWeapon:@_Weapons_FindByItem() {
     get_string(Arg_sCallback, sCallback, charsmax(sCallback));
 
     CWeapons_AddEventListener(iWeapon, iEvent, iPlugin, sCallback);
+}
+
+@_Weapons_Give(const iPlugin) {
+    enum {Arg_UserId = 1, Arg_iWeapon}
+
+    new T_CustomWeapon:iWeapon = T_CustomWeapon:get_param(Arg_iWeapon);
+    new UserId = get_param(Arg_UserId);
+
+    CWeapons_Give(UserId, iWeapon);
 }

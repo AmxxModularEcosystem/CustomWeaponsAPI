@@ -1,6 +1,7 @@
 #include <amxmodx>
 #include <reapi>
 #include <json>
+#include <regex>
 #include "Cwapi/ArrayMap"
 #include "Cwapi/Events"
 #include "Cwapi/Utils"
@@ -161,6 +162,19 @@ CWeapons_AddEventListener(
     Events_PushListener(Weapon[CWeapon_Events], iEvent, iListener);
 }
 
+// TODO: Добавить типы выдачи
+CWeapons_Give(const UserId, const T_CustomWeapon:iWeapon) {
+    new Weapon[S_CustomWeapon];
+    CWeapons_Get(iWeapon, Weapon);
+
+    return rg_give_custom_item(
+        UserId,
+        Weapon[CWeapon_Reference],
+        GT_REPLACE,
+        _:iWeapon + CWAPI_IMPULSE_OFFSET
+    );
+}
+
 T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = false) {
     new JSON:jWeapon = CfgUtils_GetJson(sFile, true, bAbsolutePath);
 
@@ -217,9 +231,34 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
     return CWeapons__Create(WeaponData);
 }
 
-// CWeapons_LoadFromDir(const sPath[]) {
-//     // ...
-// }
+CWeapons_LoadFromFolder(const sFolder[]) {
+    new sFile[PLATFORM_MAX_PATH], iDirHandler, FileType:iType;
+    iDirHandler = open_dir(CfgUtils_GetPath(sFolder), sFile, charsmax(sFile), iType);
+    if (!iDirHandler) {
+        log_error(0, "[ERROR] Can't open folder '%s'.", CfgUtils_GetPath(sFolder));
+        return;
+    }
+
+    new Regex:iRegEx_FileName, ret;
+    iRegEx_FileName = regex_compile("(.+).json$", ret, "", 0, "i");
+
+    do {
+        if (
+            sFile[0] == '!'
+            || iType != FileType_File
+            || regex_match_c(sFile, iRegEx_FileName) <= 0
+        ) {
+            continue;
+        }
+
+        regex_substr(iRegEx_FileName, 1, sFile, charsmax(sFile));
+        CWeapons_LoadFromCfg(fmt("%s/%s", sFolder, sFile));
+
+    } while (next_file(iDirHandler, sFile, charsmax(sFile), iType));
+
+    regex_free(iRegEx_FileName);
+    close_dir(iDirHandler);
+}
 
 #include "Cwapi/Core/CWeapons/Hooks"
 #include "Cwapi/Core/CWeapons/Natives"

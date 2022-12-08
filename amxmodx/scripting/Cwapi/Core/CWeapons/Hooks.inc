@@ -1,5 +1,6 @@
 #include <amxmodx>
 #include <reapi>
+#include <hamsandwich>
 #include "Cwapi/Utils"
 
 enum _E_Ham_WeaponHook{
@@ -9,12 +10,13 @@ enum _E_Ham_WeaponHook{
 }
 
 static const _HAM_WEAPON_HOOKS[][_E_Ham_WeaponHook] = {
-    {Ham_Item_Holster, "Hook_PlayerItemHolster", true},
-    {Ham_CS_Item_GetMaxSpeed, "Hook_PlayerGetMaxSpeed", false},
-    {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Post", true},
-    {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Pre", false},
-    {Ham_Weapon_SecondaryAttack, "Hook_SecondaryAttack", true},
-    {Ham_Item_AddToPlayer, "Hook_AddItemToPlayer_Post", true},
+    {Ham_Spawn, "Hook_Spawn_Pre", false},
+    // {Ham_Item_Holster, "Hook_PlayerItemHolster", true},
+    // {Ham_CS_Item_GetMaxSpeed, "Hook_PlayerGetMaxSpeed", false},
+    // {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Post", true},
+    // {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Pre", false},
+    // {Ham_Weapon_SecondaryAttack, "Hook_SecondaryAttack", true},
+    // {Ham_Item_AddToPlayer, "Hook_AddItemToPlayer_Post", true},
 };
 
 static Trie:gRegisteredRefWeapons = Invalid_Trie;
@@ -32,7 +34,7 @@ CWeapons_Hooks_RegForWeapon(const sWeaponName[]) {
 
 static CWeapons_Hooks__RegReapi() {
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Pre", false);
-    // RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_PlayerAddItem", true);
+    RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_AddPlayerItem_Pre", false);
     // RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
     // RegisterHookChain(RG_CSGameRules_PlayerKilled, "Hook_PlayerKilled", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Pre", false);
@@ -63,44 +65,70 @@ static CWeapons_Hooks__RegHam(const sWeaponName[]) {
 
 // Callbacks
 
-public Hook_WeaponBoxSetModel_Pre(const iWeaponBox, const szModelName[]) {
-    new ItemId = GetItemFromWeaponBox(iWeaponBox);
-
+public Hook_Spawn_Pre(const ItemId) {
     new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
     if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
         return;
     }
 
+    CWeapons_Call(Weapon, CWeapon_OnSpawn, [iWeapon, ItemId]);
+
+    if (Events_IsRet(CWAPI_STOP_MAIN)) {
+        RemoveEntity(ItemId);
+        return;
+    }
+
+    if (Events_IsRet(CWAPI_STOP)) {
+        return;
+    }
+
+}
+
+public Hook_AddPlayerItem_Pre(const UserId, const ItemId) {
+    if (!is_user_connected(UserId)) {
+        return HC_CONTINUE;
+    }
+
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HC_CONTINUE;
+    }
+
+    CWeapons_Call(Weapon, CWeapon_OnAddPlayerItem, [iWeapon, ItemId, UserId]);
+
+    // Так и не понял, чё с этим будет... Пусть пока так.
+    // if (Events_IsRet(CWAPI_STOP_MAIN)) {
+    //     return HC_BREAK;
+    // }
+
+    return HC_CONTINUE;
+}
+
+public Hook_WeaponBoxSetModel_Pre(const iWeaponBox, const szModelName[]) {
+    new ItemId = GetItemFromWeaponBox(iWeaponBox);
+
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HC_CONTINUE;
+    }
+
     CWeapons_Call(Weapon, CWeapon_OnSetWeaponBoxModel, [iWeapon, iWeaponBox, ItemId]);
 
     if (Events_IsRet(CWAPI_STOP_MAIN)) {
-        set_entvar(iWeaponBox, var_flags, FL_KILLME);
-        return;
+        RemoveWeaponBox(iWeaponBox);
+        return HC_BREAK;
     }
 
     if (
         Events_IsRet(CWAPI_CONTINUE)
         && Weapon[CWeapon_Models][CWeapon_Model_World][0]
     ) {
-        SetHookChainArg(2, ATYPE_STRING, Weapon[CWeapon_Models][CWeapon_Model_World][0]);
+        SetHookChainArg(2, ATYPE_STRING, Weapon[CWeapon_Models][CWeapon_Model_World]);
+        return HC_SUPERCEDE;
     }
 
-    return;
+    return HC_CONTINUE;
 }
-
-// public Hook_PlayerAddItem(const UserId, const ItemId) {
-//     new WeaponId = GetWeapId(ItemId);
-
-//     if (
-//         !IsCustomWeapon(WeaponId)
-//         || !is_user_connected(UserId)
-//     ) {
-//         return;
-//     }
-
-//     CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_AddItem, ItemId, UserId);
-//     return;
-// }
 
 // public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, DamageBits) {
 //     if (

@@ -21,6 +21,7 @@ enum T_CustomWeapon { Invalid_CustomWeapon = -1 }
 enum E_CWeapon_Event {
     CWeapon_OnSpawn,
     CWeapon_OnSetWeaponBoxModel,
+    CWeapon_OnAddPlayerItem,
 }
 
 /**
@@ -58,3 +59,4 @@ forward CWAPI_OnLoaded();
 native CWAPI_Weapons_Find(const sWeaponName[]);
 native CWAPI_Weapons_FindByItem(const ItemId);
 native CWAPI_Weapons_AddEventListener(const T_CustomWeapon:iWeapon, const E_CWeapon_Event:iEvent, const iPlugin, const sCallback[]);
+native CWAPI_Weapons_Give(const UserId, const T_CustomWeapon:iWeapon);

@@ -169,3 +169,21 @@ stock RegisterPlugin(
 stock CreateConstCvar(const sCvarName[], const sCvarValue[]) {
     set_pcvar_string(create_cvar(sCvarName, sCvarValue), sCvarValue);
 }
+
+stock bool:mult_member_f(const EntId, const any:iMember, const Float:fMult) {
+    return set_member(EntId, iMember, (Float:get_member(EntId, iMember)) * fMult);
+}
+
+stock bool:mult_member(const EntId, const any:iMember, const iMult) {
+    return set_member(EntId, iMember, get_member(EntId, iMember) * iMult);
+}
+
+// Не использовать для вепонбоксов! (thx fl0werD)
+stock RemoveEntity(const EntId) {
+    set_entvar(EntId, var_flags, FL_KILLME);
+    set_entvar(EntId, var_nextthink, -1.0);
+}
+
+stock RemoveWeaponBox(const EntId) {
+    set_entvar(EntId, var_nextthink, get_gametime() + 0.0001);
+}

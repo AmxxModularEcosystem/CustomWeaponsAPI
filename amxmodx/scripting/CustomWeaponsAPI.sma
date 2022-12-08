@@ -1,8 +1,4 @@
 #include <amxmodx>
-#include <reapi>
-#include <hamsandwich>
-#include <json>
-#include <regex>
 #include <cwapi>
 
 #include "Cwapi/Utils"
@@ -38,8 +34,7 @@ PluginInit() {
     
     Forwards_RegAndCall("Load", ET_IGNORE);
 
-    CWeapons_LoadFromCfg("Weapons/TestWeapon");
-    // LoadWeapons();
+    CWeapons_LoadFromFolder("Weapons");
 
     // if (CWeapons_Count() < 1) {
     //     set_fail_state("[WARNING] No loaded weapons");
@@ -125,23 +120,20 @@ PluginInit() {
 // }
 
 // Выдача пушки
-stock GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWAPI_GT_SMART) {
-    if (!is_user_alive(Id)) {
-        return -1;
-    }
-
-    if (!IsCustomWeapon(WeaponId)) {
-        return -1;
-    }
-
+stock GiveCustomWeapon(
+    const UserId,
+    const T_CustomWeapon:iWeapon,
+    const CWAPI_GiveType:iGiveType = CWAPI_GT_SMART
+) {
     if (!CallWeaponEvent(WeaponId, CWAPI_WE_Take, WeaponId, Id)) {
         return -1;
     }
 
-    new Data[CWAPI_WeaponData]; ArrayGetArray(CustomWeapons, WeaponId, Data);
+    new Weapon[S_CustomWeapon];
+    CWeapons_Get(iWeapon, Weapon);
 
     new GiveType:WeaponGiveType;
-    if (Type == CWAPI_GT_SMART) {
+    if (iGiveType == CWAPI_GT_SMART) {
         if (equal(Data[CWAPI_WD_DefaultName], "knife")) {
             WeaponGiveType = GT_REPLACE;
         } else if (IsGrenade(Data[CWAPI_WD_DefaultName])) {
@@ -150,14 +142,14 @@ stock GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWA
             WeaponGiveType = GT_DROP_AND_REPLACE;
         }
     } else {
-        WeaponGiveType = GiveType:Type;
+        WeaponGiveType = GiveType:iGiveType;
     }
 
     new ItemId = rg_give_custom_item(
-        Id,
-        GetWeapFullName(Data[CWAPI_WD_DefaultName]),
+        UserId,
+        Weapon[CWeapon_Reference],
         WeaponGiveType,
-        WeaponId+CWAPI_IMPULSE_OFFSET
+        WeaponId + CWAPI_IMPULSE_OFFSET
     );
 
     if (is_nullent(ItemId)) {
@@ -190,14 +182,15 @@ stock GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWA
         }
     }
 
-    if (Data[CWAPI_WD_Damage] >= 0.0) {
-        set_member(
-            ItemId, m_Weapon_flBaseDamage,
-            Data[CWAPI_WD_Damage]
-        );
-    }
+    // if (Data[CWAPI_WD_Damage] >= 0.0) {
+    //     set_member(
+    //         ItemId, m_Weapon_flBaseDamage,
+    //         Data[CWAPI_WD_Damage]
+    //     );
+    // }
 
     if (Data[CWAPI_WD_DamageMult] >= 0.0) {
+        mult_member_f(ItemId, m_Weapon_flBaseDamage, Data[CWAPI_WD_DamageMult]);
         set_member(
             ItemId, m_Weapon_flBaseDamage,
             Float:get_member(ItemId, m_Weapon_flBaseDamage)*Data[CWAPI_WD_DamageMult]
@@ -236,7 +229,6 @@ stock GiveCustomWeapon(const Id, const WeaponId, const CWAPI_GiveType:Type = CWA
         }
     }
 
-    set_entvar(ItemId, var_CWAPI_ItemOwner, Id);
 
     return ItemId;
 }
