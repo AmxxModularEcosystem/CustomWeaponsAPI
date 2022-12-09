@@ -24,6 +24,8 @@ public plugin_precache() {
 PluginInit() {
     CallOnce();
     
+    Dbg_PrintServer("%s run in debug mode.", PluginName);
+
     RegisterPluginByVars();
     register_library(CWAPI_LIBRARY);
     CreateConstCvar(CWAPI_VERSION_CVAR, CWAPI_VERSION);
@@ -44,37 +46,44 @@ PluginInit() {
     server_print("[%s v%s] %d custom weapons loaded.", PluginName, PluginVersion, CWeapons_Count());
     Forwards_RegAndCall("Loaded", ET_IGNORE);
 
-    if (IS_DEBUG) {
-        // CWAPI_Give <WeaponName>
-        register_clcmd("CWAPI_Give", "Cmd_GiveCustomWeapon");
-    }
+    register_clcmd("CWAPI_Give", "Cmd_GiveCustomWeapon");
 
     // CWAPI_Srv_Give <UserId> <WeaponName>
-    register_srvcmd("CWAPI_Srv_Give", "@SrvCmd_Give");
+    // register_srvcmd("CWAPI_Srv_Give", "@SrvCmd_Give");
 }
 
-// #if DEBUG
-//     public Cmd_GiveCustomWeapon(const Id) {
-//         new WeaponName[32];
-//         read_argv(1, WeaponName, charsmax(WeaponName));
+public Cmd_GiveCustomWeapon(const UserId) {
+    enum {Arg_sWeaponName = 1, Arg_iGiveType}
 
-//         if (TrieKeyExists(WeaponsNames, WeaponName)) {
-//             new WeaponId;
-//             TrieGetCell(WeaponsNames, WeaponName, WeaponId);
+    Dbg_PrintServer("Cmd_GiveCustomWeapon(%n): Exec cmd.", UserId);
+    if (!IS_DEBUG) {
+        return PLUGIN_CONTINUE;
+    }
+    
+    if (!is_user_alive(UserId)) {
+        Dbg_PrintServer("Cmd_GiveCustomWeapon(%n): Player is dead.", UserId);
+        return PLUGIN_HANDLED;
+    }
 
-//             if (GiveCustomWeapon(Id, WeaponId, CWAPI_GT_SMART) != -1) {
-//                 client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_GIVE_SUCCESS", WeaponName);
-//             } else {
-//                 client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_GIVE_ERROR");
-//             }
+    new sWeaponName[CWAPI_WEAPON_NAME_MAX_LEN];
+    read_argv(Arg_sWeaponName, sWeaponName, charsmax(sWeaponName));
 
-//             return PLUGIN_HANDLED;
-//         }
+    new T_CustomWeapon:iWeapon = CWeapons_Find(sWeaponName);
 
-//         client_print_color(Id, print_team_default, "%L", LANG_PLAYER, "WEAPON_NOT_FOUND", WeaponName);
-//         return PLUGIN_CONTINUE;
-//     }
-// #endif
+    new CWeapon_GiveType:iGiveType = CWAPI_GT_SMART;
+    if (read_argc() > 2) {
+        iGiveType = CWeapon_GiveType:read_argv_int(Arg_iGiveType);
+    }
+
+    if (iWeapon != Invalid_CustomWeapon) {
+        Dbg_PrintServer("Cmd_GiveCustomWeapon(%n): Giving weapon '%s' (#%d).", UserId, sWeaponName, iWeapon);
+        CWeapons_Give(UserId, iWeapon, iGiveType);
+    } else {
+        Dbg_PrintServer("Cmd_GiveCustomWeapon(%n): Weapon '%s' not found.", UserId, sWeaponName);
+    }
+
+    return PLUGIN_HANDLED;
+}
 
 // @SrvCmd_Give() {
 //     enum {Arg_UserId = 1, Arg_WeaponName}
@@ -98,139 +107,5 @@ PluginInit() {
 
 //     return PLUGIN_CONTINUE;
 // }
-
-// public Cmd_Select(const UserId) {
-//     if (!is_user_alive(UserId)) {
-//         return PLUGIN_HANDLED;
-//     }
-
-//     new WeaponName[40];
-//     read_argv(0, WeaponName, charsmax(WeaponName));
-
-//     if (TrieKeyExists(WeaponsNames, WeaponName[7])) {
-//         new WeaponId, Data[CWAPI_WeaponData];
-//         TrieGetCell(WeaponsNames, WeaponName[7], WeaponId);
-//         ArrayGetArray(CustomWeapons, WeaponId, Data);
-
-//         engclient_cmd(UserId, GetWeapFullName(Data[CWAPI_WD_DefaultName]));
-//         return PLUGIN_HANDLED_MAIN;
-//     }
-
-//     return PLUGIN_CONTINUE;
-// }
-
-// Выдача пушки
-stock GiveCustomWeapon(
-    const UserId,
-    const T_CustomWeapon:iWeapon,
-    const CWAPI_GiveType:iGiveType = CWAPI_GT_SMART
-) {
-    if (!CallWeaponEvent(WeaponId, CWAPI_WE_Take, WeaponId, Id)) {
-        return -1;
-    }
-
-    new Weapon[S_CustomWeapon];
-    CWeapons_Get(iWeapon, Weapon);
-
-    new GiveType:WeaponGiveType;
-    if (iGiveType == CWAPI_GT_SMART) {
-        if (equal(Data[CWAPI_WD_DefaultName], "knife")) {
-            WeaponGiveType = GT_REPLACE;
-        } else if (IsGrenade(Data[CWAPI_WD_DefaultName])) {
-            WeaponGiveType = GT_APPEND;
-        } else {
-            WeaponGiveType = GT_DROP_AND_REPLACE;
-        }
-    } else {
-        WeaponGiveType = GiveType:iGiveType;
-    }
-
-    new ItemId = rg_give_custom_item(
-        UserId,
-        Weapon[CWeapon_Reference],
-        WeaponGiveType,
-        WeaponId + CWAPI_IMPULSE_OFFSET
-    );
-
-    if (is_nullent(ItemId)) {
-        return -1;
-    }
-
-    new WeaponIdType:DefaultWeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
-    
-    rg_set_iteminfo(ItemId, ItemInfo_pszName, GetWeapFullName(Data[CWAPI_WD_Name]));
-
-    if (Data[CWAPI_WD_HasSecondaryAttack]) {
-        set_member(ItemId, m_Weapon_bHasSecondaryAttack, Data[CWAPI_WD_HasSecondaryAttack]);
-    }
-
-    if (Data[CWAPI_WD_Weight]) {
-        rg_set_iteminfo(ItemId, ItemInfo_iWeight, Data[CWAPI_WD_Weight]);
-    }
-    
-    if (DefaultWeaponId != WEAPON_KNIFE) {
-        if (Data[CWAPI_WD_ClipSize]) {
-            rg_set_iteminfo(ItemId, ItemInfo_iMaxClip, Data[CWAPI_WD_ClipSize]);
-            rg_set_user_ammo(Id, DefaultWeaponId, Data[CWAPI_WD_ClipSize]);
-        }
-
-        if (Data[CWAPI_WD_MaxAmmo] >= 0) {
-            rg_set_iteminfo(ItemId, ItemInfo_iMaxAmmo1, Data[CWAPI_WD_MaxAmmo]);
-            rg_set_user_bpammo(Id, DefaultWeaponId, Data[CWAPI_WD_MaxAmmo]);
-        } else {
-            rg_set_user_bpammo(Id, DefaultWeaponId, rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo1));
-        }
-    }
-
-    // if (Data[CWAPI_WD_Damage] >= 0.0) {
-    //     set_member(
-    //         ItemId, m_Weapon_flBaseDamage,
-    //         Data[CWAPI_WD_Damage]
-    //     );
-    // }
-
-    if (Data[CWAPI_WD_DamageMult] >= 0.0) {
-        mult_member_f(ItemId, m_Weapon_flBaseDamage, Data[CWAPI_WD_DamageMult]);
-        set_member(
-            ItemId, m_Weapon_flBaseDamage,
-            Float:get_member(ItemId, m_Weapon_flBaseDamage)*Data[CWAPI_WD_DamageMult]
-        );
-
-        if (DefaultWeaponId == WEAPON_KNIFE) {
-            set_member(
-                ItemId, m_Knife_flStabBaseDamage,
-                Float:get_member(ItemId, m_Knife_flStabBaseDamage)*Data[CWAPI_WD_DamageMult]
-            );
-
-            set_member(
-                ItemId, m_Knife_flSwingBaseDamage,
-                Float:get_member(ItemId, m_Knife_flSwingBaseDamage)*Data[CWAPI_WD_DamageMult]
-            );
-
-            set_member(
-                ItemId, m_Knife_flSwingBaseDamage_Fast,
-                Float:get_member(ItemId, m_Knife_flSwingBaseDamage_Fast)*Data[CWAPI_WD_DamageMult]
-            );
-        } else if (DefaultWeaponId == WEAPON_M4A1) {
-            set_member(
-                ItemId, m_M4A1_flBaseDamageSil,
-                Float:get_member(ItemId, m_M4A1_flBaseDamageSil)*Data[CWAPI_WD_DamageMult]
-            );
-        } else if (DefaultWeaponId == WEAPON_USP) {
-            set_member(
-                ItemId, m_USP_flBaseDamageSil,
-                Float:get_member(ItemId, m_USP_flBaseDamageSil)*Data[CWAPI_WD_DamageMult]
-            );
-        } else if (DefaultWeaponId == WEAPON_FAMAS) {
-            set_member(
-                ItemId, m_Famas_flBaseDamageBurst,
-                Float:get_member(ItemId, m_Famas_flBaseDamageBurst)*Data[CWAPI_WD_DamageMult]
-            );
-        }
-    }
-
-
-    return ItemId;
-}
 
 #include "Cwapi/Core/Natives"

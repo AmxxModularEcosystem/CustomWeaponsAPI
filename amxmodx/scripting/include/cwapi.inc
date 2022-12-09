@@ -5,7 +5,7 @@
 
 #include <amxmodx>
 
-#define _CWAPI_VERSION "0.8.0"
+#define _CWAPI_VERSION "0.8.0-pre-alpha"
 stock const CWAPI_VERSION[] = _CWAPI_VERSION;
 stock const CWAPI_LIBRARY[] = "CustomWeaponsAPI";
 stock const CWAPI_VERSION_CVAR[] = "CWAPI_VERSION";
@@ -43,7 +43,7 @@ enum {
     CWAPI_STOP_MAIN,
 };
 
-enum CWAPI_GiveType {
+enum CWeapon_GiveType {
     CWAPI_GT_SMART = -1, // Для ножей GT_REPLACE, для гранат GT_APPEND, для остального GT_DROP_AND_REPLACE
     CWAPI_GT_APPEND, // Аналог GT_APPEND
     CWAPI_GT_REPLACE, // Аналог GT_REPLACE
@@ -59,4 +59,4 @@ forward CWAPI_OnLoaded();
 native CWAPI_Weapons_Find(const sWeaponName[]);
 native CWAPI_Weapons_FindByItem(const ItemId);
 native CWAPI_Weapons_AddEventListener(const T_CustomWeapon:iWeapon, const E_CWeapon_Event:iEvent, const iPlugin, const sCallback[]);
-native CWAPI_Weapons_Give(const UserId, const T_CustomWeapon:iWeapon);
+native CWAPI_Weapons_Give(const UserId, const T_CustomWeapon:iWeapon, const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART);

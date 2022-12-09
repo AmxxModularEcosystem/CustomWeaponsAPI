@@ -38,7 +38,7 @@ stock CfgUtils_MakePath(const sFilePath[], sOut[], const iOutLen) {
     if (CfgUtils__IsPathSeparator(sFilePath[0])) {
         return formatex(sOut, iOutLen, "%s%s", __amxx_configsdir, sFilePath)
     } else {
-        return formatex(sOut, iOutLen, "%s/%s/%s", __amxx_configsdir, g_sCfgFolder, sFilePath);
+        return formatex(sOut, iOutLen, "%s/plugins/%s/%s", __amxx_configsdir, g_sCfgFolder, sFilePath);
     }
 }
 

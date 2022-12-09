@@ -34,18 +34,6 @@ const WEAPON_GRENADE = (
 #define IsWeaponSilenced(%0) \
     bool:((WPNSTATE_M4A1_SILENCED | WPNSTATE_USP_SILENCED) & get_member(%0, m_Weapon_iWeaponState))
 
-#define IsPistol(%0) \
-    (WEAPON_PISTOLS & BIT(rg_get_iteminfo(%0, ItemInfo_iId)))
-
-#define IsGrenade(%0) \
-    (equal(%0, "hegrenade") || equal(%0, "smokegrenade") || equal(%0, "flashbang"))
-
-#define json_object_get_real_def(%1,%2,%3) \
-    json_object_has_value(%1, %2, JSONNumber) ? json_object_get_real(%1, %2) : %3
-
-#define json_object_get_num_def(%1,%2,%3) \
-    json_object_has_value(%1, %2, JSONNumber) ? json_object_get_number(%1, %2) : %3
-
 #define CallOnce() CompositeMacros( \
     static bool:__CallOnce_bCalled; \
     if (__CallOnce_bCalled) return; \
@@ -144,22 +132,6 @@ stock GetAmxxVersionNum() {
     return iRes;
 }
 
-stock RegisterPlugin(
-    const sName[],
-    const sVersion[],
-    const sAuthor[],
-    const sUrl[] = "",
-    const sDescription[] = ""
-) {
-    #if AMXX_VERSION_NUM >= 1100
-    if (GetAmxxVersionNum() >= 1100) {
-        register_plugin(sName, sVersion, sAuthor, sUrl, sDescription);
-        return;
-    }
-    #endif
-    register_plugin(sName, sVersion, sAuthor);
-}
-
 #define RegisterPluginByVars() CompositeMacros( \
     if (GetAmxxVersionNum() < 1100) { \
         register_plugin(PluginName, PluginVersion, PluginAuthor); \
@@ -171,11 +143,23 @@ stock CreateConstCvar(const sCvarName[], const sCvarValue[]) {
 }
 
 stock bool:mult_member_f(const EntId, const any:iMember, const Float:fMult) {
-    return set_member(EntId, iMember, (Float:get_member(EntId, iMember)) * fMult);
+    return bool:set_member(EntId, iMember, (Float:get_member(EntId, iMember)) * fMult);
 }
 
 stock bool:mult_member(const EntId, const any:iMember, const iMult) {
-    return set_member(EntId, iMember, get_member(EntId, iMember) * iMult);
+    return bool:set_member(EntId, iMember, get_member(EntId, iMember) * iMult);
+}
+
+stock bool:set_member_if_specified(const EntId, const any:iMember, const any:iValue, const any:iNotSpecVal) {
+    if (iValue != iNotSpecVal) {
+        set_member(EntId, iMember, iValue);
+    }
+}
+
+stock bool:rg_set_iteminfo_if_specified(const ItemId, const ItemInfo:iItemInfo, const any:iValue, const any:iNotSpecVal) {
+    if (iValue != iNotSpecVal) {
+        rg_set_iteminfo(ItemId, iItemInfo, iValue);
+    }
 }
 
 // Не использовать для вепонбоксов! (thx fl0werD)
@@ -186,4 +170,34 @@ stock RemoveEntity(const EntId) {
 
 stock RemoveWeaponBox(const EntId) {
     set_entvar(EntId, var_nextthink, get_gametime() + 0.0001);
+}
+
+stock MultItemDamage(const ItemId, const Float:fMultiplier) {
+    new WeaponIdType:WeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
+
+    mult_member_f(ItemId, m_Weapon_flBaseDamage, fMultiplier);
+    if (WeaponId == WEAPON_KNIFE) {
+        mult_member_f(ItemId, m_Knife_flStabBaseDamage, fMultiplier);
+        mult_member_f(ItemId, m_Knife_flSwingBaseDamage, fMultiplier);
+        mult_member_f(ItemId, m_Knife_flSwingBaseDamage_Fast, fMultiplier);
+    } else if (WeaponId == WEAPON_M4A1) {
+        mult_member_f(ItemId, m_M4A1_flBaseDamageSil, fMultiplier);
+    } else if (WeaponId == WEAPON_USP) {
+        mult_member_f(ItemId, m_USP_flBaseDamageSil, fMultiplier);
+    } else if (WeaponId == WEAPON_FAMAS) {
+        mult_member_f(ItemId, m_Famas_flBaseDamageBurst, fMultiplier);
+    }
+}
+
+stock WeaponIdType:GetWeaponIdByName(const sWeaponName[]) {
+    return WeaponIdType:rg_get_weapon_info(sWeaponName, WI_ID);
+}
+
+#define ThrowError(%1) CompositeMacros( \
+    log_error(0, %1); \
+    log_amx(%1); \
+)
+
+stock InstantReload(const ItemId) {
+    set_member(ItemId, m_Weapon_iClip, rg_get_iteminfo(ItemId, ItemInfo_iMaxClip));
 }

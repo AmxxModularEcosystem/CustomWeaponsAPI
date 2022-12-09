@@ -15,6 +15,7 @@ enum S_CWeapon_Models {
 
 enum _:S_CustomWeapon {
     CWeapon_Reference[32],
+    WeaponIdType:CWeapon_ReferenceId,
     CWeapon_Name[CWAPI_WEAPON_NAME_MAX_LEN],
     CWeapon_Models[S_CWeapon_Models],
     Float:CWeapon_DamageMult,
@@ -64,7 +65,7 @@ static T_CustomWeapon:CWeapons__Create(const WeaponData[S_CustomWeapon]) {
     Weapon = WeaponData;
 
     Weapon[CWeapon_Events] = Events_Init(E_CWeapon_Event);
-    CWeapons_Hooks_RegForWeapon(Weapon[CWeapon_Reference]);
+    CWeapons_Hooks_RegForWeapon(Weapon[CWeapon_Reference], Weapon[CWeapon_Name]);
 
     return T_CustomWeapon:ArrayMapPushArray(gCustomWeapons, Weapon, Weapon[CWeapon_Name]);
 }
@@ -88,18 +89,18 @@ T_CustomWeapon:CWeapons_Find(const sWeaponName[]) {
     return T_CustomWeapon:ArrayMapGetIndex(gCustomWeapons, sWeaponName);
 }
 
-// bool:CWeapons_GetByName(const sWeaponName[], Weapon[S_CustomWeapon]) {
-//     if (!CWeapons_IsValidName(sWeaponName)) {
-//         return false;
-//     }
+bool:CWeapons_GetByName(const sWeaponName[], Weapon[S_CustomWeapon]) {
+    if (!CWeapons_IsValidName(sWeaponName)) {
+        return false;
+    }
     
-//     ArrayMapGetArray(gCustomWeapons, sWeaponName, Weapon);
-//     return true;
-// }
+    ArrayMapGetArray(gCustomWeapons, sWeaponName, Weapon);
+    return true;
+}
 
 bool:CWeapons_Get(const T_CustomWeapon:iWeapon, Weapon[S_CustomWeapon]) {
     if (!CWeapons_IsValidIndex(iWeapon)) {
-        log_error(0, "Invalid custom weapon index (%d).", iWeapon);
+        ThrowError("Invalid custom weapon index (%d).", iWeapon);
         return false;
     }
 
@@ -153,57 +154,104 @@ CWeapons_AddEventListener(
         case CWeapon_OnSetWeaponBoxModel:
             // (const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId)
             iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL);
+        case CWeapon_OnAddPlayerItem:
+            // (const T_CustomWeapon:iWeapon, const ItemId, const UserId)
+            iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL);
     }
 
     if (iListener < 0) {
-        log_error(0, "Can`t create forward for function '%s' in plugin #%d.", sCallback, iPlugin);
+        ThrowError("Can`t create forward for function '%s' in plugin #%d.", sCallback, iPlugin);
     }
 
     Events_PushListener(Weapon[CWeapon_Events], iEvent, iListener);
 }
 
-// TODO: Добавить типы выдачи
-CWeapons_Give(const UserId, const T_CustomWeapon:iWeapon) {
+static GiveType:CWeapons__ResolveGiveType(
+    const WeaponIdType:WeaponId,
+    const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART
+) {
+    if (iGiveType != CWAPI_GT_SMART) {
+        return GiveType:iGiveType;
+    }
+    
+    if (WeaponId == WEAPON_KNIFE) {
+        return GT_REPLACE;
+    } else if (WEAPON_GRENADE & BIT(_:WeaponId)) {
+        return GT_APPEND;
+    } else {
+        return GT_DROP_AND_REPLACE;
+    }
+}
+
+CWeapons_Give(
+    const UserId,
+    const T_CustomWeapon:iWeapon,
+    const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART
+) {
     new Weapon[S_CustomWeapon];
     CWeapons_Get(iWeapon, Weapon);
 
-    return rg_give_custom_item(
+    // CWeapons_Call(...);
+
+    new GiveType:iResolvedGiveType = CWeapons__ResolveGiveType(Weapon[CWeapon_ReferenceId], iGiveType);
+    Dbg_PrintServer("CWeapons_Give(%d, %d, %d): Resolved give type - %d", UserId, iWeapon, iGiveType, iResolvedGiveType);
+
+    // Удаление/выбрасывание референсного оружия, если оно есть
+    // Мб как-то можно более просто это сделать?)
+    if (rg_has_item_by_name(UserId, Weapon[CWeapon_Reference])) {
+        if (iResolvedGiveType == GT_DROP_AND_REPLACE) {
+            rg_drop_item(UserId, Weapon[CWeapon_Reference]);
+        } else {
+            rg_remove_item(UserId, Weapon[CWeapon_Reference]);
+        }
+    }
+
+    new ItemId = rg_give_custom_item(
         UserId,
         Weapon[CWeapon_Reference],
-        GT_REPLACE,
+        iResolvedGiveType,
         _:iWeapon + CWAPI_IMPULSE_OFFSET
     );
+
+    Dbg_PrintServer("CWeapons_Give(%d, %d, %d): Item's index - %d", UserId, iWeapon, iGiveType, ItemId);
+
+    return ItemId;
 }
 
 T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = false) {
     new JSON:jWeapon = CfgUtils_GetJson(sFile, true, bAbsolutePath);
 
     if (jWeapon == Invalid_JSON) {
-        log_error(0, "[ERROR] Invalid JSON syntax. File '%s'.", CfgUtils_GetPath(sFile));
+        ThrowError("[ERROR] Invalid JSON syntax. File '%s'.", CfgUtils_GetPath(sFile));
         return Invalid_CustomWeapon;
     }
 
     if (!json_is_object(jWeapon)) {
         // TODO: Прикрутить оболочку жисона и слать ошибки через неё
-        log_error(0, "[ERROR] Invalid config structure. File '%s'.", CfgUtils_GetPath(sFile));
+        ThrowError("[ERROR] Invalid config structure. File '%s'.", CfgUtils_GetPath(sFile));
         CfgUtils_JsonFree(jWeapon);
         return Invalid_CustomWeapon;
     }
 
     new WeaponData[S_CustomWeapon];
 
-    CfgUtils_GetFileName(sFile, WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]));
+    JsonObject_ReadStringOr(jWeapon, "Name", WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name])) {
+        CfgUtils_GetFileName(sFile, WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]));
+    }
+
+    Dbg_PrintServer("CWeapons_LoadFromCfg('%s', %s): Read weapon '%s'.", sFile, bAbsolutePath ? "true" : "false", WeaponData[CWeapon_Name]);
 
     JsonObject_ReadStringOr(jWeapon, "Reference", WeaponData[CWeapon_Reference], charsmax(WeaponData[CWeapon_Reference])) {
-        log_error(0, "[ERROR] Invalid config structure. File '%s'.", CfgUtils_GetPath(sFile));
+        ThrowError("[ERROR] Invalid config structure. File '%s'.", CfgUtils_GetPath(sFile));
         CfgUtils_JsonFree(jWeapon);
         return Invalid_CustomWeapon;
     }
+    WeaponData[CWeapon_ReferenceId] = GetWeaponIdByName(WeaponData[CWeapon_Reference]);
 
     WeaponData[CWeapon_MaxClip] = JsonObject_ReadInt(jWeapon, "MaxClip", -1);
     WeaponData[CWeapon_MaxAmmo] = JsonObject_ReadInt(jWeapon, "MaxAmmo", -1);
     WeaponData[CWeapon_Weight] = JsonObject_ReadInt(jWeapon, "Weight", -1);
-    WeaponData[CWeapon_DamageMult] = JsonObject_ReadFloat(jWeapon, "DamageMult", -1.0);
+    WeaponData[CWeapon_DamageMult] = JsonObject_ReadFloat(jWeapon, "DamageMult", 1.0);
 
     new Models[S_CWeapon_Models];
     JsonObject_ReadAndPrecacheModel(
@@ -232,12 +280,16 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
 }
 
 CWeapons_LoadFromFolder(const sFolder[]) {
+    Dbg_PrintServer("CWeapons_LoadFromFolder('%s'): Call func.", sFolder);
+
     new sFile[PLATFORM_MAX_PATH], iDirHandler, FileType:iType;
     iDirHandler = open_dir(CfgUtils_GetPath(sFolder), sFile, charsmax(sFile), iType);
     if (!iDirHandler) {
-        log_error(0, "[ERROR] Can't open folder '%s'.", CfgUtils_GetPath(sFolder));
+        ThrowError("[ERROR] Can't open folder '%s'.", CfgUtils_GetPath(sFolder));
         return;
     }
+    
+    Dbg_PrintServer("CWeapons_LoadFromFolder('%s'): Read weapons from folder '%s'.", sFolder, sFolder);
 
     new Regex:iRegEx_FileName, ret;
     iRegEx_FileName = regex_compile("(.+).json$", ret, "", 0, "i");

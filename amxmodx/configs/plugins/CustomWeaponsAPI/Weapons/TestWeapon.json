@@ -1,0 +1,7 @@
+{
+    "Name": "Weapon_for_testing",
+    "Reference": "weapon_deagle",
+    "DamageMult": 5.0,
+    "MaxClip": 42,
+    "MaxAmmo": 84
+}

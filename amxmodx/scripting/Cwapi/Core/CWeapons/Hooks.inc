@@ -10,7 +10,7 @@ enum _E_Ham_WeaponHook{
 }
 
 static const _HAM_WEAPON_HOOKS[][_E_Ham_WeaponHook] = {
-    {Ham_Spawn, "Hook_Spawn_Pre", false},
+    {Ham_Spawn, "Hook_Spawn_Post", true},
     // {Ham_Item_Holster, "Hook_PlayerItemHolster", true},
     // {Ham_CS_Item_GetMaxSpeed, "Hook_PlayerGetMaxSpeed", false},
     // {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Post", true},
@@ -27,9 +27,10 @@ CWeapons_Hooks_Init() {
     gRegisteredRefWeapons = TrieCreate();
 }
 
-CWeapons_Hooks_RegForWeapon(const sWeaponName[]) {
+CWeapons_Hooks_RegForWeapon(const sReference[], const sWeaponName[]) {
     // Больше обёрток богу обёрток!!!
-    CWeapons_Hooks__RegHamOnce(sWeaponName);
+    CWeapons_Hooks__RegHamOnce(sReference);
+    register_clcmd(sWeaponName, "Hook_WeaponCommand");
 }
 
 static CWeapons_Hooks__RegReapi() {
@@ -65,13 +66,38 @@ static CWeapons_Hooks__RegHam(const sWeaponName[]) {
 
 // Callbacks
 
-public Hook_Spawn_Pre(const ItemId) {
+public Hook_WeaponCommand(const UserId) {
+    if (!is_user_alive(UserId)) {
+        return PLUGIN_HANDLED;
+    }
+
+    new sWeaponName[CWAPI_WEAPON_NAME_MAX_LEN];
+    read_argv(0, sWeaponName, charsmax(sWeaponName));
+    
+    Dbg_PrintServer("Hook_WeaponCommand(%n): Exec cmd.", UserId);
+    
+    new Weapon[S_CustomWeapon];
+    if (!CWeapons_GetByName(sWeaponName, Weapon)) {
+        return PLUGIN_CONTINUE;
+    }
+    
+    Dbg_PrintServer("Hook_WeaponCommand(%n): For weapon '%s'.", UserId, Weapon[CWeapon_Name]);
+
+    engclient_cmd(UserId, Weapon[CWeapon_Reference]);
+    return PLUGIN_HANDLED_MAIN;
+}
+
+public Hook_Spawn_Post(const ItemId) {
     new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
     if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
         return;
     }
 
+    Dbg_PrintServer("Hook_Spawn_Post(%d): For weapon '%s'.", ItemId, Weapon[CWeapon_Name]);
+
     CWeapons_Call(Weapon, CWeapon_OnSpawn, [iWeapon, ItemId]);
+    
+    Dbg_PrintServer("Hook_Spawn_Post(%d): Event return - %d", ItemId, Events_GetReturnedValue());
 
     if (Events_IsRet(CWAPI_STOP_MAIN)) {
         RemoveEntity(ItemId);
@@ -81,7 +107,22 @@ public Hook_Spawn_Pre(const ItemId) {
     if (Events_IsRet(CWAPI_STOP)) {
         return;
     }
+    
+    rg_set_iteminfo(ItemId, ItemInfo_pszName, Weapon[CWeapon_Name]);
 
+    // set_member_if_specified(ItemId, m_Weapon_bHasSecondaryAttack, Weapon[CWeapon_HasSecondaryAttack], false);
+    rg_set_iteminfo_if_specified(ItemId, ItemInfo_iWeight, Weapon[CWeapon_Weight], -1);
+    
+    new WeaponIdType:WeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
+    
+    if (WeaponId != WEAPON_KNIFE) {
+        rg_set_iteminfo_if_specified(ItemId, ItemInfo_iMaxClip, Weapon[CWeapon_MaxClip], -1);
+        rg_set_iteminfo_if_specified(ItemId, ItemInfo_iMaxAmmo1, Weapon[CWeapon_MaxAmmo], -1);
+
+        InstantReload(ItemId);
+    }
+
+    MultItemDamage(ItemId, Weapon[CWeapon_DamageMult]);
 }
 
 public Hook_AddPlayerItem_Pre(const UserId, const ItemId) {

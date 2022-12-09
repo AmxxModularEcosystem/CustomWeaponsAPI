@@ -38,10 +38,11 @@ T_CustomWeapon:@_Weapons_FindByItem() {
 }
 
 @_Weapons_Give(const iPlugin) {
-    enum {Arg_UserId = 1, Arg_iWeapon}
+    enum {Arg_UserId = 1, Arg_iWeapon, Arg_iGiveType}
 
     new T_CustomWeapon:iWeapon = T_CustomWeapon:get_param(Arg_iWeapon);
     new UserId = get_param(Arg_UserId);
+    new CWeapon_GiveType:iGiveType = CWeapon_GiveType:get_param(Arg_iGiveType);
 
-    CWeapons_Give(UserId, iWeapon);
+    CWeapons_Give(UserId, iWeapon, iGiveType);
 }
