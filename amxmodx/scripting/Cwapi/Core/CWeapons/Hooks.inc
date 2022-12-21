@@ -36,9 +36,9 @@ CWeapons_Hooks_RegForWeapon(const sReference[], const sWeaponName[]) {
 static CWeapons_Hooks__RegReapi() {
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Pre", false);
     RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_AddPlayerItem_Pre", false);
+    RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Pre", false);
     // RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
     // RegisterHookChain(RG_CSGameRules_PlayerKilled, "Hook_PlayerKilled", true);
-    // RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Pre", false);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Post", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Post", true);
@@ -171,6 +171,37 @@ public Hook_WeaponBoxSetModel_Pre(const iWeaponBox, const szModelName[]) {
     return HC_CONTINUE;
 }
 
+public Hook_DefaultDeploy_Pre(const ItemId, szViewModel[], szWeaponModel[], iAnim, szAnimExt[], skiplocal) {
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HC_CONTINUE;
+    }
+
+    Dbg_PrintServer("Hook_DefaultDeploy_Pre(%d): For weapon '%s'.", ItemId, Weapon[CWeapon_Name]);
+
+    if (Weapon[CWeapon_Models][CWeapon_Model_View][0]) {
+        SetHookChainArg(2, ATYPE_STRING, Weapon[CWeapon_Models][CWeapon_Model_View]);
+        Dbg_PrintServer("Hook_DefaultDeploy_Pre(%d): Set '%s' as view model.", ItemId, Weapon[CWeapon_Models][CWeapon_Model_View]);
+    }
+    
+    if (Weapon[CWeapon_Models][CWeapon_Model_Player][0]) {
+        SetHookChainArg(3, ATYPE_STRING, Weapon[CWeapon_Models][CWeapon_Model_Player]);
+        Dbg_PrintServer("Hook_DefaultDeploy_Pre(%d): Set '%s' as player model.", ItemId, Weapon[CWeapon_Models][CWeapon_Model_Player]);
+    }
+    
+    // if (Data[CWAPI_WD_DeployTime] >= 0.0) {
+    //     SetWeaponNextAttack(ItemId, Data[CWAPI_WD_DeployTime]);
+    // }
+
+    // if (Data[CWAPI_WD_Accuracy] >= 0.0) {
+    //     set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
+    // }
+
+    // CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
+    
+    return HC_CONTINUE;
+}
+
 // public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, DamageBits) {
 //     if (
 //         !is_user_connected(Victim)
@@ -219,33 +250,6 @@ public Hook_WeaponBoxSetModel_Pre(const iWeaponBox, const szModelName[]) {
 
 //     CallWeaponEvent(WeaponId, CWAPI_WE_Kill, ItemId, Victim);
 //     return HC_CONTINUE;
-// }
-
-// public Hook_DefaultDeploy_Pre(const ItemId, szViewModel[], szWeaponModel[], iAnim, szAnimExt[], skiplocal) {
-//     if (!IsCustomWeapon(GetWeapId(ItemId))) {
-//         return;
-//     }
-    
-//     new Data[CWAPI_WeaponData];
-//     ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
-
-//     if (Data[CWAPI_WD_Models][CWAPI_WM_V][0]) {
-//         SetHookChainArg(2, ATYPE_STRING, Data[CWAPI_WD_Models][CWAPI_WM_V]);
-//     }
-    
-//     if (Data[CWAPI_WD_Models][CWAPI_WM_P][0]) {
-//         SetHookChainArg(3, ATYPE_STRING, Data[CWAPI_WD_Models][CWAPI_WM_P]);
-//     }
-    
-//     if (Data[CWAPI_WD_DeployTime] >= 0.0) {
-//         SetWeaponNextAttack(ItemId, Data[CWAPI_WD_DeployTime]);
-//     }
-
-//     if (Data[CWAPI_WD_Accuracy] >= 0.0) {
-//         set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
-//     }
-
-//     // CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
 // }
 
 // public Hook_DefaultReload_Pre(const ItemId, iClipSize, iAnim, Float:fDelay) {

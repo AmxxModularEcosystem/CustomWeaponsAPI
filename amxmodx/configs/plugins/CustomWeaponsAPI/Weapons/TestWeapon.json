@@ -3,5 +3,11 @@
     "Reference": "weapon_deagle",
     "DamageMult": 5.0,
     "MaxClip": 42,
-    "MaxAmmo": 84
+    "MaxAmmo": 84,
+    
+    "Models": {
+        "View": "models/v_p228.mdl",
+        "Player": "models/p_p228.mdl",
+        "World": "models/w_p228.mdl"
+    }
 }

@@ -86,9 +86,9 @@ stock bool:CfgUtils_JsonFree(&JSON:jValue) {
     return json_free(jValue);
 }
 
-#define JsonObject_ReadStringOr(%1,%2,%3,%4) \
-    if (json_object_has_value(%1, %2, JSONString)) { \
-        json_object_get_string(%1, %2, %3, %4); \
+#define JsonObject_ReadStringOr(%1,%2,%3,%4,%5) \
+    if (json_object_has_value(%1, %2, JSONString, %5)) { \
+        json_object_get_string(%1, %2, %3, %4, %5); \
     } else 
 
 stock bool:JsonObject_ReadString(const JSON:jObject, const sKey[], sOut[], const iOutLen, const sDefault[] = "", const bool:bDotNot = false) {

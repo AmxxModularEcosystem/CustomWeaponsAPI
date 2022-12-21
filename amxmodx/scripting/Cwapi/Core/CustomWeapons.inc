@@ -249,13 +249,13 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
 
     new WeaponData[S_CustomWeapon];
 
-    JsonObject_ReadStringOr(jWeapon, "Name", WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name])) {
+    JsonObject_ReadStringOr(jWeapon, "Name", WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]), false) {
         CfgUtils_GetFileName(sFile, WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]));
     }
 
     Dbg_PrintServer("CWeapons_LoadFromCfg('%s', %s): Read weapon '%s'.", sFile, bAbsolutePath ? "true" : "false", WeaponData[CWeapon_Name]);
 
-    JsonObject_ReadStringOr(jWeapon, "Reference", WeaponData[CWeapon_Reference], charsmax(WeaponData[CWeapon_Reference])) {
+    JsonObject_ReadStringOr(jWeapon, "Reference", WeaponData[CWeapon_Reference], charsmax(WeaponData[CWeapon_Reference]), false) {
         ThrowError("[ERROR] Invalid config structure. File '%s'.", CfgUtils_GetPath(sFile));
         CfgUtils_JsonFree(jWeapon);
         return Invalid_CustomWeapon;
