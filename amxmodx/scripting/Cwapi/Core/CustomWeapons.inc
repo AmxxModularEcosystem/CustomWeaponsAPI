@@ -2,6 +2,7 @@
 #include <reapi>
 #include <json>
 #include <regex>
+#include <cwapi>
 #include "Cwapi/ArrayMap"
 #include "Cwapi/Events"
 #include "Cwapi/Utils"
@@ -53,6 +54,19 @@ CWeapons_Init() {
 
 CWeapons_Count() {
     return ArrayMapSize(gCustomWeapons);
+}
+
+T_CustomWeapon:CWeapons_Iterate(const T_CustomWeapon:iWeapon, Weapon[S_CustomWeapon]) {
+    new iNextWeapon = _:iWeapon + 1;
+
+    // Пушки кончились
+    if (iNextWeapon >= CWeapons_Count()) {
+        return Invalid_CustomWeapon;
+    }
+
+    CWeapons_Get(T_CustomWeapon:iNextWeapon, Weapon);
+
+    return T_CustomWeapon:iNextWeapon;
 }
 
 static T_CustomWeapon:CWeapons__Create(const WeaponData[S_CustomWeapon]) {
