@@ -165,7 +165,6 @@ public Hook_WeaponBoxSetModel_Pre(const iWeaponBox, const szModelName[]) {
         && Weapon[CWeapon_Models][CWeapon_Model_World][0]
     ) {
         SetHookChainArg(2, ATYPE_STRING, Weapon[CWeapon_Models][CWeapon_Model_World]);
-        return HC_SUPERCEDE;
     }
 
     return HC_CONTINUE;
