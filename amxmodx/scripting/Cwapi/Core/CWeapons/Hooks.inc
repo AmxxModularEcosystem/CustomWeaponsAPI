@@ -37,9 +37,9 @@ static CWeapons_Hooks__RegReapi() {
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Pre", false);
     RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_AddPlayerItem_Pre", false);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Pre", false);
+    RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Post", true);
     // RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
     // RegisterHookChain(RG_CSGameRules_PlayerKilled, "Hook_PlayerKilled", true);
-    // RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Post", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Post", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
@@ -137,11 +137,6 @@ public Hook_AddPlayerItem_Pre(const UserId, const ItemId) {
 
     CWeapons_Call(Weapon, CWeapon_OnAddPlayerItem, [iWeapon, ItemId, UserId]);
 
-    // Так и не понял, чё с этим будет... Пусть пока так.
-    // if (Events_IsRet(CWAPI_STOP_MAIN)) {
-    //     return HC_BREAK;
-    // }
-
     return HC_CONTINUE;
 }
 
@@ -170,7 +165,7 @@ public Hook_WeaponBoxSetModel_Pre(const iWeaponBox, const szModelName[]) {
     return HC_CONTINUE;
 }
 
-public Hook_DefaultDeploy_Pre(const ItemId, szViewModel[], szWeaponModel[], iAnim, szAnimExt[], skiplocal) {
+public Hook_DefaultDeploy_Pre(const ItemId, szViewModel[], szWeaponModel[]) {
     new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
     if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
         return HC_CONTINUE;
@@ -188,15 +183,27 @@ public Hook_DefaultDeploy_Pre(const ItemId, szViewModel[], szWeaponModel[], iAni
         Dbg_PrintServer("Hook_DefaultDeploy_Pre(%d): Set '%s' as player model.", ItemId, Weapon[CWeapon_Models][CWeapon_Model_Player]);
     }
     
-    // if (Data[CWAPI_WD_DeployTime] >= 0.0) {
-    //     SetWeaponNextAttack(ItemId, Data[CWAPI_WD_DeployTime]);
-    // }
+    return HC_CONTINUE;
+}
+
+public Hook_DefaultDeploy_Post(const ItemId) {
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HC_CONTINUE;
+    }
+
+    Dbg_PrintServer("Hook_DefaultDeploy_Post(%d): For weapon '%s'.", ItemId, Weapon[CWeapon_Name]);
+    
+    if (Weapon[CWeapon_DeployTime] >= 0.0) {
+        SetWeaponNextAttack(ItemId, Weapon[CWeapon_DeployTime]);
+        Dbg_PrintServer("Hook_DefaultDeploy_Post(%d): Set next attack after %.2f seconds.", ItemId, Weapon[CWeapon_DeployTime]);
+    }
 
     // if (Data[CWAPI_WD_Accuracy] >= 0.0) {
     //     set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
     // }
 
-    // CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Deploy, ItemId);
+    CWeapons_Call(Weapon, CWeapon_OnDeploy, [iWeapon, ItemId]);
     
     return HC_CONTINUE;
 }
@@ -277,22 +284,6 @@ public Hook_DefaultDeploy_Pre(const ItemId, szViewModel[], szWeaponModel[], iAni
 //     }
 
 //     return HC_CONTINUE;
-// }
-
-// public Hook_DefaultDeploy_Post(const ItemId, szViewModel[], szWeaponModel[], iAnim, szAnimExt[], skiplocal) {
-//     new WeaponId = GetWeapId(ItemId);
-//     if (!IsCustomWeapon(WeaponId)) {
-//         return;
-//     }
-    
-//     new Data[CWAPI_WeaponData];
-//     ArrayGetArray(CustomWeapons, WeaponId, Data);
-
-//     if (Data[CWAPI_WD_Accuracy] >= 0.0) {
-//         set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
-//     }
-
-//     CallWeaponEvent(WeaponId, CWAPI_WE_Deploy, ItemId);
 // }
 
 // public Hook_DefaultReload_Post(const ItemId, iClipSize, iAnim, Float:fDelay) {

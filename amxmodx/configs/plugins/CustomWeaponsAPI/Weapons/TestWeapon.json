@@ -4,6 +4,7 @@
     "DamageMult": 5.0,
     "MaxClip": 42,
     "MaxAmmo": 84,
+    "DeployTime": 0.1,
     
     "Models": {
         "View": "models/v_p228.mdl",

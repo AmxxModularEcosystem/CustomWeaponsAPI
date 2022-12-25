@@ -23,9 +23,9 @@ enum _:S_CustomWeapon {
     CWeapon_Weight,
     CWeapon_MaxClip,
     CWeapon_MaxAmmo,
+    Float:CWeapon_DeployTime,
 
     // Float:CWeapon_MaxWalkSpeed,
-    // Float:CWeapon_DeployTime,
     // Float:CWeapon_ReloadTime,
     // Float:CWeapon_PrimaryAttackRate,
     // Float:CWeapon_SecondaryAttackRate,
@@ -162,7 +162,7 @@ CWeapons_AddEventListener(
 
     new iListener = -1;
     switch (iEvent) {
-        case CWeapon_OnSpawn:
+        case CWeapon_OnSpawn, CWeapon_OnDeploy:
             // (const T_CustomWeapon:iWeapon, const ItemId)
             iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL);
         case CWeapon_OnSetWeaponBoxModel:
@@ -266,6 +266,7 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
     WeaponData[CWeapon_MaxAmmo] = JsonObject_ReadInt(jWeapon, "MaxAmmo", -1);
     WeaponData[CWeapon_Weight] = JsonObject_ReadInt(jWeapon, "Weight", -1);
     WeaponData[CWeapon_DamageMult] = JsonObject_ReadFloat(jWeapon, "DamageMult", 1.0);
+    WeaponData[CWeapon_DeployTime] = JsonObject_ReadFloat(jWeapon, "DeployTime", -1.0);
 
     new Models[S_CWeapon_Models];
     JsonObject_ReadAndPrecacheModel(

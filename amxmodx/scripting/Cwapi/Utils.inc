@@ -66,9 +66,10 @@ stock GetItemFromWeaponBox(const WeaponBox) {
 }
 
 // Установка времени до следующего выстрела
-stock SetWeaponNextAttack(ItemId, Float:Rate) {
-    set_member(ItemId, m_Weapon_flNextPrimaryAttack, Rate);
-    set_member(ItemId, m_Weapon_flNextSecondaryAttack, Rate);
+stock SetWeaponNextAttack(const ItemId, const Float:fTime) {
+    set_member(get_member(ItemId, m_pPlayer), m_flNextAttack, fTime);
+    set_member(ItemId, m_Weapon_flNextPrimaryAttack, fTime);
+    set_member(ItemId, m_Weapon_flNextSecondaryAttack, fTime);
 }
 
 stock SetWeaponIdleAnim(const UserId, const ItemId) {

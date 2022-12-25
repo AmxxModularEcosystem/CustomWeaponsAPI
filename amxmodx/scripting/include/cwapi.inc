@@ -22,6 +22,7 @@ enum E_CWeapon_Event {
     CWeapon_OnSpawn,
     CWeapon_OnSetWeaponBoxModel,
     CWeapon_OnAddPlayerItem,
+    CWeapon_OnDeploy,
 }
 
 /**
