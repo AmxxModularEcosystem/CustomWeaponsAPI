@@ -683,9 +683,9 @@ GiveCustomWeapon(const UserId, const WeaponId, const CWAPI_GiveType:Type = CWAPI
 
     new WeaponIdType:DefaultWeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
 
-    // if (Data[CWAPI_WD_HasCustomHud]) {
-    rg_set_iteminfo(ItemId, ItemInfo_pszName, GetWeapFullName(Data[CWAPI_WD_Name]));
-    // }
+    if (Data[CWAPI_WD_HasCustomHud]) {
+        rg_set_iteminfo(ItemId, ItemInfo_pszName, GetWeapFullName(Data[CWAPI_WD_Name]));
+    }
 
     if (Data[CWAPI_WD_HasSecondaryAttack]) {
         set_member(ItemId, m_Weapon_bHasSecondaryAttack, Data[CWAPI_WD_HasSecondaryAttack]);
