@@ -11,6 +11,7 @@ stock const CWAPI_LIBRARY[] = "CustomWeaponsAPI";
 stock const CWAPI_VERSION_CVAR[] = "CWAPI_VERSION";
 stock const CWAPI_CONFIGS_FOLDER[] = "CustomWeaponsAPI";
 
+#define CWAPI_ABILITY_NAME_MAX_LEN 32
 #define CWAPI_WEAPON_NAME_MAX_LEN 32
 #define CWAPI_CALLBACK_MAX_LEN 32
 #define CWAPI_IMPULSE_OFFSET 4354
@@ -18,10 +19,36 @@ stock const CWAPI_CONFIGS_FOLDER[] = "CustomWeaponsAPI";
 
 enum T_CustomWeapon { Invalid_CustomWeapon = -1 }
 
+/**
+ * События кастомного оружия
+ */
 enum E_CWeapon_Event {
+    /**
+     * Вызывается при создании кастомного оружия перед установкой параметров.
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     */
     CWeapon_OnSpawn,
+
+    /**
+     * Вызывается при установке world модели
+     * 
+     * (const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     */
     CWeapon_OnSetWeaponBoxModel,
+
+    /**
+     * Вызывается при добавлении оружия игроку в инвентарь
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
+     */
     CWeapon_OnAddPlayerItem,
+
+    /**
+     * Вызывается при взятии оружия в руки
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     */
     CWeapon_OnDeploy,
 }
 
@@ -29,35 +56,142 @@ enum E_CWeapon_Event {
  * Публиные параметры кастомного оружия
  */
 enum E_CWeapon_Data {
+    /**
+     * Название стандартного оружия, на котором основано кастомное
+     * 
+     * Тип: Строка
+     */
     CWeaponData_Reference,
+
+    /**
+     * Название кастомного оружия
+     * 
+     * Тип: Строка
+     */
     CWeaponData_Name,
 }
 
+enum T_WeaponAbility { Invalid_WeaponAbility = -1 }
+
 enum {
-    // Продолжить вызов обработчиков и обработать событие
+    /**
+     * Продолжить вызов обработчиков и обработать событие
+     */
     CWAPI_CONTINUE = 0,
 
-    // Прекратить вызов обработчиков и прервать действия CWAPI, если они есть
+    /**
+     * Прекратить вызов обработчиков и прервать действия CWAPI, если они есть
+     */
     CWAPI_STOP,
 
-    // Прекратить вызов обработчиков, попытаться прервать действия по-умолчанию и прервать действия CWAPI, если они есть
+    /**
+     * Прекратить вызов обработчиков, попытаться прервать действия по-умолчанию и прервать действия CWAPI, если они есть
+     */
     CWAPI_STOP_MAIN,
 };
 
 enum CWeapon_GiveType {
-    CWAPI_GT_SMART = -1, // Для ножей GT_REPLACE, для гранат GT_APPEND, для остального GT_DROP_AND_REPLACE
-    CWAPI_GT_APPEND, // Аналог GT_APPEND
-    CWAPI_GT_REPLACE, // Аналог GT_REPLACE
-    CWAPI_GT_DROP, // Аналог GT_DROP_AND_REPLACE
+    /**
+     * Для ножей GT_REPLACE, для гранат GT_APPEND, для остального GT_DROP_AND_REPLACE
+     */
+    CWAPI_GT_SMART = -1,
+
+    /**
+     * Аналог GT_APPEND
+     */
+    CWAPI_GT_APPEND,
+
+    /**
+     * Аналог GT_REPLACE
+     */
+    CWAPI_GT_REPLACE,
+
+    /**
+     * Аналог GT_DROP_AND_REPLACE
+     */
+    CWAPI_GT_DROP,
 }
 
+/**
+ * Принудительная загрузка Custom Weapons API.
+ * 
+ * @note    Решает проблему порядка запуска плагинов.
+ *          В плагинах, использующих CWAPI, можно вызывать этот натив там, где удобно,
+ *          вместо ожидания форварда CWAPI_OnLoaded.
+ * 
+ * @note    Если CWAPI уже был загружен, ничего не произойдёт.
+ * 
+ * @noreturn
+ */
 native CWAPI_Init();
 
+/**
+ * Вызывается после инициализации и перед загрузкой оружия из файлов.
+ * 
+ * @note    Тут должны регистрироваться все способности.
+ * 
+ * @noreturn
+ */
 forward CWAPI_OnLoad();
+
+/**
+ * Вызывается после загрузки оружия из файлов.
+ * 
+ * @note    Вызов этого форварда означает полную готовность CWAPI к использованию.
+ * 
+ * @noreturn
+ */
 forward CWAPI_OnLoaded();
 
+/**
+ * Поиск кастомного оружия по его названию.
+ * 
+ * @param sWeaponName   Название кастомного оружия.
+ * 
+ * @return              Хендлер кастомного оружия или Invalid_CustomWeapon в случае неудачи.
+ */
+native T_CustomWeapon:CWAPI_Weapons_Find(const sWeaponName[]);
 
-native CWAPI_Weapons_Find(const sWeaponName[]);
-native CWAPI_Weapons_FindByItem(const ItemId);
-native CWAPI_Weapons_AddEventListener(const T_CustomWeapon:iWeapon, const E_CWeapon_Event:iEvent, const iPlugin, const sCallback[]);
+/**
+ * Поиск кастомного оружия по сущности предмета.
+ * 
+ * @param sWeaponName   Индекс сущности предмета.
+ * 
+ * @return              Хендлер кастомного оружия или Invalid_CustomWeapon в случае неудачи.
+ */
+native T_CustomWeapon:CWAPI_Weapons_FindByItem(const ItemId);
+
+/**
+ * Регистрация обработчика события кастомного оружия.
+ * 
+ * @param iWeapon   Хендлер кастомного оружия.
+ * @param iEvent    Событие.
+ * @param sCallback Название функции-обработчика.
+ * 
+ * @noreturn
+ */
+native CWAPI_Weapons_AddEventListener(const T_CustomWeapon:iWeapon, const E_CWeapon_Event:iEvent, const sCallback[]);
+
+/**
+ * Выдача кастомного оружия игроку.
+ * 
+ * @param UserId    Индекс игрока.
+ * @param iWeapon   Хендлер кастомного оружия.
+ * @param iGiveType Метод выдачи оружия (см. enum CWeapon_GiveType).
+ * 
+ * @noreturn
+ */
 native CWAPI_Weapons_Give(const UserId, const T_CustomWeapon:iWeapon, const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART);
+
+native CWAPI_Weapons_GetName(const T_CustomWeapon:iWeapon, sOut[], const iOutLen);
+
+stock CWAPI_Weapons_iGetName(const T_CustomWeapon:iWeapon) {
+    new sWeaponName[CWAPI_WEAPON_NAME_MAX_LEN];
+    CWAPI_Weapons_GetName(iWeapon, sWeaponName, charsmax(sWeaponName));
+
+    return sWeaponName;
+}
+
+native T_WeaponAbility:CWAPI_Abilities_Register(const sAbilityName[]);
+native CWAPI_Abilities_AddParams(const T_WeaponAbility:iAbility, any:... /* Params */);
+native CWAPI_Abilities_AddEventListener(const T_WeaponAbility:iAbility, const E_CWeapon_Event:iEvent, const sCallback[]);

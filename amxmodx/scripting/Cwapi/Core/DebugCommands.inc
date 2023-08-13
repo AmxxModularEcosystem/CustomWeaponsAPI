@@ -1,5 +1,6 @@
 #include <amxmodx>
 #include <cwapi>
+#include "Cwapi/Core/CustomWeapons"
 
 DbgCmds_Reg() {
     register_clcmd("Cwapi_Dbg_Give", "@DbgCmds_Give");

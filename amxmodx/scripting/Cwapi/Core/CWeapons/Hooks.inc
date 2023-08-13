@@ -199,10 +199,6 @@ public Hook_DefaultDeploy_Post(const ItemId) {
         Dbg_PrintServer("Hook_DefaultDeploy_Post(%d): Set next attack after %.2f seconds.", ItemId, Weapon[CWeapon_DeployTime]);
     }
 
-    // if (Data[CWAPI_WD_Accuracy] >= 0.0) {
-    //     set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
-    // }
-
     CWeapons_Call(Weapon, CWeapon_OnDeploy, [iWeapon, ItemId]);
     
     return HC_CONTINUE;

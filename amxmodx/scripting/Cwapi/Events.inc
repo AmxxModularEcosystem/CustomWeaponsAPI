@@ -97,14 +97,18 @@ stock bool:Events_HasListeners(const T_Events:aEvents, const any:iEvent) {
         )
 
 stock any:__Events_Call_ret;
-#define Events_SetReturnedValue(%1) \
-    __Events_Call_ret = %1
 
-#define Events_GetReturnedValue() \
-    __Events_Call_ret
+stock bool:Events_IsRet(const any:iValue) {
+    return Events_GetReturnedValue() == iValue;
+}
 
-#define Events_IsRet(%1) \
-    (Events_GetReturnedValue() == %1)
+stock Events_SetReturnedValue(const any:iValue) {
+    __Events_Call_ret = iValue;
+}
+
+stock Events_GetReturnedValue() {
+    return __Events_Call_ret;
+}
 
 #define Events_CallP(%1,%2,[%3]) Events_CompositeMacros( \
     Events_ForeachListener(%1, %2: __Events_Call_listeners[__Events_Call_i] => __Events_Call_listener) { \
@@ -115,9 +119,7 @@ stock any:__Events_Call_ret;
 #define Events_CallPWhile(%1,%2,[%3],%4) Events_CompositeMacros( \
     Events_ForeachListener(%1, %2: __Events_Call_listeners[__Events_Call_i] => __Events_Call_listener) { \
         ExecuteForward(__Events_Call_listener, __Events_Call_ret, %3); \
-        if (!(%4)) { \
-            break; \
-        } \
+        if (!(%4)) break; \
     } \
 )
 
@@ -130,8 +132,6 @@ stock any:__Events_Call_ret;
 #define Events_CallWhile(%1,%2,%3) Events_CompositeMacros( \
     Events_ForeachListener(%1, %2: __Events_Call_listeners[__Events_Call_i] => __Events_Call_listener) { \
         ExecuteForward(__Events_Call_listener, __Events_Call_ret); \
-        if (!(%3)) { \
-            break; \
-        } \
+        if (!(%3)) break; \
     } \
 )

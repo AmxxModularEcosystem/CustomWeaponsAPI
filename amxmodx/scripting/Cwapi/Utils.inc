@@ -7,13 +7,8 @@
 #include <reapi>
 #include <json>
 
-stock const __INT_TEMPLATE_STR[] = "%d";
-
 #define CompositeMacros(%1) \
     do { %1 } while(is_linux_server() == 0xDEADBEEF)
-
-#define IntToStr(%1) \
-    fmt(__INT_TEMPLATE_STR, %1)
 
 const WEAPON_PISTOLS = (
     BIT(_:WEAPON_P228)
@@ -31,14 +26,20 @@ const WEAPON_GRENADE = (
     | BIT(_:WEAPON_FLASHBANG)
 );
 
-#define IsWeaponSilenced(%0) \
-    bool:((WPNSTATE_M4A1_SILENCED | WPNSTATE_USP_SILENCED) & get_member(%0, m_Weapon_iWeaponState))
-
 #define CallOnce() CompositeMacros( \
     static bool:__CallOnce_bCalled; \
-    if (__CallOnce_bCalled) return; \
+    if (__CallOnce_bCalled) \
+        return; \
     __CallOnce_bCalled = true; \
 )
+
+stock IntToStr(const iNum) {
+    return fmt("%d", iNum);
+}
+
+stock bool:IsWeaponSilenced(const ItemId) {
+    return bool:((WPNSTATE_M4A1_SILENCED | WPNSTATE_USP_SILENCED) & get_member(ItemId, m_Weapon_iWeaponState));
+}
 
 stock GetAttackerWeapon(const AttackerId, const InflictorId) {
     if (InflictorId != AttackerId) {
@@ -140,7 +141,7 @@ stock GetAmxxVersionNum() {
 )
 
 stock CreateConstCvar(const sCvarName[], const sCvarValue[]) {
-    set_pcvar_string(create_cvar(sCvarName, sCvarValue), sCvarValue);
+    set_pcvar_string(create_cvar(sCvarName, sCvarValue, FCVAR_SERVER), sCvarValue);
 }
 
 stock bool:mult_member_f(const EntId, const any:iMember, const Float:fMult) {

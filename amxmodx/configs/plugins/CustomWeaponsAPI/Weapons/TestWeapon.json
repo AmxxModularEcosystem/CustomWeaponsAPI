@@ -10,5 +10,12 @@
         "View": "models/v_p228.mdl",
         "Player": "models/p_p228.mdl",
         "World": "models/w_p228.mdl"
+    },
+
+    "Abilities": {
+        "TestAbility": {
+            "TestInteger": 123,
+            "TestString": "321"
+        }
     }
 }

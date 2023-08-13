@@ -1,10 +1,12 @@
 #include <amxmodx>
+#include <ParamsController>
 #include <cwapi>
 #include "Cwapi/Utils"
 #include "Cwapi/ArrayTrieUtils"
 #include "Cwapi/CfgUtils"
 #include "Cwapi/Forwards"
 #include "Cwapi/DebugMode"
+#include "Cwapi/Core/Params"
 
 #include "Cwapi/Core/CustomWeapons"
 #include "Cwapi/Core/DebugCommands"

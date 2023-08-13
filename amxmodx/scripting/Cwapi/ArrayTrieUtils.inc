@@ -5,11 +5,21 @@
 
 #include <amxmodx>
 
-#define ArraySizeSafe(%1) \
-    (%1 == Invalid_Array ? 0 : ArraySize(%1))
+stock ArraySizeSafe(const Array:iArr) {
+    if (iArr == Invalid_Array) {
+        return 0;
+    }
 
-#define TrieSizeSafe(%1) \
-    (%1 == Invalid_Trie ? 0 : TrieGetSize(%1))
+    return ArraySize(iArr);
+}
+
+stock TrieSizeSafe(const Trie:iTrie) {
+    if (iTrie == Invalid_Trie) {
+        return 0;
+    }
+
+    return TrieGetSize(iTrie);
+}
 
 stock ArrayDestroySafe(Array:a) {
     if (a != Invalid_Array) {
@@ -23,39 +33,44 @@ stock TrieDestroySafe(Trie:t) {
     }
 }
 
-#define ArrayForeachArray(%1=>%2[%3]) \
-    ArrayForeachArrayEx(%1 => %2[%3], __i__)
-
-#define ArrayForeachArrayEx(%1=>%2[%3],%4) \
-    if(%1 != Invalid_Array)\
-        for(new %2[%3], %4 = 0; %4 < ArraySizeSafe(%1); %4++)\
-            if(ArrayGetArray(%1, %4, %2))
-
-#define ArrayForeachArray2(%1:%4=>%2[%3]) \
+#define ArrayForeachArray(%1:%4=>%2[%3]) \
     if(%1 != Invalid_Array) \
         for(new %2[%3], %4 = 0; %4 < ArraySizeSafe(%1); %4++) \
             if(ArrayGetArray(%1, %4, %2))
+
+#define ArrayForeachCell(%1:%2=>%3) \
+    if(%1 != Invalid_Array) \
+        for(new %3, %2 = 0; %2 < ArraySizeSafe(%1); %2++) \
+            if((%3 = ArrayGetCell(%1, %2, %2)) == %3)
 
 #define ArrayForeachString(%1:%4=>%2[%3]) \
     if(%1 != Invalid_Array) \
         for(new %2[%3], %4 = 0; %4 < ArraySizeSafe(%1); %4++) \
             if(ArrayGetString(%1, %4, %2, charsmax(%2)))
 
-#define ArrayCreateIfNotCreated(%1,%2) \
-    %1 = (%1 == Invalid_Array) \
-        ? ArrayCreate(%2) \
-        : %1
+stock Array:ArrayCreateIfNotCreated(&Array:iArr, const iCellSize = 1, const iReserved = 1) {
+    if (iArr == Invalid_Array) {
+        return iArr = ArrayCreate(iCellSize, iReserved);
+    } else {
+        return iArr;
+    }
+}
 
-#define TrieCreateIfNotCreated(%1) \
-    %1 = (%1 == Invalid_Trie) \
-        ? TrieCreate() \
-        : %1
+stock Array:TrieCreateIfNotCreated(&Trie:iTrie) {
+    if (iTrie == Invalid_Trie) {
+        return iTrie = TrieCreate();
+    } else {
+        return iTrie;
+    }
+}
 
-#define ArrayDestroyIfEmpty(%1) \
-    CompositeMacros( \
-        if(!ArraySizeSafe(%1)) \
-            ArrayDestroy(%1); \
-    )
+stock Array:ArrayDestroyIfEmpty(&Array:iArr) {
+    if (!ArraySizeSafe(iArr)) {
+        ArrayDestroy(iArr);
+    }
+    
+    return iArr;
+}
 
 stock Array:ArrayMergeCells(const Array:a1, const Array:a2) {
     new Array:aMerged = ArrayClone(a1);

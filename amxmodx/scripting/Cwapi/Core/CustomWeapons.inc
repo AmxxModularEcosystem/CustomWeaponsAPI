@@ -1,3 +1,8 @@
+#if defined __cwapi_CustomWeapons_included
+    #endinput
+#endif
+#define __cwapi_CustomWeapons_included
+
 #include <amxmodx>
 #include <reapi>
 #include <json>
@@ -6,7 +11,9 @@
 #include "Cwapi/ArrayMap"
 #include "Cwapi/Events"
 #include "Cwapi/Utils"
+#include "Cwapi/ArrayTrieUtils"
 #include "Cwapi/CfgUtils"
+#include "Cwapi/Core/CWeapons/Abilities"
 
 enum S_CWeapon_Models {
     CWeapon_Model_View[PLATFORM_MAX_PATH],
@@ -15,6 +22,7 @@ enum S_CWeapon_Models {
 }
 
 enum _:S_CustomWeapon {
+    T_CustomWeapon:CWeapon_Index,
     CWeapon_Reference[32],
     WeaponIdType:CWeapon_ReferenceId,
     CWeapon_Name[CWAPI_WEAPON_NAME_MAX_LEN],
@@ -33,23 +41,36 @@ enum _:S_CustomWeapon {
     // bool:CWeapon_HasCustomHud,
 
     T_Events:CWeapon_Events,
+    Array:CWeapon_Abilities, // T_WAbility_Unit[]
 }
 
 static ArrayMap(gCustomWeapons);
 
-#define CWeapons_Call(%1,%2,[%3]) CompositeMacros ( \
+#define CWeapons_Call(%1,%2,[%3]) CompositeMacros( \
+    CWeapons_CallSelf(%1, %2, [%3]); \
+    if (Events_IsRet(CWAPI_CONTINUE)) { \
+        CWeapons_CallAbilities(%1, %2, [%3]); \
+    } \
+)
+
+
+#define CWeapons_CallSelf(%1,%2,[%3]) CompositeMacros( \
     Events_SetReturnedValue(CWAPI_CONTINUE); \
-    Events_CallPWhile( \
-        %1[CWeapon_Events], \
-        %2, \
-        [%3], \
-        (Events_IsRet(CWAPI_CONTINUE)) \
-    ); \
+    Events_CallPWhile(%1[CWeapon_Events], %2, [%3, Invalid_Trie], Events_IsRet(CWAPI_CONTINUE)); \
+)
+
+#define CWeapons_CallAbilities(%1,%2,[%3]) CompositeMacros( \
+    ArrayForeachCell (%1[CWeapon_Abilities]: __CWeapons_CallAbilities_i => __CWeapons_CallAbilities_iAbilityUnit) { \
+        new __CWeapons_CallAbilities_AbilityUnit[S_WAbility_Unit]; \
+        WAbilityUnit_Get(T_WAbility_Unit:__CWeapons_CallAbilities_iAbilityUnit, __CWeapons_CallAbilities_AbilityUnit); \
+        WAbilityUnit_Call(__CWeapons_CallAbilities_AbilityUnit, %2, [%3]); \
+    } \
 )
 
 CWeapons_Init() {
-    InitArrayMap(gCustomWeapons, S_CustomWeapon, 8);
+    InitArrayMap(gCustomWeapons, S_CustomWeapon, 4);
     CWeapons_Hooks_Init();
+    WAbility_Init();
 }
 
 CWeapons_Count() {
@@ -78,10 +99,19 @@ static T_CustomWeapon:CWeapons__Create(const WeaponData[S_CustomWeapon]) {
     new Weapon[S_CustomWeapon];
     Weapon = WeaponData;
 
+    Weapon[CWeapon_Index] = T_CustomWeapon:ArrayMapSize(gCustomWeapons);
     Weapon[CWeapon_Events] = Events_Init(E_CWeapon_Event);
     CWeapons_Hooks_RegForWeapon(Weapon[CWeapon_Reference], Weapon[CWeapon_Name]);
 
-    return T_CustomWeapon:ArrayMapPushArray(gCustomWeapons, Weapon, Weapon[CWeapon_Name]);
+    new T_CustomWeapon:iCustomWeapon = T_CustomWeapon:ArrayMapPushArray(gCustomWeapons, Weapon, Weapon[CWeapon_Name]);
+
+    // Такое вообще может случиться?)
+    if (iCustomWeapon != Weapon[CWeapon_Index]) {
+        log_amx("ChZH?!");
+        return Invalid_CustomWeapon;
+    }
+
+    return iCustomWeapon;
 }
 
 bool:CWeapons_IsValidIndex(const any:iWeapon) {
@@ -160,24 +190,7 @@ CWeapons_AddEventListener(
     new Weapon[S_CustomWeapon];
     CWeapons_Get(iWeapon, Weapon);
 
-    new iListener = -1;
-    switch (iEvent) {
-        case CWeapon_OnSpawn, CWeapon_OnDeploy:
-            // (const T_CustomWeapon:iWeapon, const ItemId)
-            iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL);
-        case CWeapon_OnSetWeaponBoxModel:
-            // (const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId)
-            iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL);
-        case CWeapon_OnAddPlayerItem:
-            // (const T_CustomWeapon:iWeapon, const ItemId, const UserId)
-            iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL);
-    }
-
-    if (iListener < 0) {
-        ThrowError("Can`t create forward for function '%s' in plugin #%d.", sCallback, iPlugin);
-    }
-
-    Events_PushListener(Weapon[CWeapon_Events], iEvent, iListener);
+    Events_PushListener(Weapon[CWeapon_Events], iEvent, CWeaponUtils_MakeEventCallback(iEvent, iPlugin, sCallback));
 }
 
 static GiveType:CWeapons__ResolveGiveType(
@@ -288,6 +301,12 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
     );
 
     WeaponData[CWeapon_Models] = Models;
+
+    if (json_object_has_value(jWeapon, "Abilities", JSONObject)) {
+        new JSON:jAbilities = json_object_get_value(jWeapon, "Abilities");
+        WeaponData[CWeapon_Abilities] = WAbilityUnit_ReadJsonObject(jAbilities);
+        CfgUtils_JsonFree(jAbilities);
+    }
     
     CfgUtils_JsonFree(jWeapon);
 
