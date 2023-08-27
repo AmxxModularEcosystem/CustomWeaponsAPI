@@ -669,6 +669,14 @@ GiveCustomWeapon(const UserId, const WeaponId, const CWAPI_GiveType:Type = CWAPI
     } else {
         WeaponGiveType = GiveType:Type;
     }
+    
+    if (rg_has_item_by_name(UserId, GetWeapFullName(Data[CWAPI_WD_DefaultName]))) {
+        if (WeaponGiveType == GT_DROP_AND_REPLACE) {
+            rg_drop_item(UserId, GetWeapFullName(Data[CWAPI_WD_DefaultName]));
+        } else {
+            rg_remove_item(UserId, GetWeapFullName(Data[CWAPI_WD_DefaultName]));
+        }
+    }
 
     new ItemId = rg_give_custom_item(
         UserId,
