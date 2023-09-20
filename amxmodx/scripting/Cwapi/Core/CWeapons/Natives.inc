@@ -45,7 +45,7 @@ T_CustomWeapon:@_Weapons_FindByItem() {
     new UserId = get_param(Arg_UserId);
     new CWeapon_GiveType:iGiveType = CWeapon_GiveType:get_param(Arg_iGiveType);
 
-    CWeapons_Give(UserId, iWeapon, iGiveType);
+    return CWeapons_Give(UserId, iWeapon, iGiveType);
 }
 
 @_Weapons_GetName(const iPlugin) {

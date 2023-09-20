@@ -179,7 +179,7 @@ native CWAPI_Weapons_AddEventListener(const T_CustomWeapon:iWeapon, const E_CWea
  * @param iWeapon   Хендлер кастомного оружия.
  * @param iGiveType Метод выдачи оружия (см. enum CWeapon_GiveType).
  * 
- * @noreturn
+ * @return          Индекс созданный ентити предмета. -1, если оружие по какой-то причине не было выдано.
  */
 native CWAPI_Weapons_Give(const UserId, const T_CustomWeapon:iWeapon, const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART);
 
