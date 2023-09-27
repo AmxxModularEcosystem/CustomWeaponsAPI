@@ -11,7 +11,7 @@ enum _E_Ham_WeaponHook{
 
 static const _HAM_WEAPON_HOOKS[][_E_Ham_WeaponHook] = {
     {Ham_Spawn, "Hook_Spawn_Post", true},
-    // {Ham_Item_Holster, "Hook_PlayerItemHolster", true},
+    {Ham_Item_Holster, "Hook_ItemHolster_Pre", false},
     // {Ham_CS_Item_GetMaxSpeed, "Hook_PlayerGetMaxSpeed", false},
     // {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Post", true},
     // {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Pre", false},
@@ -204,6 +204,17 @@ public Hook_DefaultDeploy_Post(const ItemId) {
     return HC_CONTINUE;
 }
 
+public Hook_ItemHolster_Pre(const ItemId) {
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HAM_IGNORED;
+    }
+
+    CWeapons_Call(Weapon, CWeapon_OnHolster, [iWeapon, ItemId]);
+    
+    return HAM_IGNORED;
+}
+
 // public Hook_PlayerTakeDamage(const Victim, Inflictor, Attacker, Float:Damage, DamageBits) {
 //     if (
 //         !is_user_connected(Victim)
@@ -325,15 +336,6 @@ public Hook_DefaultDeploy_Post(const ItemId) {
 //     }
     
 //     return HC_CONTINUE;
-// }
-
-// public Hook_PlayerItemHolster(const ItemId) {
-//     if (!IsCustomWeapon(GetWeapId(ItemId))) {
-//         return;
-//     }
-
-//     CallWeaponEvent(GetWeapId(ItemId), CWAPI_WE_Holster, ItemId);
-//     return;
 // }
 
 // public Hook_PlayerGetMaxSpeed(const ItemId) {

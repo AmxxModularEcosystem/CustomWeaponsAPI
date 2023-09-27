@@ -50,6 +50,13 @@ enum E_CWeapon_Event {
      * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
      */
     CWeapon_OnDeploy,
+
+    /**
+     * Вызывается при убирания оружия из рук
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     */
+    CWeapon_OnHolster,
 }
 
 /**
