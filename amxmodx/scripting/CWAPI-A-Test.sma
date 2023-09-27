@@ -15,6 +15,7 @@ public CWAPI_OnLoad() {
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnSetWeaponBoxModel, "@OnSetWeaponBoxModel");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnAddPlayerItem, "@OnAddPlayerItem");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnDeploy, "@OnDeploy");
+    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnHolster, "@OnHolster");
 }
 
 @OnSpawn(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
@@ -51,6 +52,15 @@ public CWAPI_OnLoad() {
     TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
     PrintMessage(iWeapon, ItemId, "@OnDeploy(%d, %d, %d): Number = %d, String = %s", iWeapon, ItemId, tAbilityParams, iTestInteger, sTestString);
+}
+
+@OnHolster(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
+    new iTestInteger;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+    new sTestString[64];
+    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
+
+    PrintMessage(iWeapon, ItemId, "@OnHolster(%d, %d, %d): Number = %d, String = %s", iWeapon, ItemId, tAbilityParams, iTestInteger, sTestString);
 }
 
 PrintMessage(const T_CustomWeapon:iWeapon, const ItemId, const sMsg[], const any:...) {
