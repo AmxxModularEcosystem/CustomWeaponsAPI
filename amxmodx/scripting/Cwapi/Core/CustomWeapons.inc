@@ -60,7 +60,8 @@ static ArrayMap(gCustomWeapons);
 )
 
 #define CWeapons_CallAbilities(%1,%2,[%3]) CompositeMacros( \
-    ArrayForeachCell (%1[CWeapon_Abilities]: __CWeapons_CallAbilities_i => __CWeapons_CallAbilities_iAbilityUnit) { \
+    for (new __CWeapons_CallAbilities_i = 0; __CWeapons_CallAbilities_i < ArraySizeSafe(%1[CWeapon_Abilities]); ++__CWeapons_CallAbilities_i) { \
+        new __CWeapons_CallAbilities_iAbilityUnit = ArrayGetCell(%1[CWeapon_Abilities], __CWeapons_CallAbilities_i); \
         new __CWeapons_CallAbilities_AbilityUnit[S_WAbility_Unit]; \
         WAbilityUnit_Get(T_WAbility_Unit:__CWeapons_CallAbilities_iAbilityUnit, __CWeapons_CallAbilities_AbilityUnit); \
         WAbilityUnit_Call(__CWeapons_CallAbilities_AbilityUnit, %2, [%3]); \
