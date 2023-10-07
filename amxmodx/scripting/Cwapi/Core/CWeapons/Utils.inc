@@ -9,7 +9,7 @@
 CWeaponUtils_MakeEventCallback(const E_CWeapon_Event:iEvent, const iPlugin, const sCallback[]) {
     new iListener = -1;
     switch (iEvent) {
-        case CWeapon_OnSpawn, CWeapon_OnDeploy:
+        case CWeapon_OnSpawn, CWeapon_OnDeploy, CWeapon_OnHolster:
             // (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
             iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL);
         case CWeapon_OnSetWeaponBoxModel:
