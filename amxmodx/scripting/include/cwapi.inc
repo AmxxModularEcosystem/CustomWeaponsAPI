@@ -52,11 +52,18 @@ enum E_CWeapon_Event {
     CWeapon_OnDeploy,
 
     /**
-     * Вызывается при убирания оружия из рук
+     * Вызывается при убирании оружия из рук
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
      */
     CWeapon_OnHolster,
+
+    /**
+     * Вызывается при удалении оружия из инвентаря игрока
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
+     */
+    CWeapon_OnRemovePlayerItem,
 }
 
 /**

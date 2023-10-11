@@ -36,6 +36,7 @@ CWeapons_Hooks_RegForWeapon(const sReference[], const sWeaponName[]) {
 static CWeapons_Hooks__RegReapi() {
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Pre", false);
     RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_AddPlayerItem_Pre", false);
+    RegisterHookChain(RG_CBasePlayer_RemovePlayerItem, "Hook_RemovePlayerItem_Post", true);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Pre", false);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Post", true);
     // RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
@@ -136,6 +137,21 @@ public Hook_AddPlayerItem_Pre(const UserId, const ItemId) {
     }
 
     CWeapons_Call(Weapon, CWeapon_OnAddPlayerItem, [iWeapon, ItemId, UserId]);
+
+    return HC_CONTINUE;
+}
+
+public Hook_RemovePlayerItem_Post(const UserId, const ItemId) {
+    if (!is_user_connected(UserId)) {
+        return HC_CONTINUE;
+    }
+
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HC_CONTINUE;
+    }
+
+    CWeapons_Call(Weapon, CWeapon_OnRemovePlayerItem, [iWeapon, ItemId, UserId]);
 
     return HC_CONTINUE;
 }
