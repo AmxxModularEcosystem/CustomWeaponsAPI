@@ -64,6 +64,13 @@ enum E_CWeapon_Event {
      * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
      */
     CWeapon_OnRemovePlayerItem,
+
+    /**
+     * Вызывается при убийстве игрока оружием
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const KillerId, const Trie:tAbilityParams = Invalid_Trie)
+     */
+    CWeapon_OnPlayerKilled,
 }
 
 /**

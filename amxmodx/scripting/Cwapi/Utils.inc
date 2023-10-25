@@ -203,3 +203,10 @@ stock WeaponIdType:GetWeaponIdByName(const sWeaponName[]) {
 stock InstantReload(const ItemId) {
     set_member(ItemId, m_Weapon_iClip, rg_get_iteminfo(ItemId, ItemInfo_iMaxClip));
 }
+
+stock bool:IsUserIdValid(const UserId) {
+    return (
+        UserId > 0
+        && UserId <= MAX_PLAYERS
+    );
+}

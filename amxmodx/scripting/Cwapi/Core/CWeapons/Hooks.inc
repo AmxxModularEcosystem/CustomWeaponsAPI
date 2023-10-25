@@ -34,13 +34,14 @@ CWeapons_Hooks_RegForWeapon(const sReference[], const sWeaponName[]) {
 }
 
 static CWeapons_Hooks__RegReapi() {
+    RegisterHookChain(RG_CSGameRules_PlayerKilled, "Hook_PlayerKilled_Post", true);
+
     RegisterHookChain(RG_CWeaponBox_SetModel, "Hook_WeaponBoxSetModel_Pre", false);
     RegisterHookChain(RG_CBasePlayer_AddPlayerItem, "Hook_AddPlayerItem_Pre", false);
     RegisterHookChain(RG_CBasePlayer_RemovePlayerItem, "Hook_RemovePlayerItem_Post", true);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Pre", false);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Post", true);
     // RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
-    // RegisterHookChain(RG_CSGameRules_PlayerKilled, "Hook_PlayerKilled", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Post", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
@@ -66,6 +67,25 @@ static CWeapons_Hooks__RegHam(const sWeaponName[]) {
 }
 
 // Callbacks
+
+public Hook_PlayerKilled_Post(const VictimId, const KillerId, const InflictorId) {
+    if (KillerId != InflictorId) {
+        return;
+    }
+
+    if (!IsUserIdValid(KillerId)) {
+        return;
+    }
+
+    new ItemId = get_member(KillerId, m_pActiveItem);
+
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return;
+    }
+    
+    CWeapons_Call(Weapon, CWeapon_OnPlayerKilled, [iWeapon, ItemId, VictimId, KillerId]);
+}
 
 public Hook_WeaponCommand(const UserId) {
     if (!is_user_alive(UserId)) {
@@ -255,29 +275,6 @@ public Hook_ItemHolster_Pre(const ItemId) {
 //         return HC_SUPERCEDE;
 //     }
 
-//     return HC_CONTINUE;
-// }
-
-// public Hook_PlayerKilled(const Victim, const Attacker, const Inflictor) {
-//     if (
-//         !is_user_connected(Victim)
-//         || !is_user_connected(Attacker)
-//     ) {
-//         return HC_CONTINUE;
-//     }
-        
-//     new ItemId = GetAttackerWeapon(Attacker, Inflictor);
-
-//     if (is_nullent(ItemId)) {
-//         return HC_CONTINUE;
-//     }
-
-//     new WeaponId = GetWeapId(ItemId);
-//     if (!IsCustomWeapon(WeaponId)) {
-//         return HC_CONTINUE;
-//     }
-
-//     CallWeaponEvent(WeaponId, CWAPI_WE_Kill, ItemId, Victim);
 //     return HC_CONTINUE;
 // }
 
