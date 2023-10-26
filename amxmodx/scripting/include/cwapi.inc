@@ -15,9 +15,14 @@ stock const CWAPI_CONFIGS_FOLDER[] = "CustomWeaponsAPI";
 #define CWAPI_WEAPON_NAME_MAX_LEN 32
 #define CWAPI_CALLBACK_MAX_LEN 32
 #define CWAPI_IMPULSE_OFFSET 4354
+
 #define var_CWAPI_ItemOwner var_iuser4
+#define pev_CWAPI_ItemOwner pev_iuser4
+#define EV_INT_CWAPI_ItemOwner EV_INT_iuser4
 
 enum T_CustomWeapon { Invalid_CustomWeapon = -1 }
+
+enum T_WeaponAbility { Invalid_WeaponAbility = -1 }
 
 /**
  * События кастомного оружия
@@ -91,8 +96,6 @@ enum E_CWeapon_Data {
      */
     CWeaponData_Name,
 }
-
-enum T_WeaponAbility { Invalid_WeaponAbility = -1 }
 
 enum {
     /**
@@ -204,8 +207,24 @@ native CWAPI_Weapons_AddEventListener(const T_CustomWeapon:iWeapon, const E_CWea
  */
 native CWAPI_Weapons_Give(const UserId, const T_CustomWeapon:iWeapon, const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART);
 
+/**
+ * Получение названия кастомного оружия.
+ * 
+ * @param iWeapon   Хендлер кастомного оружия.
+ * @param sOut      Буфер для записи названия кастомного оружия.
+ * @param iOutLen   Размер буфера.
+ * 
+ * @return          Количество записанных в буфер ячеек.
+ */
 native CWAPI_Weapons_GetName(const T_CustomWeapon:iWeapon, sOut[], const iOutLen);
 
+/**
+ * Получение названия кастомного оружия.
+ * 
+ * @param iWeapon   Хендлер кастомного оружия.
+ * 
+ * @return          Название кастомного оружия.
+ */
 stock CWAPI_Weapons_iGetName(const T_CustomWeapon:iWeapon) {
     new sWeaponName[CWAPI_WEAPON_NAME_MAX_LEN];
     CWAPI_Weapons_GetName(iWeapon, sWeaponName, charsmax(sWeaponName));
@@ -213,6 +232,45 @@ stock CWAPI_Weapons_iGetName(const T_CustomWeapon:iWeapon) {
     return sWeaponName;
 }
 
+/**
+ * Регистрация способности кастомного оружия.
+ * 
+ * @param sAbilityName  Название способности.
+ * 
+ * @return              Хендлер зарегистрированной способности.
+ */
 native T_WeaponAbility:CWAPI_Abilities_Register(const sAbilityName[]);
+
+/**
+ * Добавление параметров для способности кастомного оружия.
+ * 
+ * @param iAbility  Хендлер способности.
+ * @param any:...   Перечисление параметров.
+ * 
+ * @note            Формат перечисления параметров:
+ *                      CWAPI_Abilities_AddParams(..., const sParamName[], const sParamType[], const bool:bParamRequired, ...);
+ * 
+ * @note            sParamName - Название параметра;
+ *                  sParamType - Название типа параметра;
+ *                  bParamRequired - Обязателен ли параметр.
+ * 
+ * @note            Пример:
+ *                      CWAPI_Abilities_AddParams(iAbility,
+ *                          "Param1", "String", true,
+ *                          "Param2", "Integer", false
+ *                      );
+ * 
+ * @noreturn
+ */
 native CWAPI_Abilities_AddParams(const T_WeaponAbility:iAbility, any:... /* Params */);
+
+/**
+ * Добавление обработчика события кастомного оружия для способности.
+ * 
+ * @param iAbility  Хендлер способности.
+ * @param iEvent    Элемент перечисления события.
+ * @param sCallback Название функции-обработчика.
+ * 
+ * @noreturn
+ */
 native CWAPI_Abilities_AddEventListener(const T_WeaponAbility:iAbility, const E_CWeapon_Event:iEvent, const sCallback[]);
