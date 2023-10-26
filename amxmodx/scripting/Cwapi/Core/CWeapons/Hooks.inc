@@ -144,6 +144,8 @@ public Hook_Spawn_Post(const ItemId) {
     }
 
     MultItemDamage(ItemId, Weapon[CWeapon_DamageMult]);
+    
+    set_entvar(ItemId, var_CWAPI_ItemOwner, 0);
 }
 
 public Hook_AddPlayerItem_Pre(const UserId, const ItemId) {
@@ -156,6 +158,10 @@ public Hook_AddPlayerItem_Pre(const UserId, const ItemId) {
         return HC_CONTINUE;
     }
 
+    if (get_entvar(ItemId, var_CWAPI_ItemOwner) == 0) {
+        set_entvar(ItemId, var_CWAPI_ItemOwner, UserId);
+    }
+
     CWeapons_Call(Weapon, CWeapon_OnAddPlayerItem, [iWeapon, ItemId, UserId]);
 
     return HC_CONTINUE;
@@ -164,8 +170,8 @@ public Hook_AddPlayerItem_Pre(const UserId, const ItemId) {
 public Hook_RemovePlayerItem_Post(const UserId, const ItemId) {
     if (!is_user_connected(UserId)) {
         return HC_CONTINUE;
-    }
 
+    }
     new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
     if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
         return HC_CONTINUE;
