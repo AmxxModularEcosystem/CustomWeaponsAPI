@@ -129,7 +129,7 @@ public Hook_Spawn_Post(const ItemId) {
         return;
     }
     
-    rg_set_iteminfo(ItemId, ItemInfo_pszName, Weapon[CWeapon_Name]);
+    // rg_set_iteminfo(ItemId, ItemInfo_pszName, Weapon[CWeapon_Name]);
 
     // set_member_if_specified(ItemId, m_Weapon_bHasSecondaryAttack, Weapon[CWeapon_HasSecondaryAttack], false);
     rg_set_iteminfo_if_specified(ItemId, ItemInfo_iWeight, Weapon[CWeapon_Weight], -1);

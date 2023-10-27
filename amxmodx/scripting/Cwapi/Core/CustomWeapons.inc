@@ -243,6 +243,8 @@ CWeapons_Give(
 
     Dbg_PrintServer("CWeapons_Give(%d, %d, %d): Item's index - %d", UserId, iWeapon, iGiveType, ItemId);
 
+    FillBpAmmoByItem(UserId, ItemId);
+
     return ItemId;
 }
 

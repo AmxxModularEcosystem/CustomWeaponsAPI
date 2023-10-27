@@ -210,3 +210,10 @@ stock bool:IsUserIdValid(const UserId) {
         && UserId <= MAX_PLAYERS
     );
 }
+
+FillBpAmmoByItem(const UserId, const ItemId) {
+    new iMaxAmmo = rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo1);
+    new WeaponIdType:WeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
+
+    rg_set_user_bpammo(UserId, WeaponId, iMaxAmmo);
+}
