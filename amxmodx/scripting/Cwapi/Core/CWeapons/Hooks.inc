@@ -95,14 +95,14 @@ public Hook_WeaponCommand(const UserId) {
     new sWeaponName[CWAPI_WEAPON_NAME_MAX_LEN];
     read_argv(0, sWeaponName, charsmax(sWeaponName));
     
-    Dbg_PrintServer("Hook_WeaponCommand(%n): Exec cmd.", UserId);
+    Dbg_Log("Hook_WeaponCommand(%n): Exec cmd.", UserId);
     
     new Weapon[S_CustomWeapon];
     if (!CWeapons_GetByName(sWeaponName, Weapon)) {
         return PLUGIN_CONTINUE;
     }
     
-    Dbg_PrintServer("Hook_WeaponCommand(%n): For weapon '%s'.", UserId, Weapon[CWeapon_Name]);
+    Dbg_Log("Hook_WeaponCommand(%n): For weapon '%s'.", UserId, Weapon[CWeapon_Name]);
 
     engclient_cmd(UserId, Weapon[CWeapon_Reference]);
     return PLUGIN_HANDLED_MAIN;
@@ -114,11 +114,11 @@ public Hook_Spawn_Post(const ItemId) {
         return;
     }
 
-    Dbg_PrintServer("Hook_Spawn_Post(%d): For weapon '%s'.", ItemId, Weapon[CWeapon_Name]);
+    Dbg_Log("Hook_Spawn_Post(%d): For weapon '%s'.", ItemId, Weapon[CWeapon_Name]);
 
     CWeapons_Call(Weapon, CWeapon_OnSpawn, [iWeapon, ItemId]);
     
-    Dbg_PrintServer("Hook_Spawn_Post(%d): Event return - %d", ItemId, Events_GetReturnedValue());
+    Dbg_Log("Hook_Spawn_Post(%d): Event return - %d", ItemId, Events_GetReturnedValue());
 
     if (Events_IsRet(CWAPI_STOP_MAIN)) {
         RemoveEntity(ItemId);
@@ -213,16 +213,16 @@ public Hook_DefaultDeploy_Pre(const ItemId, szViewModel[], szWeaponModel[]) {
         return HC_CONTINUE;
     }
 
-    Dbg_PrintServer("Hook_DefaultDeploy_Pre(%d): For weapon '%s'.", ItemId, Weapon[CWeapon_Name]);
+    Dbg_Log("Hook_DefaultDeploy_Pre(%d): For weapon '%s'.", ItemId, Weapon[CWeapon_Name]);
 
     if (Weapon[CWeapon_Models][CWeapon_Model_View][0]) {
         SetHookChainArg(2, ATYPE_STRING, Weapon[CWeapon_Models][CWeapon_Model_View]);
-        Dbg_PrintServer("Hook_DefaultDeploy_Pre(%d): Set '%s' as view model.", ItemId, Weapon[CWeapon_Models][CWeapon_Model_View]);
+        Dbg_Log("Hook_DefaultDeploy_Pre(%d): Set '%s' as view model.", ItemId, Weapon[CWeapon_Models][CWeapon_Model_View]);
     }
     
     if (Weapon[CWeapon_Models][CWeapon_Model_Player][0]) {
         SetHookChainArg(3, ATYPE_STRING, Weapon[CWeapon_Models][CWeapon_Model_Player]);
-        Dbg_PrintServer("Hook_DefaultDeploy_Pre(%d): Set '%s' as player model.", ItemId, Weapon[CWeapon_Models][CWeapon_Model_Player]);
+        Dbg_Log("Hook_DefaultDeploy_Pre(%d): Set '%s' as player model.", ItemId, Weapon[CWeapon_Models][CWeapon_Model_Player]);
     }
     
     return HC_CONTINUE;
@@ -234,11 +234,11 @@ public Hook_DefaultDeploy_Post(const ItemId) {
         return HC_CONTINUE;
     }
 
-    Dbg_PrintServer("Hook_DefaultDeploy_Post(%d): For weapon '%s'.", ItemId, Weapon[CWeapon_Name]);
+    Dbg_Log("Hook_DefaultDeploy_Post(%d): For weapon '%s'.", ItemId, Weapon[CWeapon_Name]);
     
     if (Weapon[CWeapon_DeployTime] >= 0.0) {
         SetWeaponNextAttack(ItemId, Weapon[CWeapon_DeployTime]);
-        Dbg_PrintServer("Hook_DefaultDeploy_Post(%d): Set next attack after %.2f seconds.", ItemId, Weapon[CWeapon_DeployTime]);
+        Dbg_Log("Hook_DefaultDeploy_Post(%d): Set next attack after %.2f seconds.", ItemId, Weapon[CWeapon_DeployTime]);
     }
 
     CWeapons_Call(Weapon, CWeapon_OnDeploy, [iWeapon, ItemId]);
@@ -251,6 +251,8 @@ public Hook_ItemHolster_Pre(const ItemId) {
     if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
         return HAM_IGNORED;
     }
+    
+    Dbg_Log("Hook_ItemHolster_Pre(%d) - Weapon[CWeapon_Name] = %s", ItemId, Weapon[CWeapon_Name]);
 
     CWeapons_Call(Weapon, CWeapon_OnHolster, [iWeapon, ItemId]);
     

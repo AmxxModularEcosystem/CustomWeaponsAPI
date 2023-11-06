@@ -222,7 +222,7 @@ CWeapons_Give(
     // CWeapons_Call(...);
 
     new GiveType:iResolvedGiveType = CWeapons__ResolveGiveType(Weapon[CWeapon_ReferenceId], iGiveType);
-    Dbg_PrintServer("CWeapons_Give(%d, %d, %d): Resolved give type - %d", UserId, iWeapon, iGiveType, iResolvedGiveType);
+    Dbg_Log("CWeapons_Give(%d, %d, %d): Resolved give type - %d", UserId, iWeapon, iGiveType, iResolvedGiveType);
 
     // Удаление/выбрасывание референсного оружия, если оно есть
     // Мб как-то можно более просто это сделать?)
@@ -241,7 +241,7 @@ CWeapons_Give(
         _:iWeapon + CWAPI_IMPULSE_OFFSET
     );
 
-    Dbg_PrintServer("CWeapons_Give(%d, %d, %d): Item's index - %d", UserId, iWeapon, iGiveType, ItemId);
+    Dbg_Log("CWeapons_Give(%d, %d, %d): Item's index - %d", UserId, iWeapon, iGiveType, ItemId);
 
     if (!is_nullent(ItemId)) {
         FillBpAmmoByItem(UserId, ItemId);
@@ -271,7 +271,7 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
         CfgUtils_GetFileName(sFile, WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]));
     }
 
-    Dbg_PrintServer("CWeapons_LoadFromCfg('%s', %s): Read weapon '%s'.", sFile, bAbsolutePath ? "true" : "false", WeaponData[CWeapon_Name]);
+    Dbg_Log("CWeapons_LoadFromCfg('%s', %s): Read weapon '%s'.", sFile, bAbsolutePath ? "true" : "false", WeaponData[CWeapon_Name]);
 
     JsonObject_ReadStringOr(jWeapon, "Reference", WeaponData[CWeapon_Reference], charsmax(WeaponData[CWeapon_Reference]), false) {
         ThrowError("[ERROR] Invalid config structure. File '%s'.", CfgUtils_GetPath(sFile));
@@ -319,7 +319,7 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
 }
 
 CWeapons_LoadFromFolder(const sFolder[]) {
-    Dbg_PrintServer("CWeapons_LoadFromFolder('%s'): Call func.", sFolder);
+    Dbg_Log("CWeapons_LoadFromFolder('%s'): Call func.", sFolder);
 
     new sFile[PLATFORM_MAX_PATH], iDirHandler, FileType:iType;
     iDirHandler = open_dir(CfgUtils_GetPath(sFolder), sFile, charsmax(sFile), iType);
@@ -328,7 +328,7 @@ CWeapons_LoadFromFolder(const sFolder[]) {
         return;
     }
     
-    Dbg_PrintServer("CWeapons_LoadFromFolder('%s'): Read weapons from folder '%s'.", sFolder, sFolder);
+    Dbg_Log("CWeapons_LoadFromFolder('%s'): Read weapons from folder '%s'.", sFolder, sFolder);
 
     new Regex:iRegEx_FileName, ret;
     iRegEx_FileName = regex_compile("(.+).json$", ret, "", 0, "i");
