@@ -8,7 +8,7 @@ public ParamsController_OnRegisterTypes() {
     // Возможно выглядит странно, но вроде норм)
     CWAPI_Init();
 
-    ParamsController_RegSimpleType("CWAPI-Weapon", "@OnWeaponParamRead");
+    ParamsController_RegSimpleType(CWAPI_WEAPON_PARAM_TYPE_NAME, "@OnWeaponParamRead");
 }
 
 @OnWeaponParamRead(const JSON:jValue) {

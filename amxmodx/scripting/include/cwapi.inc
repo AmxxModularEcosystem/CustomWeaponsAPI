@@ -10,6 +10,7 @@ stock const CWAPI_VERSION[] = _CWAPI_VERSION;
 stock const CWAPI_LIBRARY[] = "CustomWeaponsAPI";
 stock const CWAPI_VERSION_CVAR[] = "CWAPI_VERSION";
 stock const CWAPI_CONFIGS_FOLDER[] = "CustomWeaponsAPI";
+stock const CWAPI_WEAPON_PARAM_TYPE_NAME[] = "CWAPI-Weapon";
 
 #define CWAPI_ABILITY_NAME_MAX_LEN 32
 #define CWAPI_WEAPON_NAME_MAX_LEN 32
