@@ -9,6 +9,7 @@ public ParamsController_OnRegisterTypes() {
     CWAPI_Init();
 
     ParamsController_RegSimpleType(CWAPI_WEAPON_PARAM_TYPE_NAME, "@OnWeaponParamRead");
+    ParamsController_RegSimpleType(CWAPI_GIVE_TYPE_PARAM_TYPE_NAME, "@OnGiveTypeParamRead");
 }
 
 @OnWeaponParamRead(const JSON:jValue) {
@@ -22,4 +23,19 @@ public ParamsController_OnRegisterTypes() {
     }
     
     return ParamsController_SetCell(iWeapon);
+}
+
+@OnGiveTypeParamRead(const JSON:jValue) {
+    new sValue[32];
+    json_get_string(jValue, sValue, charsmax(sValue));
+    
+    new bool:bIsValid;
+    new CWeapon_GiveType:iGiveType = CWeaponUtils_StrToGiveType(sValue, bIsValid);
+
+    if (!bIsValid) {
+        ThrowError("Give type '%s' in invalid.", sValue);
+        return false;
+    }
+    
+    return ParamsController_SetCell(iGiveType);
 }

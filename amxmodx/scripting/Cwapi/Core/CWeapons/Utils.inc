@@ -29,3 +29,30 @@ CWeaponUtils_MakeEventCallback(const E_CWeapon_Event:iEvent, const iPlugin, cons
     
     return iListener;
 }
+
+CWeapon_GiveType:CWeaponUtils_StrToGiveType(const sType[], &bool:bIsValid = false) {
+    static Trie:tTypesMap = Invalid_Trie;
+    if (tTypesMap == Invalid_Trie) {
+        tTypesMap = TrieCreate();
+        TrieSetCell(tTypesMap, "Smart", CWAPI_GT_SMART);
+        TrieSetCell(tTypesMap, "CWAPI_GT_SMART", CWAPI_GT_SMART);
+
+        TrieSetCell(tTypesMap, "Append", CWAPI_GT_APPEND);
+        TrieSetCell(tTypesMap, "Add", CWAPI_GT_APPEND);
+        TrieSetCell(tTypesMap, "CWAPI_GT_APPEND", CWAPI_GT_APPEND);
+        TrieSetCell(tTypesMap, "GT_APPEND", CWAPI_GT_APPEND);
+
+        TrieSetCell(tTypesMap, "Replace", CWAPI_GT_REPLACE);
+        TrieSetCell(tTypesMap, "CWAPI_GT_REPLACE", CWAPI_GT_REPLACE);
+        TrieSetCell(tTypesMap, "GT_REPLACE", CWAPI_GT_REPLACE);
+
+        TrieSetCell(tTypesMap, "Drop", CWAPI_GT_DROP);
+        TrieSetCell(tTypesMap, "CWAPI_GT_DROP", CWAPI_GT_DROP);
+        TrieSetCell(tTypesMap, "GT_DROP_AND_REPLACE", CWAPI_GT_DROP);
+    }
+
+    new CWeapon_GiveType:iType = CWAPI_GT_SMART;
+    bIsValid = TrieGetCell(tTypesMap, sType, iType);
+
+    return iType;
+}
