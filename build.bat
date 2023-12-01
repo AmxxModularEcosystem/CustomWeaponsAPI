@@ -64,7 +64,9 @@ if "%PACKAGE_ASSETS_USE%" == "1" (
 
 echo Compress files to ZIP archive...
 call :del %ZIP_FILE%
-call :zip %BUILD_ROOT_PATH%/*, %ZIP_FILE%
+cd %BUILD_ROOT_PATH%
+call :zip ./* %ZIP_FILE%
+cd %ROOT_PATH%
 
 echo Cleanup temp files...
 call :deldir %BUILD_ROOT_PATH%
@@ -90,5 +92,6 @@ exit /b
 exit /b
 
 :zip
-    powershell Compress-Archive %~1 %~2 -Force
+    rem powershell Compress-Archive %~1 %~2 -Force
+    zip -r9 %~2 ./%~1
 exit /b
