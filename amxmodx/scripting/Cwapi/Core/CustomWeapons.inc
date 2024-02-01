@@ -287,23 +287,29 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
     WeaponData[CWeapon_DeployTime] = JsonObject_ReadFloat(jWeapon, "DeployTime", -1.0);
 
     new Models[S_CWeapon_Models];
-    JsonObject_ReadAndPrecacheModel(
+    if (!JsonObject_ReadAndPrecacheModel(
         jWeapon, "Models.View",
         Models[CWeapon_Model_View], charsmax(Models[CWeapon_Model_View]),
         .bDotNot = true
-    );
-
-    JsonObject_ReadAndPrecacheModel(
+    )) {
+        log_amx("[WARNING] Model file '%s' not found. File '%s'.", Models[CWeapon_Model_View], CfgUtils_GetPath(sFile));
+    }
+    
+    if (!JsonObject_ReadAndPrecacheModel(
         jWeapon, "Models.World",
         Models[CWeapon_Model_World], charsmax(Models[CWeapon_Model_World]),
         .bDotNot = true
-    );
-
-    JsonObject_ReadAndPrecacheModel(
+    )) {
+        log_amx("[WARNING] Model file '%s' not found. File '%s'.", Models[CWeapon_Model_World], CfgUtils_GetPath(sFile));
+    }
+    
+    if (!JsonObject_ReadAndPrecacheModel(
         jWeapon, "Models.Player",
         Models[CWeapon_Model_Player], charsmax(Models[CWeapon_Model_Player]),
         .bDotNot = true
-    );
+    )) {
+        log_amx("[WARNING] Model file '%s' not found. File '%s'.", Models[CWeapon_Model_Player], CfgUtils_GetPath(sFile));
+    }
 
     WeaponData[CWeapon_Models] = Models;
 

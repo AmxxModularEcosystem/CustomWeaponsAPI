@@ -125,7 +125,7 @@ stock bool:JsonObject_ReadBool(const JSON:jObject, const sKey[], const bool:bDef
 
 stock bool:JsonObject_ReadAndPrecacheModel(const JSON:jObject, const sKey[], sOut[], const iOutLen, const bool:bDotNot = false) {
     JsonObject_ReadStringOr(jObject, sKey, sOut, iOutLen, bDotNot) {
-        return false;
+        return true;
     }
 
     if (!file_exists(sOut)) {
