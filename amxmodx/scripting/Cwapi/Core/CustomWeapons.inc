@@ -45,6 +45,7 @@ enum _:S_CustomWeapon {
 }
 
 static ArrayMap(gCustomWeapons);
+static bool:g_bIsInited = false;
 
 #define CWeapons_Call(%1,%2,[%3]) CompositeMacros( \
     CWeapons_CallSelf(%1, %2, [%3]); \
@@ -52,7 +53,6 @@ static ArrayMap(gCustomWeapons);
         CWeapons_CallAbilities(%1, %2, [%3]); \
     } \
 )
-
 
 #define CWeapons_CallSelf(%1,%2,[%3]) CompositeMacros( \
     Events_SetReturnedValue(CWAPI_CONTINUE); \
@@ -69,9 +69,16 @@ static ArrayMap(gCustomWeapons);
 )
 
 CWeapons_Init() {
+    CallOnce();
+    g_bIsInited = true;
+
     InitArrayMap(gCustomWeapons, S_CustomWeapon, 4);
     CWeapons_Hooks_Init();
     WAbility_Init();
+}
+
+bool:CWeapons_IsInited() {
+    return g_bIsInited;
 }
 
 CWeapons_Count() {

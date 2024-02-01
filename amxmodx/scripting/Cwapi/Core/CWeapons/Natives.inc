@@ -1,5 +1,16 @@
 #include <amxmodx>
 #include "Cwapi/Natives"
+#include "Cwapi/Utils"
+
+#include "Cwapi/Core/CustomWeapons"
+
+#define API_CWeapons_CheckInitP(%1) CompositeMacros( \
+    if (!CWeapons_IsInited()) { \
+        log_error(1, "Attempt interact with custom weapons before init them."); \
+        return %1; \
+    } \
+)
+#define API_CWeapons_CheckInit() API_CWeapons_CheckInitP( )
 
 CWeapons_Natives_Reg() {
     Natives_Reg("Weapons_Find");
@@ -11,6 +22,8 @@ CWeapons_Natives_Reg() {
 
 T_CustomWeapon:@_Weapons_Find() {
     enum {Arg_sWeaponName = 1}
+    
+    API_CWeapons_CheckInitP(Invalid_CustomWeapon);
 
     new sWeaponName[CWAPI_WEAPON_NAME_MAX_LEN];
     get_string(Arg_sWeaponName, sWeaponName, charsmax(sWeaponName));
@@ -20,6 +33,8 @@ T_CustomWeapon:@_Weapons_Find() {
 
 T_CustomWeapon:@_Weapons_FindByItem() {
     enum {Arg_ItemId = 1}
+    
+    API_CWeapons_CheckInitP(Invalid_CustomWeapon);
 
     new ItemId = get_param(Arg_ItemId);
 
@@ -28,6 +43,8 @@ T_CustomWeapon:@_Weapons_FindByItem() {
 
 @_Weapons_AddEventListener(const iPlugin) {
     enum {Arg_iWeapon = 1, Arg_iEvent, Arg_sCallback}
+    
+    API_CWeapons_CheckInit();
 
     new T_CustomWeapon:iWeapon = T_CustomWeapon:get_param(Arg_iWeapon);
     new E_CWeapon_Event:iEvent = E_CWeapon_Event:get_param(Arg_iEvent);
@@ -40,6 +57,8 @@ T_CustomWeapon:@_Weapons_FindByItem() {
 
 @_Weapons_Give(const iPlugin) {
     enum {Arg_UserId = 1, Arg_iWeapon, Arg_iGiveType}
+    
+    API_CWeapons_CheckInitP(0);
 
     new T_CustomWeapon:iWeapon = T_CustomWeapon:get_param(Arg_iWeapon);
     new UserId = get_param(Arg_UserId);
@@ -50,6 +69,8 @@ T_CustomWeapon:@_Weapons_FindByItem() {
 
 @_Weapons_GetName(const iPlugin) {
     enum {Arg_iWeapon = 1, Arg_sOut, Arg_iOutLen}
+    
+    API_CWeapons_CheckInitP(0);
 
     new T_CustomWeapon:iWeapon = T_CustomWeapon:get_param(Arg_iWeapon);
     new iOutLen = get_param(Arg_iOutLen);

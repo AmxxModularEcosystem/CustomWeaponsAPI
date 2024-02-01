@@ -6,6 +6,7 @@
 #include <amxmodx>
 #include <json>
 #include <ParamsController>
+#include "Cwapi/Utils"
 #include "Cwapi/Events"
 #include "Cwapi/ArrayMap"
 #include "Cwapi/Core/CWeapons/Utils"
@@ -36,12 +37,20 @@ enum T_WAbility_Unit { Invalid_WAbility_Unit = -1}
 
 static ArrayMap(gAbilities); // S_WeaponAbility[]
 static Array:gAbilityUnits; // S_WAbility_Unit[]
+static bool:g_bIsInited = false;
 
 WAbility_Init() {
+    CallOnce();
+    g_bIsInited = true;
+
     InitArrayMap(gAbilities, S_WeaponAbility, 1);
     gAbilityUnits = ArrayCreate(S_WAbility_Unit, 1);
 
     ParamsController_Init();
+}
+
+WAbility_IsInited() {
+    return g_bIsInited;
 }
 
 T_WeaponAbility:WAbility_Create(const sAbilityName[]) {
