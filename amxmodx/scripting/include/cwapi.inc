@@ -34,6 +34,9 @@ enum E_CWeapon_Event {
      * Вызывается при создании кастомного оружия перед установкой параметров.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * При возвращении CWAPI_STOP_MAIN создание оружия будет полностью отменено. Натив CWAPI_Weapons_Give при этом вернёт -1.
+     * При возвращении CWAPI_STOP оружие будет создано, но кастомные параметры не будут установлены.
      */
     CWeapon_OnSpawn,
 
@@ -78,6 +81,15 @@ enum E_CWeapon_Event {
      * (const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const KillerId, const Trie:tAbilityParams = Invalid_Trie)
      */
     CWeapon_OnPlayerKilled,
+    
+    /**
+     * Вызывается после полного создания кастомного оружия.
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * Возвращаемое значение игнорируется.
+     */
+    CWeapon_OnSpawnPost,
 }
 
 /**

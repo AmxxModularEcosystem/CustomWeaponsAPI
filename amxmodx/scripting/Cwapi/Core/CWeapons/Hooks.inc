@@ -128,14 +128,11 @@ public Hook_Spawn_Post(const ItemId) {
     if (Events_IsRet(CWAPI_STOP)) {
         return;
     }
-    
-    // rg_set_iteminfo(ItemId, ItemInfo_pszName, Weapon[CWeapon_Name]);
 
     // set_member_if_specified(ItemId, m_Weapon_bHasSecondaryAttack, Weapon[CWeapon_HasSecondaryAttack], false);
     rg_set_iteminfo_if_specified(ItemId, ItemInfo_iWeight, Weapon[CWeapon_Weight], -1);
     
     new WeaponIdType:WeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
-    
     if (WeaponId != WEAPON_KNIFE) {
         rg_set_iteminfo_if_specified(ItemId, ItemInfo_iMaxClip, Weapon[CWeapon_MaxClip], -1);
         rg_set_iteminfo_if_specified(ItemId, ItemInfo_iMaxAmmo1, Weapon[CWeapon_MaxAmmo], -1);
@@ -146,6 +143,8 @@ public Hook_Spawn_Post(const ItemId) {
     MultItemDamage(ItemId, Weapon[CWeapon_DamageMult]);
     
     set_entvar(ItemId, var_CWAPI_ItemOwner, 0);
+
+    CWeapons_Call(Weapon, CWeapon_OnSpawnPost, [iWeapon, ItemId]);
 }
 
 public Hook_AddPlayerItem_Pre(const UserId, const ItemId) {
