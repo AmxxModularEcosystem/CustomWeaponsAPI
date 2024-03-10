@@ -280,7 +280,7 @@ public Hook_PlayerTakeDamage(const VictimId, InflictorId, AttackerId, Float:fDam
     SetHookChainArg(4, ATYPE_FLOAT, fDamage);
     SetHookChainArg(5, ATYPE_INTEGER, iDamageBits);
 
-    if (!Events_IsRet(CWAPI_STOP_MAIN)) {
+    if (Events_IsRet(CWAPI_STOP_MAIN)) {
         SetHookChainReturn(ATYPE_INTEGER, 0);
         return HC_SUPERCEDE;
     }
