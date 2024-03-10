@@ -235,12 +235,15 @@ public Hook_DefaultDeploy_Post(const ItemId) {
 
     Dbg_Log("Hook_DefaultDeploy_Post(%d): For weapon '%s'.", ItemId, Weapon[CWeapon_Name]);
 
-    CWeapons_Call(Weapon, CWeapon_OnDeploy, [iWeapon, ItemId, Weapon[CWeapon_DeployTime]]);
-    
+    new Float:fDeployTime = get_member(get_member(ItemId, m_pPlayer), m_flNextAttack);
     if (Weapon[CWeapon_DeployTime] >= 0.0) {
-        SetWeaponNextAttack(ItemId, Weapon[CWeapon_DeployTime]);
-        Dbg_Log("Hook_DefaultDeploy_Post(%d): Set next attack after %.2f seconds.", ItemId, Weapon[CWeapon_DeployTime]);
+        fDeployTime = Weapon[CWeapon_DeployTime];
     }
+
+    CWeapons_Call(Weapon, CWeapon_OnDeploy, [iWeapon, ItemId, fDeployTime]);
+    
+    SetWeaponNextAttack(ItemId, fDeployTime);
+    Dbg_Log("Hook_DefaultDeploy_Post(%d): Set next attack after %.2f seconds.", ItemId, fDeployTime);
     
     return HC_CONTINUE;
 }
