@@ -57,7 +57,7 @@ enum E_CWeapon_Event {
     /**
      * Вызывается при взятии оружия в руки
      * 
-     * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     * (const T_CustomWeapon:iWeapon, const ItemId, &Float:fDeployTime, const Trie:tAbilityParams = Invalid_Trie)
      */
     CWeapon_OnDeploy,
 
@@ -90,6 +90,15 @@ enum E_CWeapon_Event {
      * Возвращаемое значение игнорируется.
      */
     CWeapon_OnSpawnPost,
+    
+    /**
+     * Вызывается при нанесении урона кастомным оружием.
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const InflictorId, const AttackerId, &Float:fDamage, &iDamageBits, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * При возвращении CWAPI_STOP_MAIN урон нанесён не будет.
+     */
+    CWeapon_OnDamage,
 }
 
 /**

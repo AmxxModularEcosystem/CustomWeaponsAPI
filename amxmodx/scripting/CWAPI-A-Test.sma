@@ -55,13 +55,13 @@ public CWAPI_OnLoad() {
     PrintMessage(iWeapon, ItemId, "@OnAddPlayerItem(%d, %d, %n, %d): Number = %d, String = %s", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger, sTestString);
 }
 
-@OnDeploy(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
+@OnDeploy(const T_CustomWeapon:iWeapon, const ItemId, &Float:fDeployTime, const Trie:tAbilityParams) {
     new iTestInteger;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
     new sTestString[64];
     TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
-    PrintMessage(iWeapon, ItemId, "@OnDeploy(%d, %d, %d): Number = %d, String = %s", iWeapon, ItemId, tAbilityParams, iTestInteger, sTestString);
+    PrintMessage(iWeapon, ItemId, "@OnDeploy(%d, %d, %.2f, %d): Number = %d, String = %s", iWeapon, ItemId, fDeployTime, tAbilityParams, iTestInteger, sTestString);
 }
 
 @OnHolster(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
@@ -71,6 +71,15 @@ public CWAPI_OnLoad() {
     TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
     PrintMessage(iWeapon, ItemId, "@OnHolster(%d, %d, %d): Number = %d, String = %s", iWeapon, ItemId, tAbilityParams, iTestInteger, sTestString);
+}
+
+@OnDamage(const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const InflictorId, const AttackerId, &Float:fDamage, &iDamageBits, const Trie:tAbilityParams) {
+    new iTestInteger;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+    new sTestString[64];
+    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
+
+    PrintMessage(iWeapon, ItemId, "@OnDamage(%d, %d, %d, %d, %d, %.2f, %d, %d): Number = %d, String = %s", iWeapon, ItemId, VictimId, InflictorId, AttackerId, fDamage, iDamageBits, tAbilityParams, iTestInteger, sTestString);
 }
 
 PrintMessage(const T_CustomWeapon:iWeapon, const ItemId, const sMsg[], const any:...) {

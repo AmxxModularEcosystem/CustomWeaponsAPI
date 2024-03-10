@@ -10,8 +10,8 @@ CWeaponUtils_MakeEventCallback(const E_CWeapon_Event:iEvent, const iPlugin, cons
     new iListener = -1;
     switch (iEvent) {
         case CWeapon_OnSpawn, CWeapon_OnSpawnPost, CWeapon_OnDeploy, CWeapon_OnHolster:
-            // (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
-            iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL);
+            // (const T_CustomWeapon:iWeapon, const ItemId, &Float:fDeployTime, const Trie:tAbilityParams = Invalid_Trie)
+            iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_VAL_BYREF, FP_CELL);
         case CWeapon_OnSetWeaponBoxModel:
             // (const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
             iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL, FP_CELL);
@@ -21,6 +21,9 @@ CWeaponUtils_MakeEventCallback(const E_CWeapon_Event:iEvent, const iPlugin, cons
         case CWeapon_OnPlayerKilled:
             // (const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const KillerId, const Trie:tAbilityParams = Invalid_Trie)
             iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL, FP_CELL, FP_CELL);
+        case CWeapon_OnDamage:
+            // (const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const InflictorId, const AttackerId, &Float:fDamage, &iDamageBits, const Trie:tAbilityParams = Invalid_Trie)
+            iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL, FP_CELL, FP_CELL, FP_VAL_BYREF, FP_VAL_BYREF, FP_CELL);
     }
 
     if (iListener < 0) {
