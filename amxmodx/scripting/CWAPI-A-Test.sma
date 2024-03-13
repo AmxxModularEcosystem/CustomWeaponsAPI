@@ -17,6 +17,8 @@ public CWAPI_OnLoad() {
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnAddPlayerItem, "@OnAddPlayerItem");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnDeploy, "@OnDeploy");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnHolster, "@OnHolster");
+    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnDamage, "@OnDamage");
+    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnReload, "@OnReload");
 }
 
 @OnSpawn(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
@@ -80,6 +82,15 @@ public CWAPI_OnLoad() {
     TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
     PrintMessage(iWeapon, ItemId, "@OnDamage(%d, %d, %d, %d, %d, %.2f, %d, %d): Number = %d, String = %s", iWeapon, ItemId, VictimId, InflictorId, AttackerId, fDamage, iDamageBits, tAbilityParams, iTestInteger, sTestString);
+}
+
+@OnReload(const T_CustomWeapon:iWeapon, const ItemId, &iClipSize, &iAnim, &Float:fDelay, const Trie:tAbilityParams) {
+    new iTestInteger;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+    new sTestString[64];
+    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
+
+    PrintMessage(iWeapon, ItemId, "@OnReload(%d, %d, %d, %d, %.2f, %d): Number = %d, String = %s", iWeapon, ItemId, iClipSize, iAnim, fDelay, tAbilityParams, iTestInteger, sTestString);
 }
 
 PrintMessage(const T_CustomWeapon:iWeapon, const ItemId, const sMsg[], const any:...) {

@@ -27,6 +27,9 @@ CWeaponUtils_MakeEventCallback(const E_CWeapon_Event:iEvent, const iPlugin, cons
         case CWeapon_OnDamage:
             // (const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const InflictorId, const AttackerId, &Float:fDamage, &iDamageBits, const Trie:tAbilityParams = Invalid_Trie)
             iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL, FP_CELL, FP_CELL, FP_VAL_BYREF, FP_VAL_BYREF, FP_CELL);
+        case CWeapon_OnReload:
+            // (const T_CustomWeapon:iWeapon, const ItemId, &iClipSize, &iAnim, &Float:fDelay, const Trie:tAbilityParams = Invalid_Trie)
+            iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_VAL_BYREF, FP_VAL_BYREF, FP_VAL_BYREF, FP_CELL);
     }
 
     if (iListener < 0) {

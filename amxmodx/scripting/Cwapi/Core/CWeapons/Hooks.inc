@@ -41,8 +41,8 @@ static CWeapons_Hooks__RegReapi() {
     RegisterHookChain(RG_CBasePlayer_RemovePlayerItem, "Hook_RemovePlayerItem_Post", true);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Pre", false);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Post", true);
-    RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage", false);
-    // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
+    RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage_Post", false);
+    RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Post", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
 }
@@ -261,7 +261,7 @@ public Hook_ItemHolster_Pre(const ItemId) {
     return HAM_IGNORED;
 }
 
-public Hook_PlayerTakeDamage(const VictimId, InflictorId, AttackerId, Float:fDamage, iDamageBits) {
+public Hook_PlayerTakeDamage_Post(const VictimId, InflictorId, AttackerId, Float:fDamage, iDamageBits) {
     if (
         !is_user_connected(VictimId)
         || !is_user_connected(AttackerId)
@@ -282,39 +282,39 @@ public Hook_PlayerTakeDamage(const VictimId, InflictorId, AttackerId, Float:fDam
 
     if (Events_IsRet(CWAPI_STOP_MAIN)) {
         SetHookChainReturn(ATYPE_INTEGER, 0);
-        return HC_SUPERCEDE;
+        return HC_BREAK;
     }
 
     return HC_CONTINUE;
 }
 
-// public Hook_DefaultReload_Pre(const ItemId, iClipSize, iAnim, Float:fDelay) {
-//     new WeaponId = GetWeapId(ItemId);
-//     if (!IsCustomWeapon(WeaponId)) {
-//         return HC_CONTINUE;
-//     }
+public Hook_DefaultReload_Pre(const ItemId, iClipSize, iAnim, Float:fDelay) {
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HC_CONTINUE;
+    }
 
-//     new UserId = get_member(ItemId, m_pPlayer);
+    if (Weapon[CWeapon_ReloadTime] >= 0.0) {
+        fDelay = Weapon[CWeapon_ReloadTime];
+    }
 
-//     if (
-//         get_member(ItemId, m_Weapon_iClip) >= iClipSize
-//         || !CallWeaponEvent(WeaponId, CWAPI_WE_Reload, ItemId)
-//     ) {
-//         SetWeaponIdleAnim(UserId, ItemId);
-//         SetHookChainReturn(ATYPE_INTEGER, false);
+    CWeapons_Call(Weapon, CWeapon_OnReload, [iWeapon, ItemId, iClipSize, iAnim, fDelay]);
+    SetHookChainArg(2, ATYPE_INTEGER, iClipSize);
+    SetHookChainArg(3, ATYPE_INTEGER, iAnim);
+    SetHookChainArg(4, ATYPE_FLOAT, fDelay);
 
-//         return HC_BREAK;
-//     }
-    
-//     new Data[CWAPI_WeaponData];
-//     ArrayGetArray(CustomWeapons, WeaponId, Data);
+    if (
+        !Events_IsRet(CWAPI_STOP_MAIN)
+        || get_member(ItemId, m_Weapon_iClip) >= iClipSize
+    ) {
+        SetWeaponIdleAnim(get_member(ItemId, m_pPlayer), ItemId);
 
-//     if (Data[CWAPI_WD_ReloadTime] >= 0.0) {
-//         SetHookChainArg(4, ATYPE_FLOAT, Data[CWAPI_WD_ReloadTime]);
-//     }
+        SetHookChainReturn(ATYPE_INTEGER, false);
+        return HC_BREAK;
+    }
 
-//     return HC_CONTINUE;
-// }
+    return HC_CONTINUE;
+}
 
 // public Hook_DefaultReload_Post(const ItemId, iClipSize, iAnim, Float:fDelay) {
 //     new WeaponId = GetWeapId(ItemId);

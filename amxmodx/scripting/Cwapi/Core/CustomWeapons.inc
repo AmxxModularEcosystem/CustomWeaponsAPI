@@ -32,9 +32,9 @@ enum _:S_CustomWeapon {
     CWeapon_MaxClip,
     CWeapon_MaxAmmo,
     Float:CWeapon_DeployTime,
+    Float:CWeapon_ReloadTime,
 
     // Float:CWeapon_MaxWalkSpeed,
-    // Float:CWeapon_ReloadTime,
     // Float:CWeapon_PrimaryAttackRate,
     // Float:CWeapon_SecondaryAttackRate,
     // bool:CWeapon_HasSecondaryAttack,
@@ -292,6 +292,7 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
     WeaponData[CWeapon_Weight] = JsonObject_ReadInt(jWeapon, "Weight", -1);
     WeaponData[CWeapon_DamageMult] = JsonObject_ReadFloat(jWeapon, "DamageMult", 1.0);
     WeaponData[CWeapon_DeployTime] = JsonObject_ReadFloat(jWeapon, "DeployTime", -1.0);
+    WeaponData[CWeapon_ReloadTime] = JsonObject_ReadFloat(jWeapon, "ReloadTime", -1.0);
 
     new Models[S_CWeapon_Models];
     if (!JsonObject_ReadAndPrecacheModel(

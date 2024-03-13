@@ -99,6 +99,22 @@ enum E_CWeapon_Event {
      * При возвращении CWAPI_STOP_MAIN урон нанесён не будет.
      */
     CWeapon_OnDamage,
+    
+    /**
+     * Вызывается в начале перезарядки.
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, &iClipSize, &iAnim, &Float:fDelay, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param iClipSize Размер магазина (до какого кол-ва патронов надо зарядить)
+     * @param iAnim Порядковый номер анимации перезарядки
+     * @param fDelay Задержка перед началом стрельбы (длительность перезарядки)
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
+     * 
+     * @return При возвращении CWAPI_STOP_MAIN перезарядка будет отменена.
+     */
+    CWeapon_OnReload,
 }
 
 /**
