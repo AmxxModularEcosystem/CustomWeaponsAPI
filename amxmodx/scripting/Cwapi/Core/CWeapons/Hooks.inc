@@ -304,7 +304,7 @@ public Hook_DefaultReload_Pre(const ItemId, iClipSize, iAnim, Float:fDelay) {
     SetHookChainArg(4, ATYPE_FLOAT, fDelay);
 
     if (
-        !Events_IsRet(CWAPI_STOP_MAIN)
+        Events_IsRet(CWAPI_STOP_MAIN)
         || get_member(ItemId, m_Weapon_iClip) >= iClipSize
     ) {
         SetWeaponIdleAnim(get_member(ItemId, m_pPlayer), ItemId);
