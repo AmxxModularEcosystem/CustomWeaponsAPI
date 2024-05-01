@@ -104,6 +104,8 @@ enum E_CWeapon_Event {
      * Вызывается при добавлении оружия игроку в инвентарь.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnAddPlayerItem,
 
@@ -178,11 +180,11 @@ enum E_CWeapon_Event {
     CWeapon_OnReload,
 
     /**
-     * Вызывается при попытке игрока взять оружие.
+     * Вызывается при попытке игрока поднять оружие.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
      * 
-     * @return При возвращении CWAPI_STOP_MAIN касание будет отменено.
+     * @return При возвращении CWAPI_STOP_MAIN поднятие будет заблокировано.
      */
     CWeapon_OnPlayerCanHaveWeapon,
 }
