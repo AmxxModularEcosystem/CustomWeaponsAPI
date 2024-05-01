@@ -5,7 +5,7 @@
 
 #include <amxmodx>
 
-#define _CWAPI_VERSION "0.8.0-pre-alpha"
+#define _CWAPI_VERSION "0.8.0-b1"
 
 /**
  * Строковое представление версии CWAPI.
