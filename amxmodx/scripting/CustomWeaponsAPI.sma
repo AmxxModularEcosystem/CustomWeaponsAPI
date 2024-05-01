@@ -36,6 +36,7 @@ PluginInit() {
     CfgUtils_SetFolder(CWAPI_CONFIGS_FOLDER);
     CWeapons_Init();
     
+    // Тут регаются абилки (Хотя мб надо под них создать отдельный форвард...)
     Forwards_RegAndCall("Load", ET_IGNORE);
 
     CWeapons_LoadFromFolder("Weapons");

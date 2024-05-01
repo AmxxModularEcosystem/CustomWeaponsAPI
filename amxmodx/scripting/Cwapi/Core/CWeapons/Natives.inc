@@ -18,6 +18,7 @@ CWeapons_Natives_Reg() {
     Natives_Reg("Weapons_AddEventListener");
     Natives_Reg("Weapons_Give");
     Natives_Reg("Weapons_GetName");
+    // Natives_Reg("Weapons_GetAbilityParams");
 }
 
 T_CustomWeapon:@_Weapons_Find() {
@@ -80,3 +81,18 @@ T_CustomWeapon:@_Weapons_FindByItem() {
 
     return set_string(Arg_sOut, Weapon[CWeapon_Name], iOutLen);
 }
+
+// TODO: Получение способности оружия по её хендлеру или названию
+// @_Weapons_GetAbilityParams(const iPlugin) {
+//     enum {Arg_iWeapon = 1, Arg_iAbility}
+    
+//     API_CWeapons_CheckInitP(Invalid_Trie);
+
+//     new T_CustomWeapon:iWeapon = T_CustomWeapon:get_param(Arg_iWeapon);
+//     new T_WeaponAbility:iAbility = T_WeaponAbility:get_param(Arg_iAbility);
+    
+//     new Weapon[S_CustomWeapon];
+//     CWeapons_Get(iWeapon, Weapon);
+
+//     return set_string(Arg_sOut, Weapon[CWeapon_Name], iOutLen);
+// }

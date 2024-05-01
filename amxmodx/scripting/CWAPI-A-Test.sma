@@ -19,6 +19,7 @@ public CWAPI_OnLoad() {
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnHolster, "@OnHolster");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnDamage, "@OnDamage");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnReload, "@OnReload");
+    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnPlayerCanHaveWeapon, "@OnPlayerCanHaveWeapon");
 }
 
 @OnSpawn(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
@@ -106,4 +107,13 @@ PrintMessage(const T_CustomWeapon:iWeapon, const ItemId, const sMsg[], const any
     } else {
         server_print("[TEST] [%s] %s", CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
     }
+}
+
+@OnPlayerCanHaveWeapon(const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams) {
+    new iTestInteger;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+    new sTestString[64];
+    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
+
+    PrintMessage(iWeapon, ItemId, "@OnPlayerCanHaveWeapon(%d, %d, %n, %s, %d): Number = %d, String = %s", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger, sTestString);
 }

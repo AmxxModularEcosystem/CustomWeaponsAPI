@@ -6,24 +6,74 @@
 #include <amxmodx>
 
 #define _CWAPI_VERSION "0.8.0-pre-alpha"
+
+/**
+ * Строковое представление версии CWAPI.
+ */
 stock const CWAPI_VERSION[] = _CWAPI_VERSION;
+
+/**
+ * Название библиотеки, регистрируемой CWAPI.
+ */
 stock const CWAPI_LIBRARY[] = "CustomWeaponsAPI";
+
+/**
+ * Название квара, хранящего текущую версию CWAPI.
+ */
 stock const CWAPI_VERSION_CVAR[] = "CWAPI_VERSION";
+
+/**
+ * Название папки с конфигурационными файлами CWAPI.
+ * 
+ * @note `amxmodx/configs/plugins/<CWAPI_CONFIGS_FOLDER>/`
+ */
 stock const CWAPI_CONFIGS_FOLDER[] = "CustomWeaponsAPI";
+
+/**
+ * Название типа параметра для кастомного оружия.
+ * 
+ * @note После чтения такого параметра в Trie будет лежать хендлер оружия.
+ */
 stock const CWAPI_WEAPON_PARAM_TYPE_NAME[] = "CWAPI-Weapon";
+
+/**
+ * Название типа параметра для способа выдачи кастомного оружия.
+ */
 stock const CWAPI_GIVE_TYPE_PARAM_TYPE_NAME[] = "CWAPI-GiveType";
 
+
+/**
+ * Максимальная длина названия способности.
+ */
 #define CWAPI_ABILITY_NAME_MAX_LEN 32
+
+/**
+ * Максимальная длина названия кастомного оружия.
+ */
 #define CWAPI_WEAPON_NAME_MAX_LEN 32
+
+/**
+ * Максимальная длина названия функции-обработчика события.
+ */
 #define CWAPI_CALLBACK_MAX_LEN 128
+
+/**
+ * Смещение значения var/pev_impulse для кастомного оружия.
+ */
 #define CWAPI_IMPULSE_OFFSET 4354
 
 #define var_CWAPI_ItemOwner var_iuser4
 #define pev_CWAPI_ItemOwner pev_iuser4
 #define EV_INT_CWAPI_ItemOwner EV_INT_iuser4
 
+/**
+ * Тэг хендлера кастомного оружия.
+ */
 enum T_CustomWeapon { Invalid_CustomWeapon = -1 }
 
+/**
+ * Тэг хендлера способности.
+ */
 enum T_WeaponAbility { Invalid_WeaponAbility = -1 }
 
 /**
@@ -35,71 +85,82 @@ enum E_CWeapon_Event {
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
      * 
-     * При возвращении CWAPI_STOP_MAIN создание оружия будет полностью отменено. Натив CWAPI_Weapons_Give при этом вернёт -1.
-     * При возвращении CWAPI_STOP оружие будет создано, но кастомные параметры не будут установлены.
+     * @return При возвращении CWAPI_STOP_MAIN создание оружия будет полностью отменено. Натив CWAPI_Weapons_Give при этом вернёт -1.
+     *         При возвращении CWAPI_STOP оружие будет создано, но кастомные параметры не будут установлены.
      */
     CWeapon_OnSpawn,
 
     /**
-     * Вызывается при установке world модели
+     * Вызывается при установке world модели на weaponbox.
      * 
      * (const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @return При возвращении CWAPI_STOP_MAIN weaponbox будет удалён.
+     *         При возвращении CWAPI_CONTINUE модель не будет заменена на кастомную.
      */
     CWeapon_OnSetWeaponBoxModel,
 
     /**
-     * Вызывается при добавлении оружия игроку в инвентарь
+     * Вызывается при добавлении оружия игроку в инвентарь.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
      */
     CWeapon_OnAddPlayerItem,
 
     /**
-     * Вызывается при взятии оружия в руки
+     * Вызывается при взятии оружия в руки.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, &Float:fDeployTime, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnDeploy,
 
     /**
-     * Вызывается при убирании оружия из рук
+     * Вызывается при убирании оружия из рук.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnHolster,
 
     /**
-     * Вызывается при удалении оружия из инвентаря игрока
+     * Вызывается при удалении оружия из инвентаря игрока.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnRemovePlayerItem,
 
     /**
-     * Вызывается при убийстве игрока оружием
+     * Вызывается при убийстве игрока оружием.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const KillerId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnPlayerKilled,
-    
+
     /**
      * Вызывается после полного создания кастомного оружия.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
      * 
-     * Возвращаемое значение игнорируется.
+     * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnSpawnPost,
-    
+
     /**
      * Вызывается при нанесении урона кастомным оружием.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const InflictorId, const AttackerId, &Float:fDamage, &iDamageBits, const Trie:tAbilityParams = Invalid_Trie)
      * 
-     * При возвращении CWAPI_STOP_MAIN урон нанесён не будет.
+     * @return При возвращении CWAPI_STOP_MAIN урон нанесён не будет.
      */
     CWeapon_OnDamage,
-    
+
     /**
      * Вызывается в начале перезарядки.
      * 
@@ -115,10 +176,21 @@ enum E_CWeapon_Event {
      * @return При возвращении CWAPI_STOP_MAIN перезарядка будет отменена.
      */
     CWeapon_OnReload,
+
+    /**
+     * Вызывается при попытке игрока взять оружие.
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @return При возвращении CWAPI_STOP_MAIN касание будет отменено.
+     */
+    CWeapon_OnPlayerCanHaveWeapon,
 }
 
 /**
  * Публиные параметры кастомного оружия
+ * 
+ * @note На данный момент не используется
  */
 enum E_CWeapon_Data {
     /**
@@ -201,6 +273,7 @@ forward CWAPI_OnLoad();
  * Вызывается после загрузки оружия из файлов.
  * 
  * @note    Вызов этого форварда означает полную готовность CWAPI к использованию.
+ *          То есть все способности созданы и всё оружие загружено.
  * 
  * @noreturn
  */
@@ -270,6 +343,17 @@ stock CWAPI_Weapons_iGetName(const T_CustomWeapon:iWeapon) {
 
     return sWeaponName;
 }
+
+// TODO: ...
+/**
+ * Параметры способности кастомного оружия.
+ * 
+ * @param iWeapon   Хендлер кастомного оружия.
+ * @param iAbility  Хендлер способности.
+ * 
+ * @return          Хендлер Trie с параметрами указанной способности или Invalid_Trie, если у оружия нет такой способности.
+ */
+// native Trie:CWAPI_Weapons_GetAbilityParams(const T_CustomWeapon:iWeapon, const T_WeaponAbility:iAbility);
 
 /**
  * Регистрация способности кастомного оружия.

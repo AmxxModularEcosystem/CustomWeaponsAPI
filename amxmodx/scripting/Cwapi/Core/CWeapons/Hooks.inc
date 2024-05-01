@@ -43,6 +43,7 @@ static CWeapons_Hooks__RegReapi() {
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Post", true);
     RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage_Post", false);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
+    RegisterHookChain(RG_CSGameRules_CanHavePlayerItem, "Hook_CanHavePlayerItem_Pre", false);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Post", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
 }
@@ -313,6 +314,22 @@ public Hook_DefaultReload_Pre(const ItemId, iClipSize, iAnim, Float:fDelay) {
         return HC_BREAK;
     }
 
+    return HC_CONTINUE;
+}
+
+public Hook_CanHavePlayerItem_Pre(const UserId, const ItemId) {
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HC_CONTINUE;
+    }
+
+    CWeapons_Call(Weapon, CWeapon_OnPlayerCanHaveWeapon, [iWeapon, ItemId, UserId]);
+
+    if (Events_IsRet(CWAPI_STOP_MAIN)) {
+        SetHookChainReturn(ATYPE_BOOL, false);
+        return HC_BREAK;
+    }
+    
     return HC_CONTINUE;
 }
 

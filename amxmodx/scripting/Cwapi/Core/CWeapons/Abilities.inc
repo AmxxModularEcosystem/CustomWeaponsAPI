@@ -4,6 +4,7 @@
 #define __cwapi_CustomWeapons_Abilities_included
 
 #include <amxmodx>
+#include <cwapi>
 #include <json>
 #include <ParamsController>
 #include "Cwapi/Utils"
