@@ -211,11 +211,39 @@ stock bool:IsUserIdValid(const UserId) {
     );
 }
 
-FillBpAmmoByItem(const UserId, const ItemId) {
+stock FillBpAmmoByItem(const UserId, const ItemId) {
     new iMaxAmmo = rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo1);
     new WeaponIdType:WeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
 
     if (iMaxAmmo >= 0) {
         rg_set_user_bpammo(UserId, WeaponId, iMaxAmmo);
     }
+}
+
+stock bool:IsPistol(const ItemId) {
+    return (WEAPON_PISTOLS & BIT(rg_get_iteminfo(ItemId, ItemInfo_iId))) > 0;
+}
+
+stock bool:WeaponCanShoot(const ItemId) {
+    return (
+        get_member(ItemId, m_Weapon_iClip) > 0
+        && (
+            !IsPistol(ItemId)
+            || get_member(ItemId, m_Weapon_iShotsFired) < 1
+        )
+    );
+}
+
+stock bool:WeaponWasShoot(const ItemId) {
+    return (
+        !get_member(ItemId, m_Weapon_fFireOnEmpty)
+        && (
+            !IsPistol(ItemId)
+            || get_member(ItemId, m_Weapon_iShotsFired) <= 1
+        )
+    );
+    // return (
+    //     !get_member(ItemId, m_Weapon_fFireOnEmpty)
+    //     && Float:get_member(ItemId, m_Weapon_flNextPrimaryAttack) > get_gametime()
+    // );
 }

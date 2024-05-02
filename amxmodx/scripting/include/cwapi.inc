@@ -187,6 +187,24 @@ enum E_CWeapon_Event {
      * @return При возвращении CWAPI_STOP_MAIN поднятие будет заблокировано.
      */
     CWeapon_OnPlayerCanHaveWeapon,
+
+    /**
+     * Вызывается перед выстрелом.
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @return При возвращении CWAPI_STOP_MAIN выстрел будет заблокирован.
+     */
+    CWeapon_OnPrimaryAttackPre,
+
+    /**
+     * Вызывается после выстрела.
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @noreturn Возвращаемое значение игнорируется.
+     */
+    CWeapon_OnPrimaryAttackPost,
 }
 
 /**

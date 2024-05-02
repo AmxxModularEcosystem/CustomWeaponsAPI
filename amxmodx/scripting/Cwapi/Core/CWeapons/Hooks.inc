@@ -12,9 +12,9 @@ enum _E_Ham_WeaponHook{
 static const _HAM_WEAPON_HOOKS[][_E_Ham_WeaponHook] = {
     {Ham_Spawn, "Hook_Spawn_Post", true},
     {Ham_Item_Holster, "Hook_ItemHolster_Pre", false},
+    {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Pre", false},
+    {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Post", true},
     // {Ham_CS_Item_GetMaxSpeed, "Hook_PlayerGetMaxSpeed", false},
-    // {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Post", true},
-    // {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Pre", false},
     // {Ham_Weapon_SecondaryAttack, "Hook_SecondaryAttack", true},
     // {Ham_Item_AddToPlayer, "Hook_AddItemToPlayer_Post", true},
 };
@@ -333,6 +333,45 @@ public Hook_CanHavePlayerItem_Pre(const UserId, const ItemId) {
     return HC_CONTINUE;
 }
 
+public Hook_PrimaryAttack_Pre(const ItemId) {
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HAM_IGNORED;
+    }
+
+    // TODO: Проверить для ножа
+    if (!WeaponCanShoot(ItemId)) {
+        return HAM_IGNORED;
+    }
+
+    CWeapons_Call(Weapon, CWeapon_OnPrimaryAttackPre, [iWeapon, ItemId]);
+
+    if (Events_IsRet(CWAPI_STOP_MAIN)) {
+        return HAM_SUPERCEDE;
+    }
+
+    return HAM_IGNORED;
+}
+
+public Hook_PrimaryAttack_Post(const ItemId) {
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HAM_IGNORED;
+    }
+
+    if (!WeaponWasShoot(ItemId)) {
+        return HAM_IGNORED;
+    }
+
+    CWeapons_Call(Weapon, CWeapon_OnPrimaryAttackPost, [iWeapon, ItemId]);
+
+    // if (Data[CWAPI_WD_PrimaryAttackRate] > 0.0) {
+    //     SetWeaponNextAttack(ItemId, Data[CWAPI_WD_PrimaryAttackRate]);
+    // }
+
+    return HAM_IGNORED;
+}
+
 // public Hook_DefaultReload_Post(const ItemId, iClipSize, iAnim, Float:fDelay) {
 //     new WeaponId = GetWeapId(ItemId);
 //     if (!IsCustomWeapon(WeaponId)) {
@@ -392,27 +431,6 @@ public Hook_CanHavePlayerItem_Pre(const UserId, const ItemId) {
 //     }
 
 //     return HAM_IGNORED;
-// }
-
-// public Hook_PrimaryAttack_Pre(ItemId) {
-//     new WeaponId = GetWeapId(ItemId);
-
-//     if (
-//         !IsCustomWeapon(WeaponId)
-//         || get_member(ItemId, m_Weapon_iClip) < 1
-//         || (
-//             IsPistol(ItemId)
-//             && get_member(ItemId, m_Weapon_iShotsFired)+1 > 1
-//         )
-//     ) {
-//         return;
-//     }
-
-//     new Data[CWAPI_WeaponData];
-//     ArrayGetArray(CustomWeapons, WeaponId, Data);
-    
-//     CallWeaponEvent(WeaponId, CWAPI_WE_PrimaryAttack, ItemId);
-//     return;
 // }
 
 // public Hook_PrimaryAttack_Post(ItemId) {

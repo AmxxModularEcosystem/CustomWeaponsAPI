@@ -20,6 +20,8 @@ public CWAPI_OnLoad() {
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnDamage, "@OnDamage");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnReload, "@OnReload");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnPlayerCanHaveWeapon, "@OnPlayerCanHaveWeapon");
+    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnPrimaryAttackPre, "@OnPrimaryAttackPre");
+    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnPrimaryAttackPost, "@OnPrimaryAttackPost");
 }
 
 @OnSpawn(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
@@ -115,5 +117,23 @@ PrintMessage(const T_CustomWeapon:iWeapon, const ItemId, const sMsg[], const any
     new sTestString[64];
     TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
-    PrintMessage(iWeapon, ItemId, "@OnPlayerCanHaveWeapon(%d, %d, %n, %s, %d): Number = %d, String = %s", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger, sTestString);
+    PrintMessage(iWeapon, ItemId, "@OnPlayerCanHaveWeapon(%d, %d, %n, %d): Number = %d, String = %s", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger, sTestString);
+}
+
+@OnPrimaryAttackPre(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
+    new iTestInteger;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+    new sTestString[64];
+    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
+
+    PrintMessage(iWeapon, ItemId, "@OnPrimaryAttackPre(%d, %d, %d): Number = %d, String = %s", iWeapon, ItemId, tAbilityParams, iTestInteger, sTestString);
+}
+
+@OnPrimaryAttackPost(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
+    new iTestInteger;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+    new sTestString[64];
+    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
+
+    PrintMessage(iWeapon, ItemId, "@OnPrimaryAttackPost(%d, %d, %d): Number = %d, String = %s", iWeapon, ItemId, tAbilityParams, iTestInteger, sTestString);
 }

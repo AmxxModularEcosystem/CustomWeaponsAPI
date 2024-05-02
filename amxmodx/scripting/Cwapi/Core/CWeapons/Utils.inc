@@ -9,7 +9,11 @@
 CWeaponUtils_MakeEventCallback(const E_CWeapon_Event:iEvent, const iPlugin, const sCallback[]) {
     new iListener = -1;
     switch (iEvent) {
-        case CWeapon_OnSpawn, CWeapon_OnSpawnPost, CWeapon_OnHolster:
+        case CWeapon_OnSpawn,
+             CWeapon_OnSpawnPost,
+             CWeapon_OnHolster,
+             CWeapon_OnPrimaryAttackPre,
+             CWeapon_OnPrimaryAttackPost:
             // (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
             iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL);
         case CWeapon_OnDeploy:
@@ -18,7 +22,9 @@ CWeaponUtils_MakeEventCallback(const E_CWeapon_Event:iEvent, const iPlugin, cons
         case CWeapon_OnSetWeaponBoxModel:
             // (const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
             iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL, FP_CELL);
-        case CWeapon_OnAddPlayerItem, CWeapon_OnRemovePlayerItem, CWeapon_OnPlayerCanHaveWeapon:
+        case CWeapon_OnAddPlayerItem,
+             CWeapon_OnRemovePlayerItem,
+             CWeapon_OnPlayerCanHaveWeapon:
             // (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
             iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL, FP_CELL);
         case CWeapon_OnPlayerKilled:
