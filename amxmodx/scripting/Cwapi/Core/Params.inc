@@ -5,8 +5,7 @@
 #include "Cwapi/Core/CustomWeapons"
 
 public ParamsController_OnRegisterTypes() {
-    // Возможно выглядит странно, но вроде норм)
-    CWAPI_Init();
+    CWeapons_Init();
 
     ParamsController_RegSimpleType(CWAPI_WEAPON_PARAM_TYPE_NAME, "@OnWeaponParamRead");
     ParamsController_RegSimpleType(CWAPI_GIVE_TYPE_PARAM_TYPE_NAME, "@OnGiveTypeParamRead");
