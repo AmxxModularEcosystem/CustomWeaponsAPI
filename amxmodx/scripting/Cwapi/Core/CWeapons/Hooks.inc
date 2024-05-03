@@ -326,7 +326,7 @@ public Hook_CanHavePlayerItem_Pre(const UserId, const ItemId) {
     CWeapons_Call(Weapon, CWeapon_OnPlayerCanHaveWeapon, [iWeapon, ItemId, UserId]);
 
     if (Events_IsRet(CWAPI_STOP_MAIN)) {
-        SetHookChainReturn(ATYPE_BOOL, false);
+        SetHookChainReturn(ATYPE_INTEGER, 0);
         return HC_BREAK;
     }
     
