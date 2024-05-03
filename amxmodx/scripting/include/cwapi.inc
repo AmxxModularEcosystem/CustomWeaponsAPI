@@ -205,6 +205,15 @@ enum E_CWeapon_Event {
      * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnPrimaryAttackPost,
+
+    /**
+     * Вызывается при касании weaponbox'а игроком.
+     * 
+     * (const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @return При возвращении CWAPI_STOP_MAIN касание будет заблокировано.
+     */
+    CWeapon_OnPlayerTouchWeaponBox,
 }
 
 /**

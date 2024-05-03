@@ -22,6 +22,9 @@ CWeaponUtils_MakeEventCallback(const E_CWeapon_Event:iEvent, const iPlugin, cons
         case CWeapon_OnSetWeaponBoxModel:
             // (const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
             iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL, FP_CELL);
+        case CWeapon_OnPlayerTouchWeaponBox:
+            // (const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
+            iListener = CreateOneForward(iPlugin, sCallback, FP_CELL, FP_CELL, FP_CELL, FP_CELL, FP_CELL);
         case CWeapon_OnAddPlayerItem,
              CWeapon_OnRemovePlayerItem,
              CWeapon_OnPlayerCanHaveWeapon:

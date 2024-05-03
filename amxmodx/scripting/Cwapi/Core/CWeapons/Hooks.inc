@@ -23,6 +23,7 @@ static Trie:gRegisteredRefWeapons = Invalid_Trie;
 
 CWeapons_Hooks_Init() {
     CWeapons_Hooks__RegReapi();
+    RegisterHam(Ham_Touch, "weaponbox", "Hook_WeaponBoxTouch", false);
 
     gRegisteredRefWeapons = TrieCreate();
 }
@@ -369,6 +370,26 @@ public Hook_PrimaryAttack_Post(const ItemId) {
     //     SetWeaponNextAttack(ItemId, Data[CWAPI_WD_PrimaryAttackRate]);
     // }
 
+    return HAM_IGNORED;
+}
+
+public Hook_WeaponBoxTouch(const iWeaponBox, const iToucher) {
+    if (!IsUserIdValid(iToucher)) {
+        return HAM_IGNORED;
+    }
+
+    new ItemId = GetItemFromWeaponBox(iWeaponBox);
+
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HAM_IGNORED;
+    }
+    
+    CWeapons_Call(Weapon, CWeapon_OnPlayerTouchWeaponBox, [iWeapon, iWeaponBox, ItemId, iToucher]);
+    if (Events_IsRet(CWAPI_STOP_MAIN)) {
+        return HAM_SUPERCEDE;
+    }
+    
     return HAM_IGNORED;
 }
 
