@@ -63,7 +63,6 @@ stock const CWAPI_GIVE_TYPE_PARAM_TYPE_NAME[] = "CWAPI-GiveType";
 #define CWAPI_IMPULSE_OFFSET 4354
 
 #define var_CWAPI_ItemOwner var_iuser4
-#define pev_CWAPI_ItemOwner pev_iuser4
 #define EV_INT_CWAPI_ItemOwner EV_INT_iuser4
 
 /**
@@ -85,6 +84,10 @@ enum E_CWeapon_Event {
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
      * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
+     * 
      * @return При возвращении CWAPI_STOP_MAIN создание оружия будет полностью отменено. Натив CWAPI_Weapons_Give при этом вернёт -1.
      *         При возвращении CWAPI_STOP оружие будет создано, но кастомные параметры не будут установлены.
      */
@@ -94,6 +97,11 @@ enum E_CWeapon_Event {
      * Вызывается при установке world модели на weaponbox.
      * 
      * (const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param iWeaponBox Индекс сущности weaponbox'a
+     * @param ItemId Индекс сущности предмета оружия
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
      * 
      * @return При возвращении CWAPI_STOP_MAIN weaponbox будет удалён.
      *         При возвращении CWAPI_CONTINUE модель не будет заменена на кастомную.
@@ -105,6 +113,11 @@ enum E_CWeapon_Event {
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
      * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param UserId Индекс игрока
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
+     * 
      * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnAddPlayerItem,
@@ -113,6 +126,11 @@ enum E_CWeapon_Event {
      * Вызывается при взятии оружия в руки.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, &Float:fDeployTime, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param fDeployTime Время доставания оружия, может быть изменено
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
      * 
      * @noreturn Возвращаемое значение игнорируется.
      */
@@ -123,6 +141,10 @@ enum E_CWeapon_Event {
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
      * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
+     * 
      * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnHolster,
@@ -131,6 +153,11 @@ enum E_CWeapon_Event {
      * Вызывается при удалении оружия из инвентаря игрока.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param UserId Индекс игрока
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
      * 
      * @noreturn Возвращаемое значение игнорируется.
      */
@@ -141,6 +168,12 @@ enum E_CWeapon_Event {
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const KillerId, const Trie:tAbilityParams = Invalid_Trie)
      * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param VictimId Индекс игрока жертвы
+     * @param KillerId Индекс игрока убийцы
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
+     * 
      * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnPlayerKilled,
@@ -150,6 +183,10 @@ enum E_CWeapon_Event {
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
      * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
+     * 
      * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnSpawnPost,
@@ -158,6 +195,15 @@ enum E_CWeapon_Event {
      * Вызывается при нанесении урона кастомным оружием.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const InflictorId, const AttackerId, &Float:fDamage, &iDamageBits, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param VictimId Индекс игрока жертвы
+     * @param InflictorId Индекс сущности, нанёсшей урон
+     * @param AttackerId Индекс атакующего игрока
+     * @param fDamage Величина нанесённого урона, может быть изменена
+     * @param iDamageBits Битсумма типов нанесённого урона, может быть изменена
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
      * 
      * @return При возвращении CWAPI_STOP_MAIN урон нанесён не будет.
      */
@@ -184,6 +230,11 @@ enum E_CWeapon_Event {
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
      * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param UserId Индекс игрока
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
+     * 
      * @return При возвращении CWAPI_STOP_MAIN поднятие будет заблокировано.
      */
     CWeapon_OnPlayerCanHaveWeapon,
@@ -192,6 +243,10 @@ enum E_CWeapon_Event {
      * Вызывается перед выстрелом.
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
      * 
      * @return При возвращении CWAPI_STOP_MAIN выстрел будет заблокирован.
      */
@@ -202,6 +257,10 @@ enum E_CWeapon_Event {
      * 
      * (const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams = Invalid_Trie)
      * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
+     * 
      * @noreturn Возвращаемое значение игнорируется.
      */
     CWeapon_OnPrimaryAttackPost,
@@ -210,6 +269,12 @@ enum E_CWeapon_Event {
      * Вызывается при касании weaponbox'а игроком.
      * 
      * (const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const UserId, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param iWeaponBox Индекс сущности weaponbox'a
+     * @param ItemId Индекс сущности предмета оружия
+     * @param UserId Индекс игрока
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
      * 
      * @return При возвращении CWAPI_STOP_MAIN касание будет заблокировано.
      */
@@ -237,6 +302,9 @@ enum E_CWeapon_Data {
     CWeaponData_Name,
 }
 
+/**
+ * Возможные возвращаемые значения для обработчиков событий.
+ */
 enum {
     /**
      * Продолжить вызов обработчиков и обработать событие
