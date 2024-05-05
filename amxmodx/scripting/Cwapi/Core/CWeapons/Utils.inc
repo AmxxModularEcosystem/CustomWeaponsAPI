@@ -74,3 +74,19 @@ CWeapon_GiveType:CWeaponUtils_StrToGiveType(const sType[], &bool:bIsValid = fals
 
     return iType;
 }
+
+bool:CWeaponUtils_GetByNameOrId(const sWeaponNameOrId[], Weapon[S_CustomWeapon], &T_CustomWeapon:iWeapon = Invalid_CustomWeapon) {
+    if (CWeapons_IsValidName(sWeaponNameOrId)) {
+        iWeapon = CWeapons_Find(sWeaponNameOrId);
+    } else if (is_str_num(sWeaponNameOrId)) {
+        iWeapon = T_CustomWeapon:str_to_num(sWeaponNameOrId);
+    } else {
+        return false;
+    }
+
+    if (!CWeapons_IsValidIndex(iWeapon)) {
+        return false;
+    }
+
+    return CWeapons_Get(iWeapon, Weapon);
+}

@@ -40,8 +40,8 @@ stock TrieDestroySafe(Trie:t) {
 
 #define ArrayForeachCell(%1:%2=>%3) \
     if(%1 != Invalid_Array) \
-        for(new %3, %2 = 0; %2 < ArraySizeSafe(%1); %2++) \
-            if((%3 = ArrayGetCell(%1, %2, %2)) == %3)
+        for(new any:%3, %2 = 0; %2 < ArraySizeSafe(%1); %2++) \
+            if((%3 = ArrayGetCell(%1, %2)) == %3)
 
 #define ArrayForeachString(%1:%4=>%2[%3]) \
     if(%1 != Invalid_Array) \

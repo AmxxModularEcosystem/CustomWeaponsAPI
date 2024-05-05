@@ -13,7 +13,6 @@
 #include "Cwapi/Utils"
 #include "Cwapi/ArrayTrieUtils"
 #include "Cwapi/CfgUtils"
-#include "Cwapi/Core/CWeapons/Abilities"
 
 enum S_CWeapon_Models {
     CWeapon_Model_View[PLATFORM_MAX_PATH],
@@ -43,6 +42,8 @@ enum _:S_CustomWeapon {
     T_Events:CWeapon_Events,
     Array:CWeapon_Abilities, // T_WAbility_Unit[]
 }
+
+#include "Cwapi/Core/CWeapons/Abilities"
 
 static ArrayMap(gCustomWeapons);
 static bool:g_bIsInited = false;

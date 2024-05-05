@@ -48,6 +48,8 @@ PluginInit() {
 
     // CWAPI_Srv_Give <UserId> <WeaponName>
     register_srvcmd("Cwapi_Srv_Give", "@SrvCmd_Give");
+    register_srvcmd("cwapi_weapons", "@SrvCmd_Weapons");
+    register_srvcmd("cwapi_weapon_abilities", "@SrvCmd_WeaponAbilities");
 }
 
 @SrvCmd_Give() {
@@ -73,6 +75,52 @@ PluginInit() {
         log_amx("Cwapi_Srv_Give: Weapon '%s' not found.", UserId, sWeaponName);
     }
 
+    return PLUGIN_HANDLED;
+}
+
+@SrvCmd_Weapons() {
+    new T_CustomWeapon:iWeapon = Invalid_CustomWeapon;
+    new Weapon[S_CustomWeapon];
+
+    server_print("╔═════╤══════════════════════════════════╤══════════════════════════════════╤═════════════════╗");
+    server_print("║ ID  │ Weapon name                      │ Reference                        │ Abilities count ║");
+    server_print("╟─────┼──────────────────────────────────┼──────────────────────────────────┼─────────────────╢");
+    while ((iWeapon = CWeapons_Iterate(iWeapon, Weapon)) != Invalid_CustomWeapon) {
+        server_print("║ %-3d │ %-32s │ %-32s │ %-15d ║", iWeapon, Weapon[CWeapon_Name], Weapon[CWeapon_Reference], ArraySizeSafe(Weapon[CWeapon_Abilities]));
+    }
+    server_print("╟─────┴──────────────────────────────────┴──────────────────────────────────┴─────────────────╢");
+    server_print("║ Total: %-4d                                                                                 ║", CWeapons_Count());
+    server_print("╚═════════════════════════════════════════════════════════════════════════════════════════════╝");
+}
+
+@SrvCmd_WeaponAbilities() {
+    enum {Arg_Weapon = 1}
+
+    new sWeapon[CWAPI_WEAPON_NAME_MAX_LEN];
+    read_argv(Arg_Weapon, sWeapon, charsmax(sWeapon));
+
+    new T_CustomWeapon:iWeapon, Weapon[S_CustomWeapon];
+    if (!CWeaponUtils_GetByNameOrId(sWeapon, Weapon, iWeapon)) {
+        server_print("Weapon '%s' not found.", sWeapon);
+        return PLUGIN_HANDLED;
+    }
+
+    server_print("╔═════╤════════════════════════════════════════╗");
+    server_print("║  #  │ Ability                                ║");
+    server_print("╟─────┼────────────────────────────────────────╢");
+    ArrayForeachCell (Weapon[CWeapon_Abilities]: i => iAbilityUnit) {
+        new WeaponAbilityUnit[S_WAbility_Unit];
+        WAbilityUnit_Get(iAbilityUnit, WeaponAbilityUnit);
+
+        new WeaponAbility[S_WeaponAbility];
+        WAbility_Get(WeaponAbilityUnit[WAbilityUnit_Ability], WeaponAbility);
+        
+        server_print("║ %03d │ %-32s (#%-2d) ║", i + 1, WeaponAbility[WAbility_Name], WeaponAbilityUnit[WAbilityUnit_Ability]);
+    }
+    server_print("╟─────┴────────────────────────────────────────╢");
+    server_print("║ Total: %-4d                                  ║", ArraySizeSafe(Weapon[CWeapon_Abilities]));
+    server_print("╚══════════════════════════════════════════════╝");
+    
     return PLUGIN_HANDLED;
 }
 
