@@ -224,8 +224,12 @@ stock bool:IsPistol(const ItemId) {
     return (WEAPON_PISTOLS & BIT(rg_get_iteminfo(ItemId, ItemInfo_iId))) > 0;
 }
 
-stock bool:WeaponCanShoot(const ItemId) {
-    return (
+stock bool:IsKnife(const ItemId) {
+    return WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId) == WEAPON_KNIFE;
+}
+
+stock bool:WeaponCanAttack(const ItemId) {
+    return IsKnife(ItemId) || (
         get_member(ItemId, m_Weapon_iClip) > 0
         && (
             !IsPistol(ItemId)
@@ -234,7 +238,7 @@ stock bool:WeaponCanShoot(const ItemId) {
     );
 }
 
-stock bool:WeaponWasShoot(const ItemId) {
+stock bool:WeaponWasAttack(const ItemId) {
     return (
         !get_member(ItemId, m_Weapon_fFireOnEmpty)
         && (
@@ -242,8 +246,4 @@ stock bool:WeaponWasShoot(const ItemId) {
             || get_member(ItemId, m_Weapon_iShotsFired) <= 1
         )
     );
-    // return (
-    //     !get_member(ItemId, m_Weapon_fFireOnEmpty)
-    //     && Float:get_member(ItemId, m_Weapon_flNextPrimaryAttack) > get_gametime()
-    // );
 }

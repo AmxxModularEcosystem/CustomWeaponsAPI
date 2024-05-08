@@ -272,6 +272,20 @@ public Hook_PlayerTakeDamage_Post(const VictimId, InflictorId, AttackerId, Float
     }
         
     new ItemId = GetAttackerWeapon(AttackerId, InflictorId);
+    if (is_nullent(ItemId)) {
+        return HC_CONTINUE;
+    }
+
+    /**
+     * Для ножа почему-то вызывается хук дамага для тиммейтов,
+     * хотя по факту урон не наносится.
+     */
+    if (
+        IsKnife(ItemId)
+        && !rg_is_player_can_takedamage(VictimId, AttackerId)
+    ) {
+        return HC_CONTINUE;
+    }
 
     new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
     if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
@@ -340,8 +354,7 @@ public Hook_PrimaryAttack_Pre(const ItemId) {
         return HAM_IGNORED;
     }
 
-    // TODO: Проверить для ножа
-    if (!WeaponCanShoot(ItemId)) {
+    if (!WeaponCanAttack(ItemId)) {
         return HAM_IGNORED;
     }
 
@@ -360,7 +373,7 @@ public Hook_PrimaryAttack_Post(const ItemId) {
         return HAM_IGNORED;
     }
 
-    if (!WeaponWasShoot(ItemId)) {
+    if (!WeaponWasAttack(ItemId)) {
         return HAM_IGNORED;
     }
 
