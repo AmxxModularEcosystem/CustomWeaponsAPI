@@ -7,8 +7,7 @@ new const ABILITY_NAME[] = "TestAbility";
 public CWAPI_OnLoad() {
     new T_WeaponAbility:iAbility = CWAPI_Abilities_Register(ABILITY_NAME);
     CWAPI_Abilities_AddParams(iAbility,
-        "TestString", "ShortString", true,
-        "TestInteger", "Integer", true
+        "TestInteger", "Integer", false
     );
 
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnSpawn, "@OnSpawn");
@@ -27,85 +26,96 @@ public CWAPI_OnLoad() {
 }
 
 @OnSpawn(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
-    new iTestInteger;
+    new iTestInteger = 0;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
-    PrintMessage(iWeapon, ItemId, "@OnSpawn(%d, %d, %d): Number = %d, String = %s", iWeapon, ItemId, tAbilityParams, iTestInteger, sTestString);
+    PrintMessage(iWeapon, ItemId, "@OnSpawn(%d, %d, %d): %d", iWeapon, ItemId, tAbilityParams, iTestInteger);
 }
 
 @OnSpawnPost(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
-    new iTestInteger;
+    new iTestInteger = 0;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
-    PrintMessage(iWeapon, ItemId, "@OnSpawnPost(%d, %d, %d): Number = %d, String = %s", iWeapon, ItemId, tAbilityParams, iTestInteger, sTestString);
+    PrintMessage(iWeapon, ItemId, "@OnSpawnPost(%d, %d, %d): %d", iWeapon, ItemId, tAbilityParams, iTestInteger);
 }
 
 @OnSetWeaponBoxModel(const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const Trie:tAbilityParams) {
-    new iTestInteger;
+    new iTestInteger = 0;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
-    PrintMessage(iWeapon, ItemId, "@OnSetWeaponBoxModel(%d, %d, %d, %d): Number = %d, String = %s", iWeapon, iWeaponBox, ItemId, tAbilityParams, iTestInteger, sTestString);
+    PrintMessage(iWeapon, ItemId, "@OnSetWeaponBoxModel(%d, %d, %d, %d): %d", iWeapon, iWeaponBox, ItemId, tAbilityParams, iTestInteger);
 }
 
 @OnAddPlayerItem(const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams) {
-    new iTestInteger;
+    new iTestInteger = 0;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
-    PrintMessage(iWeapon, ItemId, "@OnAddPlayerItem(%d, %d, %n, %d): Number = %d, String = %s", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger, sTestString);
+    PrintMessage(iWeapon, ItemId, "@OnAddPlayerItem(%d, %d, %n, %d): %d", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger);
 }
 
 @OnRemovePlayerItem(const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams) {
-    new iTestInteger;
+    new iTestInteger = 0;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
-    PrintMessage(iWeapon, ItemId, "@OnRemovePlayerItem(%d, %d, %n, %d): Number = %d, String = %s", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger, sTestString);
+    PrintMessage(iWeapon, ItemId, "@OnRemovePlayerItem(%d, %d, %n, %d): %d", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger);
 }
 
 @OnDeploy(const T_CustomWeapon:iWeapon, const ItemId, &Float:fDeployTime, const Trie:tAbilityParams) {
-    new iTestInteger;
+    new iTestInteger = 0;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
-    PrintMessage(iWeapon, ItemId, "@OnDeploy(%d, %d, %.2f, %d): Number = %d, String = %s", iWeapon, ItemId, fDeployTime, tAbilityParams, iTestInteger, sTestString);
+    PrintMessage(iWeapon, ItemId, "@OnDeploy(%d, %d, %.2f, %d): %d", iWeapon, ItemId, fDeployTime, tAbilityParams, iTestInteger);
 }
 
 @OnHolster(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
-    new iTestInteger;
+    new iTestInteger = 0;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
-    PrintMessage(iWeapon, ItemId, "@OnHolster(%d, %d, %d): Number = %d, String = %s", iWeapon, ItemId, tAbilityParams, iTestInteger, sTestString);
+    PrintMessage(iWeapon, ItemId, "@OnHolster(%d, %d, %d): %d", iWeapon, ItemId, tAbilityParams, iTestInteger);
 }
 
 @OnDamage(const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const InflictorId, const AttackerId, &Float:fDamage, &iDamageBits, const Trie:tAbilityParams) {
-    new iTestInteger;
+    new iTestInteger = 0;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
-    PrintMessage(iWeapon, ItemId, "@OnDamage(%d, %d, %d, %d, %d, %.2f, %d, %d): Number = %d, String = %s", iWeapon, ItemId, VictimId, InflictorId, AttackerId, fDamage, iDamageBits, tAbilityParams, iTestInteger, sTestString);
+    PrintMessage(iWeapon, ItemId, "@OnDamage(%d, %d, %d, %d, %d, %.2f, %d, %d): %d", iWeapon, ItemId, VictimId, InflictorId, AttackerId, fDamage, iDamageBits, tAbilityParams, iTestInteger);
 }
 
 @OnReload(const T_CustomWeapon:iWeapon, const ItemId, &iClipSize, &iAnim, &Float:fDelay, const Trie:tAbilityParams) {
-    new iTestInteger;
+    new iTestInteger = 0;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
 
-    PrintMessage(iWeapon, ItemId, "@OnReload(%d, %d, %d, %d, %.2f, %d): Number = %d, String = %s", iWeapon, ItemId, iClipSize, iAnim, fDelay, tAbilityParams, iTestInteger, sTestString);
+    PrintMessage(iWeapon, ItemId, "@OnReload(%d, %d, %d, %d, %.2f, %d): %d", iWeapon, ItemId, iClipSize, iAnim, fDelay, tAbilityParams, iTestInteger);
 }
+
+@OnPlayerCanHaveWeapon(const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams) {
+    new iTestInteger = 0;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+
+    PrintMessage(iWeapon, ItemId, "@OnPlayerCanHaveWeapon(%d, %d, %n, %d): %d", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger);
+}
+
+@OnPrimaryAttackPre(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
+    new iTestInteger = 0;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+
+    PrintMessage(iWeapon, ItemId, "@OnPrimaryAttackPre(%d, %d, %d): %d", iWeapon, ItemId, tAbilityParams, iTestInteger);
+}
+
+@OnPrimaryAttackPost(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
+    new iTestInteger = 0;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+
+    PrintMessage(iWeapon, ItemId, "@OnPrimaryAttackPost(%d, %d, %d): %d", iWeapon, ItemId, tAbilityParams, iTestInteger);
+}
+
+@OnPlayerTouchWeaponBox(const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const UserId, const Trie:tAbilityParams) {
+    new iTestInteger = 0;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+    
+    PrintMessage(iWeapon, ItemId, "@OnPlayerTouchWeaponBox(%d, %d, %d, %n, %d): %d", iWeapon, iWeaponBox, ItemId, UserId, tAbilityParams, iTestInteger);
+}
+
 
 PrintMessage(const T_CustomWeapon:iWeapon, const ItemId, const sMsg[], const any:...) {
     new UserId = get_member(ItemId, m_pPlayer);
@@ -113,47 +123,11 @@ PrintMessage(const T_CustomWeapon:iWeapon, const ItemId, const sMsg[], const any
     new sFmtMsg[256];
     vformat(sFmtMsg, charsmax(sFmtMsg), sMsg, 4);
 
-    if (UserId > 0) {
-        client_print(UserId, print_chat, "[TEST] [%n, %s] %s", UserId, CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
-        client_print(UserId, print_console, "[TEST] [%n, %s] %s", UserId, CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
+    if (is_user_connected(UserId)) {
+        client_print(UserId, print_chat, "[TEST] [%s] %s", CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
+        client_print(UserId, print_console, "[TEST] [%s] %s", CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
         server_print("[TEST] [%n, %s] %s", UserId, CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
     } else {
-        server_print("[TEST] [%s] %s", CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
+        server_print("[TEST] [*undefined*, %s] %s", CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
     }
-}
-
-@OnPlayerCanHaveWeapon(const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams) {
-    new iTestInteger;
-    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
-
-    PrintMessage(iWeapon, ItemId, "@OnPlayerCanHaveWeapon(%d, %d, %n, %d): Number = %d, String = %s", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger, sTestString);
-}
-
-@OnPrimaryAttackPre(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
-    new iTestInteger;
-    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
-
-    PrintMessage(iWeapon, ItemId, "@OnPrimaryAttackPre(%d, %d, %d): Number = %d, String = %s", iWeapon, ItemId, tAbilityParams, iTestInteger, sTestString);
-}
-
-@OnPrimaryAttackPost(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
-    new iTestInteger;
-    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
-
-    PrintMessage(iWeapon, ItemId, "@OnPrimaryAttackPost(%d, %d, %d): Number = %d, String = %s", iWeapon, ItemId, tAbilityParams, iTestInteger, sTestString);
-}
-
-@OnPlayerTouchWeaponBox(const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const UserId, const Trie:tAbilityParams) {
-    new iTestInteger;
-    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-    new sTestString[64];
-    TrieGetString(tAbilityParams, "TestString", sTestString, charsmax(sTestString));
-
-    PrintMessage(iWeapon, ItemId, "@OnPrimaryAttackPost(%d, %d, %d, %n, %d): Number = %d, String = %s", iWeapon, iWeaponBox, ItemId, UserId, tAbilityParams, iTestInteger, sTestString);
 }
