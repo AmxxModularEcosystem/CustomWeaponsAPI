@@ -441,17 +441,6 @@ stock CWAPI_Weapons_iGetName(const T_CustomWeapon:iWeapon) {
     return sWeaponName;
 }
 
-// TODO: ...
-/**
- * Параметры способности кастомного оружия.
- * 
- * @param iWeapon   Хендлер кастомного оружия.
- * @param iAbility  Хендлер способности.
- * 
- * @return          Хендлер Trie с параметрами указанной способности или Invalid_Trie, если у оружия нет такой способности.
- */
-// native Trie:CWAPI_Weapons_GetAbilityParams(const T_CustomWeapon:iWeapon, const T_WeaponAbility:iAbility);
-
 /**
  * Регистрация способности кастомного оружия.
  * 

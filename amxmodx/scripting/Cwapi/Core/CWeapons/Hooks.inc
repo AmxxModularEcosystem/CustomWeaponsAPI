@@ -397,12 +397,17 @@ public Hook_WeaponBoxTouch(const iWeaponBox, const iToucher) {
     if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
         return HAM_IGNORED;
     }
-    
+
     CWeapons_Call(Weapon, CWeapon_OnPlayerTouchWeaponBox, [iWeapon, iWeaponBox, ItemId, iToucher]);
     if (Events_IsRet(CWAPI_STOP_MAIN)) {
         return HAM_SUPERCEDE;
     }
-    
+
+    CWeapons_Call(Weapon, CWeapon_OnPlayerCanHaveWeapon, [iWeapon, ItemId, iToucher]);
+    if (Events_IsRet(CWAPI_STOP_MAIN)) {
+        return HAM_SUPERCEDE;
+    }
+
     return HAM_IGNORED;
 }
 

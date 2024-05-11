@@ -241,6 +241,8 @@ CWeapons_Give(
             rg_remove_item(UserId, Weapon[CWeapon_Reference]);
         }
     }
+    
+    // TODO: CWeapon_Call(CWeapon_OnGive)
 
     new ItemId = rg_give_custom_item(
         UserId,
