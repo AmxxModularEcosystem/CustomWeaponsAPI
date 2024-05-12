@@ -20,12 +20,20 @@ enum S_CWeapon_Models {
     CWeapon_Model_Player[PLATFORM_MAX_PATH],
 }
 
+enum S_CWeapon_Sounds {
+    CWeapon_Sound_Shot[PLATFORM_MAX_PATH],
+    CWeapon_Sound_ShotSilenced[PLATFORM_MAX_PATH],
+    CWeapon_Sound_ShotBurst[PLATFORM_MAX_PATH],
+}
+
 enum _:S_CustomWeapon {
     T_CustomWeapon:CWeapon_Index,
     CWeapon_Reference[32],
     WeaponIdType:CWeapon_ReferenceId,
     CWeapon_Name[CWAPI_WEAPON_NAME_MAX_LEN],
     CWeapon_Models[S_CWeapon_Models],
+    bool:CWeapon_HasCustomSounds,
+    CWeapon_Sounds[S_CWeapon_Sounds],
     Float:CWeapon_DamageMult,
     CWeapon_Weight,
     CWeapon_MaxClip,
@@ -323,6 +331,8 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
     }
 
     WeaponData[CWeapon_Models] = Models;
+    
+    CWeapons__ReadSounds(jWeapon, WeaponData, CfgUtils_GetPath(sFile));
 
     if (json_object_has_value(jWeapon, "Abilities", JSONObject)) {
         new JSON:jAbilities = json_object_get_value(jWeapon, "Abilities");
@@ -333,6 +343,52 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
     CfgUtils_JsonFree(jWeapon);
 
     return CWeapons__Create(WeaponData);
+}
+
+static CWeapons__ReadSounds(const JSON:jWeapon, WeaponData[S_CustomWeapon], const sFileNameForErrors[]) {
+    WeaponData[CWeapon_HasCustomSounds] = false;
+    if (!json_object_has_value(jWeapon, "Sounds", JSONObject)) {
+        return;
+    }
+
+    new JSON:jSounds = json_object_get_value(jWeapon, "Sounds");
+    if (!json_object_has_value(jSounds, "Shot", JSONString)) {
+        log_amx("[ERROR] 'Sounds.Shot' field required if 'Sounds' field exists. File '%s'.", sFileNameForErrors);
+        return;
+    }
+
+    new Sounds[S_CWeapon_Sounds];
+
+    if (JsonObject_ReadAndPrecacheSound(
+        jSounds, "Shot",
+        Sounds[CWeapon_Sound_Shot], charsmax(Sounds[CWeapon_Sound_Shot])
+    ) == JsonUtilsRead_PrecacheFileNotFound) {
+        log_amx("[ERROR] Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_Shot], sFileNameForErrors);
+        return;
+    }
+    
+    switch (JsonObject_ReadAndPrecacheSound(jSounds, "ShotSilenced", Sounds[CWeapon_Sound_ShotSilenced], charsmax(Sounds[CWeapon_Sound_ShotSilenced]))) {
+        case JsonUtilsRead_PrecacheFileNotFound: {
+            log_amx("[WARNING] Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_ShotSilenced], sFileNameForErrors);
+            Sounds[CWeapon_Sound_ShotSilenced][0] = EOS;
+        }
+        case JsonUtilsRead_FieldIsEmpty: {
+            Sounds[CWeapon_Sound_ShotSilenced] = Sounds[CWeapon_Sound_Shot];
+        }
+    }
+    
+    switch (JsonObject_ReadAndPrecacheSound(jSounds, "ShotBurst", Sounds[CWeapon_Sound_ShotBurst], charsmax(Sounds[CWeapon_Sound_ShotBurst]))) {
+        case JsonUtilsRead_PrecacheFileNotFound: {
+            log_amx("[WARNING] Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_ShotBurst], sFileNameForErrors);
+            Sounds[CWeapon_Sound_ShotBurst][0] = EOS;
+        }
+        case JsonUtilsRead_FieldIsEmpty: {
+            Sounds[CWeapon_Sound_ShotBurst] = Sounds[CWeapon_Sound_Shot];
+        }
+    }
+
+    WeaponData[CWeapon_Sounds] = Sounds;
+    WeaponData[CWeapon_HasCustomSounds] = true;
 }
 
 CWeapons_LoadFromFolder(const sFolder[]) {

@@ -123,6 +123,12 @@ stock bool:JsonObject_ReadBool(const JSON:jObject, const sKey[], const bool:bDef
     return json_object_get_bool(jObject, sKey, bDotNot);
 }
 
+enum E_JsonUtilsReadStatus {
+    JsonUtilsRead_Success,
+    JsonUtilsRead_FieldIsEmpty,
+    JsonUtilsRead_PrecacheFileNotFound,
+}
+
 stock bool:JsonObject_ReadAndPrecacheModel(const JSON:jObject, const sKey[], sOut[], const iOutLen, const bool:bDotNot = false) {
     JsonObject_ReadStringOr(jObject, sKey, sOut, iOutLen, bDotNot) {
         return true;
@@ -134,6 +140,19 @@ stock bool:JsonObject_ReadAndPrecacheModel(const JSON:jObject, const sKey[], sOu
     }
 
     precache_model(sOut);
-
     return true;
+}
+
+stock E_JsonUtilsReadStatus:JsonObject_ReadAndPrecacheSound(const JSON:jObject, const sKey[], sOut[], const iOutLen, const bool:bDotNot = false) {
+    sOut[0] = EOS;
+    JsonObject_ReadStringOr(jObject, sKey, sOut, iOutLen, bDotNot) {
+        return JsonUtilsRead_FieldIsEmpty;
+    }
+
+    if (!file_exists(fmt("sound/%s", sOut))) {
+        return JsonUtilsRead_PrecacheFileNotFound;
+    }
+
+    precache_sound(sOut);
+    return JsonUtilsRead_Success;
 }

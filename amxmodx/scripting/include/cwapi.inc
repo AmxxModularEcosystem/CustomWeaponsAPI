@@ -63,6 +63,7 @@ stock const CWAPI_GIVE_TYPE_PARAM_TYPE_NAME[] = "CWAPI-GiveType";
 #define CWAPI_IMPULSE_OFFSET 4354
 
 #define var_CWAPI_ItemOwner var_iuser4
+#define var_CWAPI_DefaultDeployAnimIndex var_iuser3
 #define EV_INT_CWAPI_ItemOwner EV_INT_iuser4
 
 /**

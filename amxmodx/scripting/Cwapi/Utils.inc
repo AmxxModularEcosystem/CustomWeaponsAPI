@@ -41,6 +41,10 @@ stock bool:IsWeaponSilenced(const ItemId) {
     return bool:((WPNSTATE_M4A1_SILENCED | WPNSTATE_USP_SILENCED) & get_member(ItemId, m_Weapon_iWeaponState));
 }
 
+stock bool:IsWeaponBurst(const ItemId) {
+    return bool:((WPNSTATE_GLOCK18_BURST_MODE | WPNSTATE_FAMAS_BURST_MODE) & get_member(ItemId, m_Weapon_iWeaponState));
+}
+
 stock GetAttackerWeapon(const AttackerId, const InflictorId) {
     if (InflictorId != AttackerId) {
         return 0;
