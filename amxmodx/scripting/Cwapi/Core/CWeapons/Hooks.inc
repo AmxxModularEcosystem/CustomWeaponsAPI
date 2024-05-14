@@ -1,7 +1,10 @@
 #include <amxmodx>
 #include <reapi>
 #include <hamsandwich>
+#include <fakemeta>
 #include "Cwapi/Utils"
+
+#include "Cwapi/Core/CWeapons/NotClientWeapons"
 
 enum _E_Ham_WeaponHook{
     Ham:Ham_WH_Hook,
@@ -14,6 +17,7 @@ static const _HAM_WEAPON_HOOKS[][_E_Ham_WeaponHook] = {
     {Ham_Item_Holster, "Hook_ItemHolster_Pre", false},
     {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Pre", false},
     {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Post", true},
+    {Ham_CS_Weapon_SendWeaponAnim, "Hook_SendWeaponAnim_Post", true},
     // {Ham_CS_Item_GetMaxSpeed, "Hook_PlayerGetMaxSpeed", false},
     // {Ham_Weapon_SecondaryAttack, "Hook_SecondaryAttack", true},
     // {Ham_Item_AddToPlayer, "Hook_AddItemToPlayer_Post", true},
@@ -24,6 +28,7 @@ static Trie:gRegisteredRefWeapons = Invalid_Trie;
 CWeapons_Hooks_Init() {
     CWeapons_Hooks__RegReapi();
     RegisterHam(Ham_Touch, "weaponbox", "Hook_WeaponBoxTouch", false);
+    register_forward(FM_UpdateClientData, "FMHook_UpdateClientData_Post", true);
 
     gRegisteredRefWeapons = TrieCreate();
 }
@@ -354,6 +359,10 @@ public Hook_PrimaryAttack_Pre(const ItemId) {
         return HAM_IGNORED;
     }
 
+    if (Weapon[CWeapon_HasCustomSounds]) {
+        NotClientWeapons_ManageAttackHooks(true);
+    }
+
     if (!WeaponCanAttack(ItemId)) {
         return HAM_IGNORED;
     }
@@ -364,6 +373,31 @@ public Hook_PrimaryAttack_Pre(const ItemId) {
         return HAM_SUPERCEDE;
     }
 
+    new UserId = get_member(ItemId, m_pPlayer);
+    if (Weapon[CWeapon_HasCustomSounds]) {
+        NotClientWeapons_SendDefaultWeaponAnim(UserId, ItemId, ANIMSTYPE_ATTACK);
+    }
+
+    // TODO: Сначала нужен список деф звуков
+    // if (Events_IsRet(CWAPI_STOP)) {
+    //     return HAM_IGNORED;
+    // }
+    
+    if (Weapon[CWeapon_HasCustomSounds]) {
+        new sShotSound[PLATFORM_MAX_PATH];
+        if (IsWeaponSilenced(ItemId)) {
+            copy(sShotSound, charsmax(sShotSound), Weapon[CWeapon_Sounds][CWeapon_Sound_ShotSilenced]);
+        } else if (IsWeaponBurst(ItemId)) {
+            copy(sShotSound, charsmax(sShotSound), Weapon[CWeapon_Sounds][CWeapon_Sound_ShotBurst]);
+        } else {
+            copy(sShotSound, charsmax(sShotSound), Weapon[CWeapon_Sounds][CWeapon_Sound_Shot]);
+        }
+
+        if (sShotSound[0] != EOS) {
+            rh_emit_sound2(UserId, 0, CHAN_WEAPON, sShotSound);
+        }
+    }
+
     return HAM_IGNORED;
 }
 
@@ -372,6 +406,8 @@ public Hook_PrimaryAttack_Post(const ItemId) {
     if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
         return HAM_IGNORED;
     }
+
+    NotClientWeapons_ManageAttackHooks(false);
 
     if (!WeaponWasAttack(ItemId)) {
         return HAM_IGNORED;
@@ -409,6 +445,77 @@ public Hook_WeaponBoxTouch(const iWeaponBox, const iToucher) {
     }
 
     return HAM_IGNORED;
+}
+
+public Hook_SendWeaponAnim_Post(ItemId, anim, skiplocal) {
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HAM_IGNORED;
+    }
+
+    if (Weapon[CWeapon_HasCustomSounds]) {
+        set_entvar(ItemId, var_CWAPI_DefaultDeployAnimIndex, anim);
+        NotClientWeapons_SendWeaponAnim(get_member(ItemId, m_pPlayer), anim, 0);
+    }
+
+    return HAM_IGNORED;
+}
+
+public FMHook_UpdateClientData_Post(iPlayer, SendWeapons, CD_Handle) {
+    enum {
+        SPEC_MODE,
+        SPEC_TARGET,
+
+        SPEC_END,
+    };
+    static aSpecInfo[MAX_PLAYERS + 1][SPEC_END];
+
+    static Float:flGameTime;
+    static Float:flLastEventCheck;
+
+    new iSpecMode = get_entvar(iPlayer, var_iuser1);
+    new iTarget = iSpecMode ? get_entvar(iPlayer, var_iuser2) : iPlayer;
+
+    if (!is_user_alive(iTarget)) {
+        return FMRES_IGNORED;
+    }
+
+    new iActiveItem = get_member(iTarget, m_pActiveItem);
+    if (iActiveItem == NULLENT) {
+        return FMRES_IGNORED;
+    }
+    
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(iActiveItem, Weapon, iWeapon)) {
+        return FMRES_IGNORED;
+    }
+
+    if (!Weapon[CWeapon_HasCustomSounds]) {
+        return FMRES_IGNORED;
+    }
+
+    flGameTime = get_gametime();
+    flLastEventCheck = get_member(iActiveItem, m_flLastEventCheck);
+
+    if (iSpecMode) {
+        if (aSpecInfo[iPlayer][SPEC_MODE] != iSpecMode) {
+            aSpecInfo[iPlayer][SPEC_MODE] = iSpecMode;
+            aSpecInfo[iPlayer][SPEC_TARGET] = 0;
+        }
+
+        if (iSpecMode == OBS_IN_EYE && aSpecInfo[iPlayer][SPEC_TARGET] != iTarget) {
+            aSpecInfo[iPlayer][SPEC_TARGET] = iTarget;
+            NotClientWeapons_SendDefaultWeaponAnim(iTarget, iActiveItem, ANIMSTYPE_IDLE);
+        }
+    }
+
+    if (!flLastEventCheck) {
+        set_cd(CD_Handle, CD_flNextAttack, flGameTime + 0.001);
+    } else if (flLastEventCheck <= flGameTime) {
+        set_member(iActiveItem, m_flLastEventCheck, 0.0);
+    }
+
+    return FMRES_IGNORED;
 }
 
 // public Hook_DefaultReload_Post(const ItemId, iClipSize, iAnim, Float:fDelay) {
@@ -495,34 +602,6 @@ public Hook_WeaponBoxTouch(const iWeaponBox, const iToucher) {
 //         SetWeaponNextAttack(ItemId, Data[CWAPI_WD_PrimaryAttackRate]);
 //     }
 
-//     new UserId = get_member(ItemId, m_pPlayer);
-
-//     if (IsWeaponSilenced(ItemId)) if (Data[CWAPI_WD_Sounds][CWAPI_WS_ShotSilent][0]) {
-//         rh_emit_sound2(UserId, 0, CHAN_WEAPON, Data[CWAPI_WD_Sounds][CWAPI_WS_ShotSilent]);
-//     } else if (Data[CWAPI_WD_Sounds][CWAPI_WS_Shot][0]) {
-//         rh_emit_sound2(UserId, 0, CHAN_WEAPON, Data[CWAPI_WD_Sounds][CWAPI_WS_Shot]);
-//     }
-
-//     return HAM_IGNORED;
-// }
-
-// public Hook_SecondaryAttack(ItemId) {
-//     new WeaponId = GetWeapId(ItemId);
-//     if (!IsCustomWeapon(WeaponId)) {
-//         return HAM_IGNORED;
-//     }
-
-//     if (!CallWeaponEvent(WeaponId, CWAPI_WE_SecondaryAttack, ItemId)) {
-//         return HAM_IGNORED;
-//     }
-
-//     new Data[CWAPI_WeaponData];
-//     ArrayGetArray(CustomWeapons, WeaponId, Data);
-
-//     if (Data[CWAPI_WD_SecondaryAttackRate] > 0.0) {
-//         SetWeaponNextAttack(ItemId, Data[CWAPI_WD_SecondaryAttackRate]);
-//     }
-    
 //     return HAM_IGNORED;
 // }
 

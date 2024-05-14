@@ -8,6 +8,8 @@
 #include "Cwapi/DebugMode"
 #include "Cwapi/Core/Params"
 
+#pragma dynamic 32768
+
 #include "Cwapi/Core/CustomWeapons"
 #include "Cwapi/Core/DebugCommands"
 
