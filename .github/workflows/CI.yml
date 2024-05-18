@@ -14,6 +14,7 @@ on:
 env:
   PACKAGE_NAME: CustomWeaponsAPI
   STORE_READMY: 1
+  PARAMS_CONRTOLLER_TAG: 1.0.0-b4
 
 jobs:
   build:
@@ -57,8 +58,7 @@ jobs:
           curl \
             --silent \
             https://api.github.com/repos/$REPO/releases/latest | \
-            grep "browser_download_url" | \
-            grep -Eo 'https://[^\"]*' | \
+            jq .assets[0].browser_download_url -r | \
             xargs wget
 
           7z x *.zip
@@ -68,13 +68,13 @@ jobs:
       - name: Setup ParamsController includes
         env:
           REPO: AmxxModularEcosystem/ParamsController
-          TAG: 1.0.0-b4
+          TAG: ${{ env.PARAMS_CONRTOLLER_TAG }}
         run: |
           mkdir -p dep/${REPO}
           cd dep/${REPO}
 
           if [ -z "${TAG}" ]; then
-            TAG=`curl --silent https://api.github.com/repos/${REPO}/releases/latest | grep -Po '(?<="tag_name": ")[^\"]*'`
+            TAG=`curl --silent https://api.github.com/repos/${REPO}/releases/latest | jq .tag_name -r`
           fi
 
           wget https://github.com/${REPO}/archive/refs/tags/${TAG}.zip
@@ -109,7 +109,7 @@ jobs:
           }
           export -f compile
 
-          find * -type f -name "*.sma" -exec bash -c 'compile "$0"' {} \;
+          find . -type f -name "*.sma" -exec bash -c 'compile "$0"' {} \;
 
       - name: Move files
         env:
@@ -152,8 +152,6 @@ jobs:
         if: |
           startsWith(github.ref, 'refs/tags/') &&
           steps.packaging.outcome == 'success'
-        # env:
-        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
             *.zip
