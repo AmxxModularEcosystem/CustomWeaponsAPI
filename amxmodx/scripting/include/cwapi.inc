@@ -38,6 +38,8 @@ stock const CWAPI_WEAPON_PARAM_TYPE_NAME[] = "CWAPI-Weapon";
 
 /**
  * Название типа параметра для способа выдачи кастомного оружия.
+ * 
+ * @note После чтения такого параметра в Trie будет лежать элемент перечисления CWeapon_GiveType.
  */
 stock const CWAPI_GIVE_TYPE_PARAM_TYPE_NAME[] = "CWAPI-GiveType";
 
