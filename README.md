@@ -72,3 +72,5 @@
 [Dev-CS: За помощь на форуме](https://dev-cs.ru/threads/7718/)
 
 BalbuR/DeMNiX: За реализацию поддержки кастомных звуков стрельбы
+
+[wopox1337]([url](https://github.com/wopox1337)): Пример конфига для GitHub Actions.
