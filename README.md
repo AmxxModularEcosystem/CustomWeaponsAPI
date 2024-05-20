@@ -73,4 +73,4 @@
 
 BalbuR/DeMNiX: За реализацию поддержки кастомных звуков стрельбы
 
-[wopox1337]([url](https://github.com/wopox1337)): Пример конфига для GitHub Actions.
+[wopox1337](https://github.com/wopox1337): Пример конфига для GitHub Actions.
