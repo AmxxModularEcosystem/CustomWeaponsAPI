@@ -18,7 +18,7 @@
 public stock const PluginName[] = "Custom Weapons API";
 public stock const PluginVersion[] = _CWAPI_VERSION;
 public stock const PluginAuthor[] = "ArKaNeMaN";
-public stock const PluginURL[] = "https://github.com/ArKaNeMaN/amxx-CustomWeaponsAPI";
+public stock const PluginURL[] = "https://github.com/AmxxModularEcosystem/CustomWeaponsAPI";
 public stock const PluginDescription[] = "API for creating custom weapons";
 
 public plugin_precache() {
