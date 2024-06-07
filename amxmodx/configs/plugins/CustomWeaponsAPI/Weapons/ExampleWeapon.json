@@ -1,21 +1,27 @@
 {
-    "Name": "Weapon_for_testing",
+    "Name": "ExampleWeapon",
     "Reference": "weapon_deagle",
     "DamageMult": 5.0,
     "MaxClip": 42,
     "MaxAmmo": 84,
     "DeployTime": 0.1,
-    
+    "ReloadTime": 0.2,
+   
     "Models": {
         "View": "models/v_p228.mdl",
         "Player": "models/p_p228.mdl",
         "World": "models/w_p228.mdl"
     },
+       
+    "Sounds": {
+        "Shot": "weapons/famas-1.wav",
+        "ShotSilenced": "weapons/galil-1.wav",
+        "ShotBurst": "weapons/hegrenade-1.wav"
+    },
 
     "Abilities": {
         "TestAbility": {
-            "TestInteger": 123,
-            "TestString": "321"
+            "TestInteger": 123
         }
     }
 }
