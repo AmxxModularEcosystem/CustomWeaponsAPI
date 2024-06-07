@@ -116,8 +116,8 @@ jobs:
         env:
           STORE_READMY: ${{ env.STORE_READMY }}
         run: |
-          mkdir -p publish/${{ env.PACKAGE_NAME }}
-          mv amxmodx/ publish/${{ env.PACKAGE_NAME }}/
+          mkdir -p publish/${{ env.PACKAGE_NAME }}/addons
+          mv amxmodx/ publish/${{ env.PACKAGE_NAME }}/addons
 
           if [ ! -z "${STORE_READMY}" ]; then
             mv README.md publish/
