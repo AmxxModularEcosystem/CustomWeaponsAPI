@@ -14,11 +14,11 @@
 - [ReAPI 5.24.x или новее](https://github.com/s1lentq/reapi/releases/latest)
 - [Params Controller](https://github.com/AmxxModularEcosystem/ParamsController) v1.0.0-b4 или новее
 
-## Миграция с версии 0.7.x на версию 0.8.0
+## Миграция с версии 0.7.x на версию 1.0.0
 
 [Мигратор конфигов оружия...](https://amxxmodularecosystem.github.io/vue-cwapi-weapons-migrator/)
 
-Все расширения для версии 0.7.x несовместимы с версией 0.8.0.
+Все расширения для версии 0.7.x несовместимы с версией 1.0.0.
 
 В файлах кастомных оружий были переименованы некоторые поля:
 
@@ -47,7 +47,7 @@
 }
 ```
 
-0.8.0:
+1.0.0:
 
 ```jsonc
 {
