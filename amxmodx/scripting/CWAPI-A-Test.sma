@@ -5,18 +5,21 @@
 new const ABILITY_NAME[] = "TestAbility";
 
 public CWAPI_OnLoad() {
+    register_plugin("[CWAPI-A] TestAbility", CWAPI_VERSION, "ArKaNeMaN");
+
     new T_WeaponAbility:iAbility = CWAPI_Abilities_Register(ABILITY_NAME);
     CWAPI_Abilities_AddParams(iAbility,
         "TestInteger", "Integer", false
     );
 
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnSpawn, "@OnSpawn");
-    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnSpawnPost, "@OnSpawnPost");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnSetWeaponBoxModel, "@OnSetWeaponBoxModel");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnAddPlayerItem, "@OnAddPlayerItem");
-    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnRemovePlayerItem, "@OnRemovePlayerItem");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnDeploy, "@OnDeploy");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnHolster, "@OnHolster");
+    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnRemovePlayerItem, "@OnRemovePlayerItem");
+    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnPlayerKilled, "@OnPlayerKilled");
+    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnSpawnPost, "@OnSpawnPost");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnDamage, "@OnDamage");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnReload, "@OnReload");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnPlayerCanHaveWeapon, "@OnPlayerCanHaveWeapon");
@@ -30,13 +33,6 @@ public CWAPI_OnLoad() {
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
 
     PrintMessage(iWeapon, ItemId, "@OnSpawn(%d, %d, %d): %d", iWeapon, ItemId, tAbilityParams, iTestInteger);
-}
-
-@OnSpawnPost(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
-    new iTestInteger = 0;
-    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-
-    PrintMessage(iWeapon, ItemId, "@OnSpawnPost(%d, %d, %d): %d", iWeapon, ItemId, tAbilityParams, iTestInteger);
 }
 
 @OnSetWeaponBoxModel(const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const Trie:tAbilityParams) {
@@ -53,13 +49,6 @@ public CWAPI_OnLoad() {
     PrintMessage(iWeapon, ItemId, "@OnAddPlayerItem(%d, %d, %n, %d): %d", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger);
 }
 
-@OnRemovePlayerItem(const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams) {
-    new iTestInteger = 0;
-    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
-
-    PrintMessage(iWeapon, ItemId, "@OnRemovePlayerItem(%d, %d, %n, %d): %d", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger);
-}
-
 @OnDeploy(const T_CustomWeapon:iWeapon, const ItemId, &Float:fDeployTime, const Trie:tAbilityParams) {
     new iTestInteger = 0;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
@@ -72,6 +61,27 @@ public CWAPI_OnLoad() {
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
 
     PrintMessage(iWeapon, ItemId, "@OnHolster(%d, %d, %d): %d", iWeapon, ItemId, tAbilityParams, iTestInteger);
+}
+
+@OnRemovePlayerItem(const T_CustomWeapon:iWeapon, const ItemId, const UserId, const Trie:tAbilityParams) {
+    new iTestInteger = 0;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+
+    PrintMessage(iWeapon, ItemId, "@OnRemovePlayerItem(%d, %d, %n, %d): %d", iWeapon, ItemId, UserId, tAbilityParams, iTestInteger);
+}
+
+@OnPlayerKilled(const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const KillerId, const Trie:tAbilityParams) {
+    new iTestInteger = 0;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+    
+    PrintMessage(iWeapon, ItemId, "@OnPlayerKilled(%d, %d, %n, %n, %d): %d", iWeapon, ItemId, VictimId, KillerId, tAbilityParams, iTestInteger);
+}
+
+@OnSpawnPost(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
+    new iTestInteger = 0;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+
+    PrintMessage(iWeapon, ItemId, "@OnSpawnPost(%d, %d, %d): %d", iWeapon, ItemId, tAbilityParams, iTestInteger);
 }
 
 @OnDamage(const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const InflictorId, const AttackerId, &Float:fDamage, &iDamageBits, const Trie:tAbilityParams) {
