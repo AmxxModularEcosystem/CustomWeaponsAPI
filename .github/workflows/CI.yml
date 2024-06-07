@@ -69,6 +69,7 @@ jobs:
         env:
           REPO: AmxxModularEcosystem/ParamsController
           TAG: ${{ env.PARAMS_CONRTOLLER_TAG }}
+          OUTPUT_VAR_NAME: PARAMS_CONRTOLLER_INCLUDE_PATH
         run: |
           mkdir -p dep/${REPO}
           cd dep/${REPO}
@@ -81,7 +82,7 @@ jobs:
           7z x ${TAG}.zip
 
           REPO_NAME=`echo "${REPO}" | grep -Po '(?<=\/)\w+'`
-          echo "PARAMS_CONRTOLLER_INCLUDE_PATH=$(pwd)/${REPO_NAME}-${TAG}/amxmodx/scripting/include" >> $GITHUB_ENV
+          echo "${OUTPUT_VAR_NAME}=$(pwd)/${REPO_NAME}-${TAG}/${INCLUDE_PATH:-amxmodx/scripting/include}" >> $GITHUB_ENV
 
       - name: Setup AMXXPawn Compiler
         uses: wopox1337/setup-amxxpawn@v1.1.0
