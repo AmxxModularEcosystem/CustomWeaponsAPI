@@ -897,10 +897,10 @@ static NotClientWeapons__GetDefaultAnimationData(
                         new iAnims;
                         if (IsWeaponSilenced(iWeapon)) {
                             iDefAnimsFlags |= BIT(eWeaponsDataAnimsFlags_Silenced);
-                            iAnims = random_num(9, 11);
+                            iAnims = random_num(1, 3);
                         } else {
                             iDefAnimsFlags |= BIT(eWeaponsDataAnimsFlags_Unsilenced);
-                            iAnims = random_num(1, 3);
+                            iAnims = random_num(9, 11);
                         }
 
                         return iAnims;
