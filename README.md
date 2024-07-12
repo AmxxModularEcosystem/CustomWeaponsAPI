@@ -59,7 +59,7 @@
   },
   "Sounds": {
     "Shot": "weapons/deagle-1.wav",
-    "ShotSilented": "weapons/deagle-1.wav"
+    "ShotSilenced": "weapons/deagle-1.wav"
   },
   "MaxClip": 10
 }
