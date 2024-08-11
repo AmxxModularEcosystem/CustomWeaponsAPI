@@ -19,6 +19,7 @@ CWeapons_Natives_Reg() {
     Natives_Reg("Weapons_Give");
     Natives_Reg("Weapons_GetName");
     // Natives_Reg("Weapons_GetAbilityParams");
+    Natives_Reg("Weapons_GetAttribute");
 }
 
 T_CustomWeapon:@_Weapons_Find() {
@@ -96,3 +97,26 @@ T_CustomWeapon:@_Weapons_FindByItem() {
 
 //     return set_string(Arg_sOut, Weapon[CWeapon_Name], iOutLen);
 // }
+
+@_Weapons_GetAttribute(const iPlugin) {
+    enum {Arg_iWeapon = 1, Arg_iAttribute, Arg_sOut, Arg_iOutLen}
+    
+    API_CWeapons_CheckInitP(0);
+
+    new T_CustomWeapon:iWeapon = T_CustomWeapon:get_param(Arg_iWeapon);
+    new E_CWeapon_Attribute:iAttribute = E_CWeapon_Attribute:get_param(Arg_iAttribute);
+    
+    new Weapon[S_CustomWeapon];
+    CWeapons_Get(iWeapon, Weapon);
+    
+    switch (iAttribute) {
+        case CWeaponAttr_Reference:
+            return set_string(Arg_sOut, Weapon[CWeapon_Reference], get_param(Arg_iOutLen));
+
+        case CWeaponAttr_Name:
+            return set_string(Arg_sOut, Weapon[CWeapon_Name], get_param(Arg_iOutLen));
+    }
+    
+    log_error(1, "Invalid custom weapon attribute type: %d", iAttribute);
+    return 0;
+}

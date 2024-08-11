@@ -133,11 +133,14 @@ PrintMessage(const T_CustomWeapon:iWeapon, const ItemId, const sMsg[], const any
     new sFmtMsg[256];
     vformat(sFmtMsg, charsmax(sFmtMsg), sMsg, 4);
 
+    new sWeaponName[CWAPI_WEAPON_NAME_MAX_LEN];
+    CWAPI_Weapons_GetAttribute(iWeapon, CWeaponAttr_Name, sWeaponName, charsmax(sWeaponName));
+
     if (is_user_connected(UserId)) {
-        client_print(UserId, print_chat, "[TEST] [%s] %s", CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
-        client_print(UserId, print_console, "[TEST] [%s] %s", CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
-        server_print("[TEST] [%n, %s] %s", UserId, CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
+        client_print(UserId, print_chat, "[TEST] [%s] %s", sWeaponName, sFmtMsg);
+        client_print(UserId, print_console, "[TEST] [%s] %s", sWeaponName, sFmtMsg);
+        server_print("[TEST] [%n, %s] %s", UserId, sWeaponName, sFmtMsg);
     } else {
-        server_print("[TEST] [*undefined*, %s] %s", CWAPI_Weapons_iGetName(iWeapon), sFmtMsg);
+        server_print("[TEST] [*undefined*, %s] %s", sWeaponName, sFmtMsg);
     }
 }

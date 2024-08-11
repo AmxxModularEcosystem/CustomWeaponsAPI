@@ -286,23 +286,21 @@ enum E_CWeapon_Event {
 
 /**
  * Публиные параметры кастомного оружия
- * 
- * @note На данный момент не используется
  */
-enum E_CWeapon_Data {
+enum E_CWeapon_Attribute {
     /**
      * Название стандартного оружия, на котором основано кастомное
      * 
      * Тип: Строка
      */
-    CWeaponData_Reference,
+    CWeaponAttr_Reference,
 
     /**
      * Название кастомного оружия
      * 
      * Тип: Строка
      */
-    CWeaponData_Name,
+    CWeaponAttr_Name,
 }
 
 /**
@@ -391,9 +389,9 @@ native T_CustomWeapon:CWAPI_Weapons_Find(const sWeaponName[]);
 /**
  * Поиск кастомного оружия по сущности предмета.
  * 
- * @param sWeaponName   Индекс сущности предмета.
+ * @param ItemId    Индекс сущности предмета.
  * 
- * @return              Хендлер кастомного оружия или Invalid_CustomWeapon в случае неудачи.
+ * @return          Хендлер кастомного оружия или Invalid_CustomWeapon в случае неудачи.
  */
 native T_CustomWeapon:CWAPI_Weapons_FindByItem(const ItemId);
 
@@ -443,6 +441,26 @@ stock CWAPI_Weapons_iGetName(const T_CustomWeapon:iWeapon) {
 
     return sWeaponName;
 }
+
+/**
+ * Получение атрибута кастомного оружия.
+ * 
+ * @param iWeapon       Хендлер кастомного оружия.
+ * @param iAttribute    Хендлер кастомного оружия.
+ * 
+ * @note                Для строковых атсрибутов:
+ *                      CWAPI_Weapons_GetAttribute(iWeapon, iAttribute, sOut, iOutLen);
+ *                      - sOut - буфер для записи атрибута;
+ *                      - iOutLen - размер буфера.
+ *                      - Вернёт количество записанных в буфер ячеек.
+ *  
+ * @note                Для числовых атрибутов:
+ *                      CWAPI_Weapons_GetAttribute(iWeapon, iAttribute);
+ *                      - Вернёт значение атрибута.
+ * 
+ * @return              Количество записанных в буфер ячеек.
+ */
+native any:CWAPI_Weapons_GetAttribute(const T_CustomWeapon:iWeapon, const E_CWeapon_Attribute:iAttribute, any:...);
 
 /**
  * Регистрация способности кастомного оружия.
