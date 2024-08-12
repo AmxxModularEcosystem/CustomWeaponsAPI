@@ -448,7 +448,7 @@ stock CWAPI_Weapons_iGetName(const T_CustomWeapon:iWeapon) {
  * @param iWeapon       Хендлер кастомного оружия.
  * @param iAttribute    Хендлер кастомного оружия.
  * 
- * @note                Для строковых атсрибутов:
+ * @note                Для строковых атрибутов:
  *                      CWAPI_Weapons_GetAttribute(iWeapon, iAttribute, sOut, iOutLen);
  *                      - sOut - буфер для записи атрибута;
  *                      - iOutLen - размер буфера.

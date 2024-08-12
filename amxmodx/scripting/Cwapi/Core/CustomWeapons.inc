@@ -407,17 +407,18 @@ CWeapons_LoadFromFolder(const sFolder[]) {
     iRegEx_FileName = regex_compile("(.+).json$", ret, "", 0, "i");
 
     do {
-        if (
-            sFile[0] == '!'
-            || iType != FileType_File
-            || regex_match_c(sFile, iRegEx_FileName) <= 0
-        ) {
+        if (sFile[0] == '!') {
             continue;
         }
 
-        regex_substr(iRegEx_FileName, 1, sFile, charsmax(sFile));
-        CWeapons_LoadFromCfg(fmt("%s/%s", sFolder, sFile));
-
+        if (iType == FileType_Directory) {
+            CWeapons_LoadFromFolder(fmt("%s/%s", sFolder, sFile));
+        } else if (iType == FileType_File) {
+            if (regex_match_c(sFile, iRegEx_FileName) > 0) {
+                regex_substr(iRegEx_FileName, 1, sFile, charsmax(sFile));
+                CWeapons_LoadFromCfg(fmt("%s/%s", sFolder, sFile));
+            }
+        }
     } while (next_file(iDirHandler, sFile, charsmax(sFile), iType));
 
     regex_free(iRegEx_FileName);
