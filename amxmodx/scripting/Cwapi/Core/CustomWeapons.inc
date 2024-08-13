@@ -401,13 +401,13 @@ CWeapons_LoadFromFolder(const sFolder[]) {
         return;
     }
     
-    Dbg_Log("CWeapons_LoadFromFolder('%s'): Read weapons from folder '%s'.", sFolder, sFolder);
+    Dbg_Log("CWeapons_LoadFromFolder('%s'): Read weapons from folder '%s'.", sFolder, CfgUtils_GetPath(sFolder));
 
     new Regex:iRegEx_FileName, ret;
     iRegEx_FileName = regex_compile("(.+).json$", ret, "", 0, "i");
 
     do {
-        if (sFile[0] == '!') {
+        if (sFile[0] == '!' || sFile[0] == '.') {
             continue;
         }
 
