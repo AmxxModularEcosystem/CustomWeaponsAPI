@@ -396,6 +396,17 @@ native T_CustomWeapon:CWAPI_Weapons_Find(const sWeaponName[]);
 native T_CustomWeapon:CWAPI_Weapons_FindByItem(const ItemId);
 
 /**
+ * Проверка, является ли предмет кастомным оружием.
+ * 
+ * @param ItemId    Индекс сущности предмета.
+ * 
+ * @return          true, если предмет является кастомным оружием, иначе false.
+ */
+stock bool:CWAPI_Weapons_IsCustomItem(const ItemId) {
+    return CWAPI_Weapons_FindByItem(ItemId) != Invalid_CustomWeapon;
+}
+
+/**
  * Регистрация обработчика события кастомного оружия.
  * 
  * @param iWeapon   Хендлер кастомного оружия.
