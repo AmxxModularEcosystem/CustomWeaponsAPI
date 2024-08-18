@@ -474,6 +474,21 @@ stock CWAPI_Weapons_iGetName(const T_CustomWeapon:iWeapon) {
 native any:CWAPI_Weapons_GetAttribute(const T_CustomWeapon:iWeapon, const E_CWeapon_Attribute:iAttribute, any:...);
 
 /**
+ * Получение названия кастомного оружия.
+ * 
+ * @param iWeapon       Хендлер кастомного оружия.
+ * @param iAttribute    Ключ атрибута (см. enum E_CWeapon_Attribute).
+ * 
+ * @return              Значение атрибута.
+ */
+stock CWAPI_Weapons_iGetAttribute(const T_CustomWeapon:iWeapon, const E_CWeapon_Attribute:iAttribute) {
+    new sAttrValue[MAX_FMT_LENGTH];
+    CWAPI_Weapons_GetAttribute(iWeapon, iAttribute, sAttrValue, charsmax(sAttrValue));
+
+    return sAttrValue;
+}
+
+/**
  * Регистрация способности кастомного оружия.
  * 
  * @param sAbilityName  Название способности.
