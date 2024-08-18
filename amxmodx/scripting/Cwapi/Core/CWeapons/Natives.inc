@@ -58,15 +58,16 @@ T_CustomWeapon:@_Weapons_FindByItem() {
 }
 
 @_Weapons_Give(const iPlugin) {
-    enum {Arg_UserId = 1, Arg_iWeapon, Arg_iGiveType}
+    enum {Arg_UserId = 1, Arg_iWeapon, Arg_iGiveType, Arg_bForceActive}
     
     API_CWeapons_CheckInitP(0);
 
     new T_CustomWeapon:iWeapon = T_CustomWeapon:get_param(Arg_iWeapon);
     new UserId = get_param(Arg_UserId);
     new CWeapon_GiveType:iGiveType = CWeapon_GiveType:get_param(Arg_iGiveType);
+    new bool:bForceActive = bool:get_param(Arg_bForceActive);
 
-    return CWeapons_Give(UserId, iWeapon, iGiveType);
+    return CWeapons_Give(UserId, iWeapon, iGiveType, bForceActive);
 }
 
 @_Weapons_GetName(const iPlugin) {

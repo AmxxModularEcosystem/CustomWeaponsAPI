@@ -5,7 +5,7 @@
 
 #include <amxmodx>
 
-#define _CWAPI_VERSION "1.0.0-b1"
+#define _CWAPI_VERSION "1.0.0-b2"
 
 /**
  * Строковое представление версии CWAPI.
@@ -420,13 +420,43 @@ native CWAPI_Weapons_AddEventListener(const T_CustomWeapon:iWeapon, const E_CWea
 /**
  * Выдача кастомного оружия игроку.
  * 
- * @param UserId    Индекс игрока.
- * @param iWeapon   Хендлер кастомного оружия.
- * @param iGiveType Метод выдачи оружия (см. enum CWeapon_GiveType).
+ * @param UserId        Индекс игрока.
+ * @param iWeapon       Хендлер кастомного оружия.
+ * @param iGiveType     Метод выдачи оружия (см. enum CWeapon_GiveType).
+ * @param bForceActive  Сделать выданное оружие активным.
  * 
- * @return          Индекс созданный ентити предмета. -1, если оружие по какой-то причине не было выдано.
+ * @return          Индекс созданной ентити предмета. -1, если оружие по какой-то причине не было выдано.
  */
-native CWAPI_Weapons_Give(const UserId, const T_CustomWeapon:iWeapon, const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART);
+native CWAPI_Weapons_Give(
+    const UserId,
+    const T_CustomWeapon:iWeapon,
+    const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART,
+    const bool:bForceActive = false
+);
+
+/**
+ * Выдача игроку кастомного оружия по его названию.
+ * 
+ * @param UserId        Индекс игрока.
+ * @param sWeaponName   Название кастомного оружия.
+ * @param iGiveType     Метод выдачи оружия (см. enum CWeapon_GiveType).
+ * @param bForceActive  Сделать выданное оружие активным.
+ * 
+ * @return              Индекс созданной ентити предмета. -1, если оружие по какой-то причине не было выдано.
+ */
+stock CWAPI_Weapons_GiveByName(
+    const UserId,
+    const sWeaponName[],
+    const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART,
+    const bool:bForceActive = false
+) {
+    new T_CustomWeapon:iWeapon = CWAPI_Weapons_Find(sWeaponName);
+    if (iWeapon == Invalid_CustomWeapon) {
+        return -1;
+    }
+
+    return CWAPI_Weapons_Give(UserId, iWeapon, iGiveType, bForceActive);
+}
 
 /**
  * Получение названия кастомного оружия.
@@ -457,7 +487,7 @@ stock CWAPI_Weapons_iGetName(const T_CustomWeapon:iWeapon) {
  * Получение атрибута кастомного оружия.
  * 
  * @param iWeapon       Хендлер кастомного оружия.
- * @param iAttribute    Хендлер кастомного оружия.
+ * @param iAttribute    Атрибут (см. enum E_CWeapon_Attribute).
  * 
  * @note                Для строковых атрибутов:
  *                      CWAPI_Weapons_GetAttribute(iWeapon, iAttribute, sOut, iOutLen);

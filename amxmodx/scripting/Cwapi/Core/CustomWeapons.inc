@@ -230,7 +230,8 @@ static GiveType:CWeapons__ResolveGiveType(
 CWeapons_Give(
     const UserId,
     const T_CustomWeapon:iWeapon,
-    const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART
+    const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART,
+    const bool:bForceActive = false
 ) {
     new Weapon[S_CustomWeapon];
     CWeapons_Get(iWeapon, Weapon);
@@ -263,6 +264,10 @@ CWeapons_Give(
 
     if (!is_nullent(ItemId)) {
         FillBpAmmoByItem(UserId, ItemId);
+    }
+
+    if (bForceActive) {
+        set_member(UserId, m_pActiveItem, ItemId);
     }
 
     return ItemId;
