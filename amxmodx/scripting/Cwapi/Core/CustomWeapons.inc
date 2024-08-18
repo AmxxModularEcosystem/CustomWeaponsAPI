@@ -169,6 +169,15 @@ bool:CWeapons_Get(const T_CustomWeapon:iWeapon, Weapon[S_CustomWeapon]) {
     return true;
 }
 
+any:CWeapons_GetProp(const T_CustomWeapon:iWeapon, const /*S_CustomWeapon:*/iPropKey) {
+    if (!CWeapons_IsValidIndex(iWeapon)) {
+        ThrowError("Invalid custom weapon index (%d).", iWeapon);
+        return 0;
+    }
+
+    return ArrayMapGetiCell(gCustomWeapons, iWeapon, iPropKey);
+}
+
 static T_CustomWeapon:CWeapons__GetItemIndex(const ItemId) {
     return T_CustomWeapon:(get_entvar(ItemId, var_impulse) - CWAPI_IMPULSE_OFFSET);
 }
@@ -236,10 +245,10 @@ CWeapons_Give(
     new Weapon[S_CustomWeapon];
     CWeapons_Get(iWeapon, Weapon);
 
-    // CWeapons_Call(...);
-
     new GiveType:iResolvedGiveType = CWeapons__ResolveGiveType(Weapon[CWeapon_ReferenceId], iGiveType);
     Dbg_Log("CWeapons_Give(%d, %d, %d): Resolved give type - %d", UserId, iWeapon, iGiveType, iResolvedGiveType);
+    
+    // TODO: CWeapon_Call(CWeapon_OnGive)
 
     // Удаление/выбрасывание референсного оружия, если оно есть
     // Мб как-то можно более просто это сделать?)
@@ -250,8 +259,6 @@ CWeapons_Give(
             rg_remove_item(UserId, Weapon[CWeapon_Reference]);
         }
     }
-    
-    // TODO: CWeapon_Call(CWeapon_OnGive)
 
     new ItemId = rg_give_custom_item(
         UserId,
@@ -317,6 +324,7 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
         .bDotNot = true
     )) {
         log_amx("[WARNING] Model file '%s' not found. File '%s'.", Models[CWeapon_Model_View], CfgUtils_GetPath(sFile));
+        Models[CWeapon_Model_View][0] = EOS;
     }
     
     if (!JsonObject_ReadAndPrecacheModel(
@@ -325,6 +333,7 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
         .bDotNot = true
     )) {
         log_amx("[WARNING] Model file '%s' not found. File '%s'.", Models[CWeapon_Model_World], CfgUtils_GetPath(sFile));
+        Models[CWeapon_Model_World][0] = EOS;
     }
     
     if (!JsonObject_ReadAndPrecacheModel(
@@ -333,6 +342,7 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
         .bDotNot = true
     )) {
         log_amx("[WARNING] Model file '%s' not found. File '%s'.", Models[CWeapon_Model_Player], CfgUtils_GetPath(sFile));
+        Models[CWeapon_Model_Player][0] = EOS;
     }
 
     WeaponData[CWeapon_Models] = Models;

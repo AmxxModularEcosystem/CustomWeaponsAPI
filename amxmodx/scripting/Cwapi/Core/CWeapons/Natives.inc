@@ -99,16 +99,36 @@ T_CustomWeapon:@_Weapons_FindByItem() {
 //     return set_string(Arg_sOut, Weapon[CWeapon_Name], iOutLen);
 // }
 
-@_Weapons_GetAttribute(const iPlugin) {
+any:@_Weapons_GetAttribute(const iPlugin) {
     enum {Arg_iWeapon = 1, Arg_iAttribute, Arg_sOut, Arg_iOutLen}
     
     API_CWeapons_CheckInitP(0);
 
     new T_CustomWeapon:iWeapon = T_CustomWeapon:get_param(Arg_iWeapon);
     new E_CWeapon_Attribute:iAttribute = E_CWeapon_Attribute:get_param(Arg_iAttribute);
+
+    switch (iAttribute) {
+        case CWeaponAttr_DamageMult:
+            return CWeapons_GetProp(iWeapon, CWeapon_DamageMult);
+        case CWeaponAttr_ReferenceId:
+            return CWeapons_GetProp(iWeapon, CWeapon_ReferenceId);
+        case CWeaponAttr_Weight:
+            return CWeapons_GetProp(iWeapon, CWeapon_Weight);
+        case CWeaponAttr_MaxClip:
+            return CWeapons_GetProp(iWeapon, CWeapon_MaxClip);
+        case CWeaponAttr_MaxAmmo:
+            return CWeapons_GetProp(iWeapon, CWeapon_MaxAmmo);
+        case CWeaponAttr_DeployTime:
+            return CWeapons_GetProp(iWeapon, CWeapon_DeployTime);
+        case CWeaponAttr_ReloadTime:
+            return CWeapons_GetProp(iWeapon, CWeapon_ReloadTime);
+    }
     
     new Weapon[S_CustomWeapon];
-    CWeapons_Get(iWeapon, Weapon);
+    if (!CWeapons_Get(iWeapon, Weapon)) {
+        log_error(1, "Invalid weapon handler: %d", iWeapon);
+        return 0;
+    }
     
     switch (iAttribute) {
         case CWeaponAttr_Reference:

@@ -83,6 +83,10 @@ stock ArrayMapGetIndex(AM[ArrayMap], const Key[]) {
     ArraySetArray(%1[AM_Arr], ArrayMapGetIndex(%1, %2), %3)
     
 
+stock any:ArrayMapGetiCell(const which[ArrayMap], any:item, block = 0, bool:asChar = false) {
+    return ArrayGetCell(which[AM_Arr], item, block, asChar);
+}
+
 #define ArrayMapGetCell(%1,%2) \
     ArrayGetCell(%1[AM_Arr], ArrayMapGetIndex(%1, %2))
 

@@ -135,7 +135,7 @@ stock bool:JsonObject_ReadAndPrecacheModel(const JSON:jObject, const sKey[], sOu
     }
 
     if (!file_exists(sOut)) {
-        sOut[0] = EOS;
+        // sOut[0] = EOS;
         return false;
     }
 

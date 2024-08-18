@@ -286,21 +286,75 @@ enum E_CWeapon_Event {
 
 /**
  * Публиные параметры кастомного оружия
+ * 
+ * @see CWAPI_Weapons_GetAttribute
+ * @see CWAPI_Weapons_iGetAttribute
  */
 enum E_CWeapon_Attribute {
     /**
      * Название стандартного оружия, на котором основано кастомное
      * 
-     * Тип: Строка
+     * Тип: String
+     * Только для чтения
      */
     CWeaponAttr_Reference,
 
     /**
      * Название кастомного оружия
      * 
-     * Тип: Строка
+     * Тип: String
+     * Только для чтения
      */
     CWeaponAttr_Name,
+
+    /**
+     * Множитель урона.
+     * 
+     * Тип: Float
+     */
+    CWeaponAttr_DamageMult,
+
+    /**
+     * Индекс стандартного оружия, на котором основано кастомное.
+     * 
+     * Тип: Integer
+     */
+    CWeaponAttr_ReferenceId,
+
+    /**
+     * Значимость оружия.
+     * 
+     * Тип: Integer
+     */
+    CWeaponAttr_Weight,
+
+    /**
+     * Размер магазина.
+     * 
+     * Тип: Integer
+     */
+    CWeaponAttr_MaxClip,
+
+    /**
+     * Максимальное кол-во запасных патронов.
+     * 
+     * Тип: Integer
+     */
+    CWeaponAttr_MaxAmmo,
+
+    /**
+     * Время доставания.
+     * 
+     * Тип: Float
+     */
+    CWeaponAttr_DeployTime,
+
+    /**
+     * Время перезарядки.
+     * 
+     * Тип: Float
+     */
+    CWeaponAttr_ReloadTime,
 }
 
 /**
@@ -508,6 +562,8 @@ native any:CWAPI_Weapons_GetAttribute(const T_CustomWeapon:iWeapon, const E_CWea
  * 
  * @param iWeapon       Хендлер кастомного оружия.
  * @param iAttribute    Ключ атрибута (см. enum E_CWeapon_Attribute).
+ * 
+ * @note                Только для строковых атрибутов.
  * 
  * @return              Значение атрибута.
  */
