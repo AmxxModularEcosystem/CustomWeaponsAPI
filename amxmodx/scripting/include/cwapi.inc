@@ -557,6 +557,8 @@ stock CWAPI_Weapons_iGetName(const T_CustomWeapon:iWeapon) {
  */
 native any:CWAPI_Weapons_GetAttribute(const T_CustomWeapon:iWeapon, const E_CWeapon_Attribute:iAttribute, any:...);
 
+// TODO: CWAPI_Weapons_SetAttribute
+
 /**
  * Получение названия кастомного оружия.
  * 

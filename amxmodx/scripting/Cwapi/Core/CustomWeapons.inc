@@ -5,6 +5,7 @@
 
 #include <amxmodx>
 #include <reapi>
+#include <hamsandwich>
 #include <json>
 #include <regex>
 #include <cwapi>
@@ -274,7 +275,7 @@ CWeapons_Give(
     }
 
     if (bForceActive) {
-        set_member(UserId, m_pActiveItem, ItemId);
+        rg_switch_weapon(UserId, ItemId);
     }
 
     return ItemId;
