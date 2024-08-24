@@ -107,7 +107,7 @@ enum E_CWeapon_Event {
      * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
      * 
      * @return При возвращении CWAPI_STOP_MAIN weaponbox будет удалён.
-     *         При возвращении CWAPI_CONTINUE модель не будет заменена на кастомную.
+     *         При возвращении CWAPI_STOP модель не будет заменена на кастомную.
      */
     CWeapon_OnSetWeaponBoxModel,
 
