@@ -12,13 +12,10 @@
 #include "Cwapi/ArrayMap"
 #include "Cwapi/Core/CWeapons/Utils"
 
-#define WAbility_Call(%1,%2,[%3]) \
-    Events_CallPWhile(%1[WAbility_Events], %2, [%3], Events_IsRet(CWAPI_CONTINUE))
-
 #define WAbilityUnit_Call(%1,%2,[%3]) CompositeMacros( \
     new __WAbilityUnit_Call_Ability[S_WeaponAbility]; \
     WAbility_Get(%1[WAbilityUnit_Ability], __WAbilityUnit_Call_Ability); \
-    WAbility_Call(__WAbilityUnit_Call_Ability, %2, [%3, %1[WAbilityUnit_Params]]); \
+    Events_CallPWhile(__WAbilityUnit_Call_Ability[WAbility_Events], %2, CWAPI_CONTINUE, true, %3, __WAbilityUnit_Call_Ability[WAbilityUnit_Params]); \
 )
 
 // TODO: Как-то всё переусложнено немного))

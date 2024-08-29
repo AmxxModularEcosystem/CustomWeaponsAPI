@@ -58,15 +58,10 @@ static ArrayMap(gCustomWeapons);
 static bool:g_bIsInited = false;
 
 #define CWeapons_Call(%1,%2,[%3]) CompositeMacros( \
-    CWeapons_CallSelf(%1, %2, [%3]); \
+    Events_CallPWhile(%1[CWeapon_Events], %2, CWAPI_CONTINUE, true, %3, Invalid_Trie); \
     if (Events_IsRet(CWAPI_CONTINUE)) { \
         CWeapons_CallAbilities(%1, %2, [%3]); \
     } \
-)
-
-#define CWeapons_CallSelf(%1,%2,[%3]) CompositeMacros( \
-    Events_SetReturnedValue(CWAPI_CONTINUE); \
-    Events_CallPWhile(%1[CWeapon_Events], %2, [%3, Invalid_Trie], Events_IsRet(CWAPI_CONTINUE)); \
 )
 
 #define CWeapons_CallAbilities(%1,%2,[%3]) CompositeMacros( \

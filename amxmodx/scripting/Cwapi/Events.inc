@@ -23,7 +23,7 @@ Functions & Macroses:
 */
 
 // Thx: https://dev-cs.ru/threads/222/page-12#post-103174 & Garey
-new __Events_CompositeMacros__always_false = false;
+stock __Events_CompositeMacros__always_false = false;
 #define Events_CompositeMacros(%1) \
     do { %1 } while(__Events_CompositeMacros__always_false)
 
@@ -111,28 +111,81 @@ stock Events_GetReturnedValue() {
     return __Events_Call_ret;
 }
 
-#define Events_CallP(%1,%2,[%3]) Events_CompositeMacros( \
-    Events_ForeachListener(%1, %2: __Events_Call_listeners[__Events_Call_i] => __Events_Call_listener) { \
-        ExecuteForward(__Events_Call_listener, __Events_Call_ret, %3); \
-    } \
-)
+/**
+ * Author: Garey
+ */
+stock any:Events_CallPWhile(
+    const T_Events:events,
+    const any:event,
+    const any:defaultReturn,
+    const bool:callWhileDefautReturned,
+    any:...
+) {
+    __Events_Call_ret = defaultReturn;
 
-#define Events_CallPWhile(%1,%2,[%3],%4) Events_CompositeMacros( \
-    Events_ForeachListener(%1, %2: __Events_Call_listeners[__Events_Call_i] => __Events_Call_listener) { \
-        ExecuteForward(__Events_Call_listener, __Events_Call_ret, %3); \
-        if (!(%4)) break; \
-    } \
-)
+    if (events == Invalid_Events) {
+        return __Events_Call_ret;
+    }
 
-#define Events_Call(%1,%2) Events_CompositeMacros( \
-    Events_ForeachListener(%1, %2: __Events_Call_listeners[__Events_Call_i] => __Events_Call_listener) { \
-        ExecuteForward(__Events_Call_listener, __Events_Call_ret); \
-    } \
-)
+    new Array:listeners = Events_GetListeners(events, event);
+    if (listeners == Invalid_Array) {
+        return __Events_Call_ret;
+    }
 
-#define Events_CallWhile(%1,%2,%3) Events_CompositeMacros( \
-    Events_ForeachListener(%1, %2: __Events_Call_listeners[__Events_Call_i] => __Events_Call_listener) { \
-        ExecuteForward(__Events_Call_listener, __Events_Call_ret); \
-        if (!(%3)) break; \
-    } \
-)
+    for (new i = 0; i != 0;) {
+        ExecuteForward(0, i, 0);
+    }
+ 
+    // Сколько параметров в этой функции перед any:...
+    // public Events_CallPWhile(a, b, c, d, any:...)
+    //                            ^1 ^2 ^3 ^4!
+    const orig_pre_va_params = 4;
+
+    // Сколько параметров в пробрасываемой функции перед any:....
+    // ExecuteForward(forward_handle, &ret = 0, any:...)
+    //                              ^1        ^2!
+    const pass_pre_va_params = 2;
+ 
+    const orig_bytes = orig_pre_va_params * 4;
+ 
+    new iArgnum = pass_pre_va_params + numargs() - orig_pre_va_params;
+    new iBytesnum = iArgnum * 4;
+    // We have to declare iArg here or we'll corrupt the stack.
+    // No variable declarations/freeing can be done while we are pushing parameters
+    new iArg;
+    // We push each "variadic" parameters to the stack
+
+    // new any:ret = defaultReturn;
+    for (new i = 0, ii = ArraySize(listeners); i < ii; ++i) {
+        new listener = ArrayGetCell(listeners, i);
+    
+        // We push each "variadic" parameters to the stack
+        for(iArg = iArgnum * 4 + orig_bytes; iArg > 8 + orig_bytes; iArg -= 4) {
+            #emit LCTRL 5
+            #emit LOAD.S.alt iArg
+            #emit ADD
+            #emit LOAD.I
+            #emit PUSH.pri
+        }
+
+        // We have yet to push print_chat and 0
+        #emit PUSH.C __Events_Call_ret
+        #emit PUSH.S listener
+        #emit PUSH.S iBytesnum
+
+        // Finally, call the native
+        #emit SYSREQ.C ExecuteForward
+        #emit LOAD.S.pri iBytesnum
+        #emit ADD.C 4
+        #emit MOVE.alt
+        #emit LCTRL 4
+        #emit ADD
+        #emit SCTRL 4
+
+        if (callWhileDefautReturned && __Events_Call_ret != defaultReturn) {
+            return __Events_Call_ret;
+        }
+    }
+
+    return __Events_Call_ret;
+}

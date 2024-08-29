@@ -26,7 +26,7 @@ stock bool:Dbg_GetState() {
 #define IS_DEBUG Dbg_GetState()
 
 // Thx: https://dev-cs.ru/threads/222/page-12#post-103174 & Garey
-new __DebugMode_CompositeMacros__always_false = false;
+stock __DebugMode_CompositeMacros__always_false = false;
 #define DebugMode_CompositeMacros(%1) \
     do { %1 } while(__DebugMode_CompositeMacros__always_false)
 
