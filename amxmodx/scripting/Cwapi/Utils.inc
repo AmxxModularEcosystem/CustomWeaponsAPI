@@ -7,8 +7,10 @@
 #include <reapi>
 #include <json>
 
+// Thx: https://dev-cs.ru/threads/222/page-12#post-103174 & Garey
+new __CompositeMacros__always_false = false;
 #define CompositeMacros(%1) \
-    do { %1 } while(is_linux_server() == 0xDEADBEEF)
+    do { %1 } while(__CompositeMacros__always_false)
 
 const WEAPON_PISTOLS = (
     BIT(_:WEAPON_P228)

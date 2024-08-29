@@ -22,9 +22,10 @@ Functions & Macroses:
     Events_GetReturnedValue();
 */
 
-// Thx: https://dev-cs.ru/threads/222/page-12#post-103174
+// Thx: https://dev-cs.ru/threads/222/page-12#post-103174 & Garey
+new __Events_CompositeMacros__always_false = false;
 #define Events_CompositeMacros(%1) \
-    do { %1 } while(is_linux_server() == 0xDEADBEEF)
+    do { %1 } while(__Events_CompositeMacros__always_false)
 
 enum T_Events { Invalid_Events = _:Invalid_Array }
 
