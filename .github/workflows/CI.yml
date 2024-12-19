@@ -81,7 +81,7 @@ jobs:
           wget https://github.com/${REPO}/archive/refs/tags/${TAG}.zip
           7z x ${TAG}.zip
 
-          REPO_NAME=`echo "${REPO}" | grep -Po '(?<=\/)\w+'`
+          REPO_NAME=`echo "${REPO}" | grep -Po '(?<=\/).+'`
           echo "${OUTPUT_VAR_NAME}=$(pwd)/${REPO_NAME}-${TAG}/${INCLUDE_PATH:-amxmodx/scripting/include}" >> $GITHUB_ENV
 
       - name: Setup AMXXPawn Compiler
