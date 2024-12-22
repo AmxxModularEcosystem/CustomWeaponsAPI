@@ -282,6 +282,24 @@ enum E_CWeapon_Event {
      * @return При возвращении CWAPI_STOP_MAIN касание будет заблокировано.
      */
     CWeapon_OnPlayerTouchWeaponBox,
+
+    /**
+     * Вызывается при броске гранаты игроком.
+     * 
+     * (const T_CustomWeapon:iWeapon, const ItemId, const UserId, Float:vecSrc[3], Float:vecThrow[3], &Float:time, const usEvent, const Trie:tAbilityParams = Invalid_Trie)
+     * 
+     * @param iWeapon Хендлер кастомного оружия
+     * @param ItemId Индекс сущности предмета оружия
+     * @param UserId Индекс игрока
+     * @param vecSrc // TODO
+     * @param vecThrow // TODO
+     * @param time Время до взрыва гранаты
+     * @param usEvent // TODO
+     * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
+     * 
+     * @return При возвращении CWAPI_STOP_MAIN бросок будет заблокирован.
+     */
+    CWeapon_OnPlayerThrowGrenade,
 }
 
 /**

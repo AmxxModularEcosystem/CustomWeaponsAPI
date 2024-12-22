@@ -86,3 +86,12 @@ stock Array:ArrayMergeCells(const Array:a1, const Array:a2) {
 
     return aMerged;
 }
+
+stock any:TrieGetCellEx(const Trie:trie, const key[], const any:defaultValue = 0) {
+    new any:val;
+    if (TrieGetCell(trie, key, val)) {
+        return val;
+    } else {
+        return defaultValue;
+    }
+}

@@ -50,6 +50,7 @@ static CWeapons_Hooks__RegReapi() {
     RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage_Post", false);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
     RegisterHookChain(RG_CSGameRules_CanHavePlayerItem, "Hook_CanHavePlayerItem_Pre", false);
+    RegisterHookChain(RG_CBasePlayer_ThrowGrenade, "Hook_PlayerThrowGrenade_Pre", .post = false);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Post", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
 }
@@ -74,6 +75,32 @@ static CWeapons_Hooks__RegHam(const sWeaponName[]) {
 }
 
 // Callbacks
+
+public Hook_PlayerThrowGrenade_Pre(const playerIndex, const grenadeItemIndex, Float:vecSrc[3], Float:vecThrow[3], Float:time, const usEvent) {
+    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
+    if (!CWeapons_GetByItem(grenadeItemIndex, Weapon, iWeapon)) {
+        return HC_CONTINUE;
+    }
+    
+    Dbg_Log("Hook_PlayerThrowGrenade_Pre(%n, %d)", playerIndex, grenadeItemIndex);
+
+    CWeapons_Call(Weapon, CWeapon_OnPlayerThrowGrenade, [iWeapon, grenadeItemIndex, playerIndex, PrepareArray(_:vecSrc, 3, true), PrepareArray(_:vecThrow, 3, true), time, usEvent]);
+
+    if (Events_IsRet(CWAPI_STOP)) {
+        return HC_CONTINUE;
+    }
+
+    if (Events_IsRet(CWAPI_STOP_MAIN)) {
+        SetHookChainReturn(ATYPE_INTEGER, 0);
+        return HC_BREAK;
+    }
+    
+    // SetHookChainArg(3, ATYPE_VECTOR, vecSrc);
+    // SetHookChainArg(4, ATYPE_VECTOR, vecThrow);
+    SetHookChainArg(5, ATYPE_FLOAT, time);
+    
+    return HC_CONTINUE;
+}
 
 public Hook_PlayerKilled_Post(const VictimId, const KillerId, const InflictorId) {
     if (KillerId != InflictorId) {
@@ -298,13 +325,13 @@ public Hook_PlayerTakeDamage_Post(const VictimId, InflictorId, AttackerId, Float
     }
 
     CWeapons_Call(Weapon, CWeapon_OnDamage, [iWeapon, ItemId, VictimId, InflictorId, AttackerId, fDamage, iDamageBits]);
-    SetHookChainArg(4, ATYPE_FLOAT, fDamage);
-    SetHookChainArg(5, ATYPE_INTEGER, iDamageBits);
-
     if (Events_IsRet(CWAPI_STOP_MAIN)) {
         SetHookChainReturn(ATYPE_INTEGER, 0);
         return HC_BREAK;
     }
+
+    SetHookChainArg(4, ATYPE_FLOAT, fDamage);
+    SetHookChainArg(5, ATYPE_INTEGER, iDamageBits);
 
     return HC_CONTINUE;
 }

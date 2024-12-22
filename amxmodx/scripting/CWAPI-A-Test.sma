@@ -26,6 +26,7 @@ public CWAPI_OnLoad() {
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnPrimaryAttackPre, "@OnPrimaryAttackPre");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnPrimaryAttackPost, "@OnPrimaryAttackPost");
     CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnPlayerTouchWeaponBox, "@OnPlayerTouchWeaponBox");
+    CWAPI_Abilities_AddEventListener(iAbility, CWeapon_OnPlayerThrowGrenade, "@OnPlayerThrowGrenade");
 }
 
 @OnSpawn(const T_CustomWeapon:iWeapon, const ItemId, const Trie:tAbilityParams) {
@@ -33,6 +34,13 @@ public CWAPI_OnLoad() {
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
 
     PrintMessage(iWeapon, ItemId, "@OnSpawn(%d, %d, %d): %d", iWeapon, ItemId, tAbilityParams, iTestInteger);
+}
+
+@OnPlayerThrowGrenade(const T_CustomWeapon:iWeapon, const ItemId, const UserId, Float:vecSrc[3], Float:vecThrow[3], &Float:time, const usEvent, const Trie:tAbilityParams) {
+    new iTestInteger = 0;
+    TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
+
+    PrintMessage(iWeapon, ItemId, "@OnPlayerThrowGrenade(%d, %d, %n, [...], [...], %.2f, %d, %d): %d", iWeapon, ItemId, UserId, time, usEvent, tAbilityParams, iTestInteger);
 }
 
 @OnSetWeaponBoxModel(const T_CustomWeapon:iWeapon, const iWeaponBox, const ItemId, const Trie:tAbilityParams) {
