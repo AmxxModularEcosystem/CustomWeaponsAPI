@@ -241,13 +241,14 @@ CWeapons_Give(
     const UserId,
     const T_CustomWeapon:iWeapon,
     const CWeapon_GiveType:iGiveType = CWAPI_GT_SMART,
-    const bool:bForceActive = false
+    const bool:bForceActive = false,
+    const initBpAmmo = -1
 ) {
     new Weapon[S_CustomWeapon];
     CWeapons_Get(iWeapon, Weapon);
 
     new GiveType:iResolvedGiveType = CWeapons__ResolveGiveType(Weapon[CWeapon_ReferenceId], iGiveType);
-    Dbg_Log("CWeapons_Give(%d, %d, %d): Resolved give type - %d", UserId, iWeapon, iGiveType, iResolvedGiveType);
+    Dbg_Log("CWeapons_Give(%d, %d, %d, %s, %d): iResolvedGiveType = %d", UserId, iWeapon, iGiveType, bForceActive ? "true" : "false", initBpAmmo, iResolvedGiveType);
     
     // TODO: CWeapon_Call(CWeapon_OnGive)
 
@@ -268,14 +269,19 @@ CWeapons_Give(
         _:iWeapon + CWAPI_IMPULSE_OFFSET
     );
 
-    Dbg_Log("CWeapons_Give(%d, %d, %d): Item's index - %d", UserId, iWeapon, iGiveType, ItemId);
-
-    if (!is_nullent(ItemId)) {
-        FillBpAmmoByItem(UserId, ItemId);
+    if (is_nullent(ItemId) && IsWeaponGrenade(Weapon[CWeapon_ReferenceId])) {
+        Dbg_Log("CWeapons_Give(%d, %d, %d, %s, %d): Find exists grenade (%d)", UserId, iWeapon, iGiveType, bForceActive ? "true" : "false", initBpAmmo, ItemId);
+        ItemId = rg_find_weapon_bpack_by_name(UserId, Weapon[CWeapon_Reference]);
     }
 
-    if (bForceActive) {
-        rg_switch_weapon(UserId, ItemId);
+    Dbg_Log("CWeapons_Give(%d, %d, %d, %s, %d): ItemId = %d", UserId, iWeapon, iGiveType, bForceActive ? "true" : "false", initBpAmmo, ItemId);
+
+    if (!is_nullent(ItemId)) {
+        FillBpAmmoByItem(UserId, ItemId, initBpAmmo);
+        
+        if (bForceActive) {
+            rg_switch_weapon(UserId, ItemId);
+        }
     }
 
     return ItemId;

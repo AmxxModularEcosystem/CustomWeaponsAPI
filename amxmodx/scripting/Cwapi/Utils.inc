@@ -6,6 +6,7 @@
 #include <amxmodx>
 #include <reapi>
 #include <json>
+#include "Cwapi/DebugMode"
 
 // Thx: https://dev-cs.ru/threads/222/page-12#post-103174 & Garey
 new __CompositeMacros__always_false = false;
@@ -45,6 +46,10 @@ stock bool:IsWeaponSilenced(const ItemId) {
 
 stock bool:IsWeaponBurst(const ItemId) {
     return bool:((WPNSTATE_GLOCK18_BURST_MODE | WPNSTATE_FAMAS_BURST_MODE) & get_member(ItemId, m_Weapon_iWeaponState));
+}
+
+stock bool:IsWeaponGrenade(const WeaponIdType:weaponIndex) {
+    return (WEAPON_GRENADE & BIT(_:weaponIndex)) > 0;
 }
 
 stock GetAttackerWeapon(const AttackerId, const InflictorId) {
@@ -217,13 +222,24 @@ stock bool:IsUserIdValid(const UserId) {
     );
 }
 
-stock FillBpAmmoByItem(const UserId, const ItemId) {
-    new iMaxAmmo = rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo1);
+stock FillBpAmmoByItem(const UserId, const ItemId, const amountOverride = -1) {
+    new amount = rg_get_iteminfo(ItemId, ItemInfo_iMaxAmmo1);
+    if (amount <= 0) {
+        return;
+    }
+
+    if (amountOverride > 0) {
+        amount = amountOverride;
+    }
+
     new WeaponIdType:WeaponId = WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId);
 
-    if (iMaxAmmo >= 0) {
-        rg_set_user_bpammo(UserId, WeaponId, iMaxAmmo);
+    new currentAmount = rg_get_user_bpammo(UserId, WeaponId);
+    if (currentAmount >= amount) {
+        return;
     }
+
+    rg_set_user_bpammo(UserId, WeaponId, amount);
 }
 
 stock bool:IsPistol(const ItemId) {
