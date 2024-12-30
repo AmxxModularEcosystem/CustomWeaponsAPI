@@ -41,6 +41,7 @@ enum _:S_CustomWeapon {
     CWeapon_MaxAmmo,
     Float:CWeapon_DeployTime,
     Float:CWeapon_ReloadTime,
+    bool:CWeapon_Grenade_PreventFITH,
 
     // Float:CWeapon_MaxWalkSpeed,
     // Float:CWeapon_PrimaryAttackRate,
@@ -323,6 +324,10 @@ T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = fa
     WeaponData[CWeapon_DamageMult] = JsonObject_ReadFloat(jWeapon, "DamageMult", 1.0);
     WeaponData[CWeapon_DeployTime] = JsonObject_ReadFloat(jWeapon, "DeployTime", -1.0);
     WeaponData[CWeapon_ReloadTime] = JsonObject_ReadFloat(jWeapon, "ReloadTime", -1.0);
+
+    if (IsWeaponGrenade(WeaponData[CWeapon_ReferenceId])) {
+        WeaponData[CWeapon_Grenade_PreventFITH] = JsonObject_ReadBool(jWeapon, "Grenade.PreventFITH", false, true);
+    }
 
     new Models[S_CWeapon_Models];
     if (!JsonObject_ReadAndPrecacheModel(

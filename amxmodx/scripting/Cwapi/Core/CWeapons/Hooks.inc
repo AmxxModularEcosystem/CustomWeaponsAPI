@@ -51,6 +51,7 @@ static CWeapons_Hooks__RegReapi() {
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
     RegisterHookChain(RG_CSGameRules_CanHavePlayerItem, "Hook_CanHavePlayerItem_Pre", false);
     RegisterHookChain(RG_CBasePlayer_ThrowGrenade, "Hook_PlayerThrowGrenade_Pre", .post = false);
+    RegisterHookChain(RG_CBasePlayer_Radio, "Hook_PlayerRadio_Pre", .post = false);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Post", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
 }
@@ -76,6 +77,28 @@ static CWeapons_Hooks__RegHam(const sWeaponName[]) {
 
 // Callbacks
 
+public Hook_PlayerRadio_Pre(const playerIndex, msgId[], msgVerbose[]) {
+    if(msgVerbose[0] == EOS || !equal(msgVerbose, "#Fire_in_the_hole")) {
+        return HC_CONTINUE;
+    }
+
+    new itemIndex = get_member(playerIndex, m_pActiveItem);
+    if(is_nullent(itemIndex)) {
+        return HC_CONTINUE;
+    }
+
+    new weaponObject[S_CustomWeapon];
+    if (!CWeapons_GetByItem(itemIndex, weaponObject)) {
+        return HC_CONTINUE;
+    }
+    
+    if (weaponObject[CWeapon_Grenade_PreventFITH]) {
+        return HC_BREAK;
+    }
+    
+    return HC_CONTINUE;
+}
+
 public Hook_PlayerThrowGrenade_Pre(const playerIndex, const grenadeItemIndex, Float:vecSrc[3], Float:vecThrow[3], Float:time, const usEvent) {
     new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
     if (!CWeapons_GetByItem(grenadeItemIndex, Weapon, iWeapon)) {
@@ -94,7 +117,7 @@ public Hook_PlayerThrowGrenade_Pre(const playerIndex, const grenadeItemIndex, Fl
         SetHookChainReturn(ATYPE_INTEGER, 0);
         return HC_BREAK;
     }
-    
+
     // SetHookChainArg(3, ATYPE_VECTOR, vecSrc);
     // SetHookChainArg(4, ATYPE_VECTOR, vecThrow);
     SetHookChainArg(5, ATYPE_FLOAT, time);
@@ -393,6 +416,8 @@ public Hook_PrimaryAttack_Pre(const ItemId) {
     if (!WeaponCanAttack(ItemId)) {
         return HAM_IGNORED;
     }
+    
+    // TODO: Сделать что-то с гранатами, чтоб оно не вызывалось постоянно в замахе
 
     CWeapons_Call(Weapon, CWeapon_OnPrimaryAttackPre, [iWeapon, ItemId]);
 
