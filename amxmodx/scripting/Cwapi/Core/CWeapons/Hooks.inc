@@ -2,6 +2,7 @@
 #include <reapi>
 #include <hamsandwich>
 #include <fakemeta>
+#include <cwapi>
 #include "Cwapi/Utils"
 
 #include "Cwapi/Core/CWeapons/NotClientWeapons"
@@ -51,6 +52,7 @@ static CWeapons_Hooks__RegReapi() {
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
     RegisterHookChain(RG_CSGameRules_CanHavePlayerItem, "Hook_CanHavePlayerItem_Pre", false);
     RegisterHookChain(RG_CBasePlayer_ThrowGrenade, "Hook_PlayerThrowGrenade_Pre", .post = false);
+    RegisterHookChain(RG_CBasePlayer_ThrowGrenade, "Hook_PlayerThrowGrenade_Post", .post = true);
     RegisterHookChain(RG_CBasePlayer_Radio, "Hook_PlayerRadio_Pre", .post = false);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Post", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
@@ -121,6 +123,17 @@ public Hook_PlayerThrowGrenade_Pre(const playerIndex, const grenadeItemIndex, Fl
     // SetHookChainArg(3, ATYPE_VECTOR, vecSrc);
     // SetHookChainArg(4, ATYPE_VECTOR, vecThrow);
     SetHookChainArg(5, ATYPE_FLOAT, time);
+    
+    return HC_CONTINUE;
+}
+
+public Hook_PlayerThrowGrenade_Post(const playerIndex, const grenadeItemIndex, Float:vecSrc[3], Float:vecThrow[3], Float:time, const usEvent) {
+    new weaponObject[S_CustomWeapon], T_CustomWeapon:weaponIndex;
+    if (!CWeapons_GetByItem(grenadeItemIndex, Weapon, iWeapon)) {
+        return HC_CONTINUE;
+    }
+    
+    set_entvar(grenadeItemIndex, var_impulse, weaponIndex);
     
     return HC_CONTINUE;
 }
@@ -330,6 +343,8 @@ public Hook_PlayerTakeDamage_Post(const VictimId, InflictorId, AttackerId, Float
     if (is_nullent(ItemId)) {
         return HC_CONTINUE;
     }
+
+    // TODO: Поддержка гранат
 
     /**
      * Для ножа почему-то вызывается хук дамага для тиммейтов,
