@@ -4,8 +4,9 @@
 #define _cwapi_included
 
 #include <amxmodx>
+#include <reapi>
 
-#define _CWAPI_VERSION "1.0.0-b2"
+#define _CWAPI_VERSION "1.0.0-b3"
 
 /**
  * Строковое представление версии CWAPI.
@@ -200,13 +201,16 @@ enum E_CWeapon_Event {
      * (const T_CustomWeapon:iWeapon, const ItemId, const VictimId, const InflictorId, const AttackerId, &Float:fDamage, &iDamageBits, const Trie:tAbilityParams = Invalid_Trie)
      * 
      * @param iWeapon Хендлер кастомного оружия
-     * @param ItemId Индекс сущности предмета оружия
+     * @param ItemId Индекс сущности предмета оружия (см. примечание ниже).
      * @param VictimId Индекс игрока жертвы
      * @param InflictorId Индекс сущности, нанёсшей урон
      * @param AttackerId Индекс атакующего игрока
      * @param fDamage Величина нанесённого урона, может быть изменена
      * @param iDamageBits Битсумма типов нанесённого урона, может быть изменена
      * @param tAbilityParams Параметры способности (только для событий, зарегистрированных для способностей)
+     * 
+     * @note В параметре ItemId может приходить ноль, если урон был нанесён гранатой или другим не моментальным снарядом.
+     *       В том числе, когда урон нанесён через натив CWAPI_Weapons_EmitDamage.
      * 
      * @return При возвращении CWAPI_STOP_MAIN урон нанесён не будет.
      */
@@ -291,7 +295,7 @@ enum E_CWeapon_Event {
      * @param iWeapon Хендлер кастомного оружия
      * @param ItemId Индекс сущности предмета оружия
      * @param UserId Индекс игрока
-     * @param vecSrc // TODO
+     * @param vecSrc Начальная точка полёта гранаты
      * @param vecThrow // TODO
      * @param time Время до взрыва гранаты
      * @param usEvent // TODO
@@ -595,6 +599,35 @@ stock CWAPI_Weapons_iGetAttribute(const T_CustomWeapon:iWeapon, const E_CWeapon_
 
     return sAttrValue;
 }
+
+/**
+ * Нанесение урона через кастомное оружие.
+ * 
+ * @param weaponIndex       Индекс кастомного оружия.
+ * @param victimIndex       Индекс жертвы, получающей урон.
+ * @param inflictorIndex    Индекс сущности, которая наносит урон. Например, летящая гранта.
+ * @param attackerIndex     Индекс атакующего игрока. Например, того, кто кинул гранату.
+ * @param damage            Значение наносимого урона. Может быть изменено в 
+ * @param damageBits        Тип наносимого урона.
+ * @param itemIndex         Индекс предмета оружия. Если урон нанесён не напрямую оружием (inflictorIndex != attackerIndex), то можно передавать ноль.
+ * @param ignoreDamageMult  Игнорировать ли атрибут "DamageMult" из кфг оружия.
+ * 
+ * @note    Вызывает событие CWeapon_OnDamage.
+ * @note    Урон может быть заблокирован способностью. В таком случае натив вернёт ноль.
+ * @note    Реализовано через ExecuteHamB, поэтому вызывает другие хуки.
+ * 
+ * @return  Итоговое значение урона, после применения DamageMult (если не игнорируется) и способностей.
+ */
+native Float:CWAPI_Weapons_EmitDamage(
+    const T_CustomWeapon:weaponIndex,
+    const victimIndex,
+    const inflictorIndex,
+    const attackerIndex,
+    const Float:damage,
+    const damageBits = DMG_GENERIC,
+    const itemIndex = 0,
+    const bool:ignoreDamageMult = false
+);
 
 /**
  * Регистрация способности кастомного оружия.

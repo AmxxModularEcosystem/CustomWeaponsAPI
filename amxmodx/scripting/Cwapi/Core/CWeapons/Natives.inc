@@ -20,6 +20,7 @@ CWeapons_Natives_Reg() {
     Natives_Reg("Weapons_GetName");
     // Natives_Reg("Weapons_GetAbilityParams");
     Natives_Reg("Weapons_GetAttribute");
+    Natives_Reg("Weapons_EmitDamage");
 }
 
 T_CustomWeapon:@_Weapons_Find() {
@@ -141,4 +142,19 @@ any:@_Weapons_GetAttribute(const iPlugin) {
     
     log_error(1, "Invalid custom weapon attribute type: %d", iAttribute);
     return 0;
+}
+
+Float:@_Weapons_EmitDamage() {
+    enum {Arg_WeaponIndex = 1, Arg_VictimIndex, Arg_InflictorIndex, Arg_AttackerIndex, Arg_Damage, Arg_DamageBits, Arg_ItemIndex, Arg_IgnoreDamageMult}
+    
+    return CWeapons_EmitDamage(
+        T_CustomWeapon:get_param(Arg_WeaponIndex),
+        get_param(Arg_VictimIndex),
+        get_param(Arg_InflictorIndex),
+        get_param(Arg_AttackerIndex),
+        Float:get_param(Arg_Damage),
+        get_param(Arg_DamageBits),
+        get_param(Arg_ItemIndex),
+        bool:get_param(Arg_IgnoreDamageMult)
+    );
 }

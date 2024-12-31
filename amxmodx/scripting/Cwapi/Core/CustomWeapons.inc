@@ -288,6 +288,36 @@ CWeapons_Give(
     return ItemId;
 }
 
+Float:CWeapons_EmitDamage(
+    const T_CustomWeapon:weaponIndex,
+    const victimIndex,
+    const inflictorIndex,
+    const attackerIndex,
+    const Float:damage,
+    const damageBits = DMG_GENERIC,
+    const itemIndex = 0,
+    const bool:ignoreDamageMult = false
+) {
+    new weaponObject[S_CustomWeapon];
+    CWeapons_Get(weaponIndex, weaponObject);
+
+    new Float:finalDamage = damage;
+    new finalDamageBits = damageBits;
+
+    if (!ignoreDamageMult) {
+        finalDamage *= weaponObject[CWeapon_DamageMult];
+    }
+
+    CWeapons_Call(weaponObject, CWeapon_OnDamage, [weaponIndex, itemIndex, victimIndex, inflictorIndex, attackerIndex, finalDamage, finalDamageBits]);
+    if (Events_IsRet(CWAPI_STOP_MAIN)) {
+        return 0.0;
+    }
+
+    new res = ExecuteHamB(Ham_TakeDamage, victimIndex, inflictorIndex, attackerIndex, finalDamage, finalDamageBits);
+    
+    return res > 0 ? finalDamage : 0.0;
+}
+
 T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = false) {
     new JSON:jWeapon = CfgUtils_GetJson(sFile, true, bAbsolutePath);
 
