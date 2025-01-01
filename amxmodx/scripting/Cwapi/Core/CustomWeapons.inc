@@ -180,24 +180,29 @@ any:CWeapons_GetProp(const T_CustomWeapon:iWeapon, const /*S_CustomWeapon:*/iPro
     return ArrayMapGetiCell(gCustomWeapons, iWeapon, iPropKey);
 }
 
-static T_CustomWeapon:CWeapons__GetItemIndex(const ItemId) {
-    return T_CustomWeapon:(get_entvar(ItemId, var_impulse) - CWAPI_IMPULSE_OFFSET);
-}
-
-bool:CWeapons_IsValidItem(const ItemId) {
-    if (is_nullent(ItemId)) {
-        return false;
+static T_CustomWeapon:CWeapons_GetWeaponFromEntity(const entityIndex) {
+    if (is_nullent(entityIndex)) {
+        return Invalid_CustomWeapon;
     }
 
-    return CWeapons_IsValidIndex(CWeapons__GetItemIndex(ItemId));
+    return CWeapons_GetWeaponFromImpulse(get_entvar(entityIndex, var_impulse));
+}
+
+T_CustomWeapon:CWeapons_GetWeaponFromImpulse(const impulse) {
+    new T_CustomWeapon:weapon = T_CustomWeapon:(impulse - CWAPI_IMPULSE_OFFSET);
+    if (!CWeapons_IsValidIndex(weapon)) {
+        return Invalid_CustomWeapon;
+    }
+
+    return weapon;
+}
+
+CWeapons_GetImpulse(const T_CustomWeapon:weapon) {
+    return (_:weapon + CWAPI_IMPULSE_OFFSET);
 }
 
 T_CustomWeapon:CWeapons_FindByItem(const ItemId) {
-    if (!CWeapons_IsValidItem(ItemId)) {
-        return Invalid_CustomWeapon;
-    }
-    
-    return CWeapons__GetItemIndex(ItemId);
+    return CWeapons_GetWeaponFromEntity(ItemId);
 }
 
 bool:CWeapons_GetByItem(const ItemId, Weapon[S_CustomWeapon], &T_CustomWeapon:iWeapon = Invalid_CustomWeapon) {
@@ -207,6 +212,26 @@ bool:CWeapons_GetByItem(const ItemId, Weapon[S_CustomWeapon], &T_CustomWeapon:iW
     }
     
     return CWeapons_Get(iWeapon, Weapon);
+}
+
+T_CustomWeapon:CWeapons_FindByInflictor(const inflictorIndex) {
+    new entityIndex = 0;
+    if (FClassnameIs(inflictorIndex, "player")) {
+        entityIndex = get_member(inflictorIndex, m_pActiveItem);
+    } else if (FClassnameIs(inflictorIndex, "grenade")) {
+        entityIndex = inflictorIndex;
+    }
+
+    return CWeapons_GetWeaponFromEntity(entityIndex);
+}
+
+bool:CWeapons_GetByInflictor(const inflictorIndex, weaponObject[S_CustomWeapon], &T_CustomWeapon:weapon = Invalid_CustomWeapon) {
+    weapon = CWeapons_FindByInflictor(inflictorIndex);
+    if (weapon == Invalid_CustomWeapon) {
+        return false;
+    }
+    
+    return CWeapons_Get(weapon, weaponObject);
 }
 
 CWeapons_AddEventListener(
@@ -267,7 +292,7 @@ CWeapons_Give(
         UserId,
         Weapon[CWeapon_Reference],
         iResolvedGiveType,
-        _:iWeapon + CWAPI_IMPULSE_OFFSET
+        CWeapons_GetImpulse(iWeapon)
     );
 
     if (is_nullent(ItemId) && IsWeaponGrenade(Weapon[CWeapon_ReferenceId])) {

@@ -52,20 +52,6 @@ stock bool:IsWeaponGrenade(const WeaponIdType:weaponIndex) {
     return (WEAPON_GRENADE & BIT(_:weaponIndex)) > 0;
 }
 
-stock GetAttackerWeapon(const AttackerId, const InflictorId) {
-    if (InflictorId != AttackerId) {
-        return 0;
-    }
-    // return FClassnameIs(InflictorId, "grenade") ? get_entvar(InflictorId, var_impulse) : 0;
-    // TODO: Сделать поддержку гранат
-
-    if (is_user_connected(AttackerId)) {
-        return get_member(AttackerId, m_pActiveItem);
-    }
-
-    return 0;
-}
-
 // Получение ID итема из WeaponBox'а
 stock GetItemFromWeaponBox(const WeaponBox) {
     for (new i = 0, ItemId; i < MAX_ITEM_TYPES; i++) {
@@ -247,6 +233,10 @@ stock bool:IsPistol(const ItemId) {
 }
 
 stock bool:IsKnife(const ItemId) {
+    if (is_nullent(ItemId)) {
+        return false;
+    }
+
     return WeaponIdType:rg_get_iteminfo(ItemId, ItemInfo_iId) == WEAPON_KNIFE;
 }
 

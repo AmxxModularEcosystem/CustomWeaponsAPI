@@ -129,11 +129,11 @@ public Hook_PlayerThrowGrenade_Pre(const playerIndex, const grenadeItemIndex, Fl
 
 public Hook_PlayerThrowGrenade_Post(const playerIndex, const grenadeItemIndex, Float:vecSrc[3], Float:vecThrow[3], Float:time, const usEvent) {
     new weaponObject[S_CustomWeapon], T_CustomWeapon:weaponIndex;
-    if (!CWeapons_GetByItem(grenadeItemIndex, Weapon, iWeapon)) {
+    if (!CWeapons_GetByItem(grenadeItemIndex, weaponObject, weaponIndex)) {
         return HC_CONTINUE;
     }
     
-    set_entvar(grenadeItemIndex, var_impulse, weaponIndex);
+    set_entvar(grenadeItemIndex, var_impulse, CWeapons_GetImpulse(weaponIndex));
     
     return HC_CONTINUE;
 }
@@ -338,31 +338,29 @@ public Hook_PlayerTakeDamage_Post(const VictimId, InflictorId, AttackerId, Float
     ) {
         return HC_CONTINUE;
     }
-        
-    new ItemId = GetAttackerWeapon(AttackerId, InflictorId);
-    if (is_nullent(ItemId)) {
-        return HC_CONTINUE;
-    }
 
-    // TODO: Поддержка гранат
+    new itemIndex = 0;
+    if (FClassnameIs(InflictorId, "player")) {
+        itemIndex = get_member(InflictorId, m_pActiveItem);
+    }
 
     /**
      * Для ножа почему-то вызывается хук дамага для тиммейтов,
      * хотя по факту урон не наносится.
      */
     if (
-        IsKnife(ItemId)
+        IsKnife(itemIndex)
         && !rg_is_player_can_takedamage(VictimId, AttackerId)
     ) {
         return HC_CONTINUE;
     }
 
-    new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
-    if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+    new weaponObject[S_CustomWeapon], T_CustomWeapon:weapon;
+    if (!CWeapons_GetByInflictor(InflictorId, weaponObject, weapon)) {
         return HC_CONTINUE;
     }
 
-    CWeapons_Call(Weapon, CWeapon_OnDamage, [iWeapon, ItemId, VictimId, InflictorId, AttackerId, fDamage, iDamageBits]);
+    CWeapons_Call(weaponObject, CWeapon_OnDamage, [weapon, itemIndex, VictimId, InflictorId, AttackerId, fDamage, iDamageBits]);
     if (Events_IsRet(CWAPI_STOP_MAIN)) {
         SetHookChainReturn(ATYPE_INTEGER, 0);
         return HC_BREAK;
