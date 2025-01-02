@@ -218,8 +218,12 @@ T_CustomWeapon:CWeapons_FindByInflictor(const inflictorIndex) {
     new entityIndex = 0;
     if (FClassnameIs(inflictorIndex, "player")) {
         entityIndex = get_member(inflictorIndex, m_pActiveItem);
+        Dbg_Log("CWeapons_FindByInflictor: Player %d has active item %d", inflictorIndex, entityIndex);
     } else if (FClassnameIs(inflictorIndex, "grenade")) {
         entityIndex = inflictorIndex;
+        Dbg_Log("CWeapons_FindByInflictor: Grenade %d", inflictorIndex);
+    } else {
+        Dbg_Log("CWeapons_FindByInflictor: Unknown inflictor %d", inflictorIndex);
     }
 
     return CWeapons_GetWeaponFromEntity(entityIndex);

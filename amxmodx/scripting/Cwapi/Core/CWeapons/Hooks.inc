@@ -132,8 +132,12 @@ public Hook_PlayerThrowGrenade_Post(const playerIndex, const grenadeItemIndex, F
     if (!CWeapons_GetByItem(grenadeItemIndex, weaponObject, weaponIndex)) {
         return HC_CONTINUE;
     }
-    
-    set_entvar(grenadeItemIndex, var_impulse, CWeapons_GetImpulse(weaponIndex));
+
+    new grenadeEntityIndex = GetHookChainReturn(ATYPE_INTEGER);
+    set_entvar(grenadeEntityIndex, var_impulse, CWeapons_GetImpulse(weaponIndex));
+
+    Dbg_Log("Hook_PlayerThrowGrenade_Post(%n, %d): grenadeEntityIndex = %d.", playerIndex, grenadeItemIndex, grenadeEntityIndex);
+    Dbg_Log("Hook_PlayerThrowGrenade_Post(%n, %d): Set impulse = %d (%d).", playerIndex, grenadeItemIndex, CWeapons_GetImpulse(weaponIndex), weaponIndex);
     
     return HC_CONTINUE;
 }
@@ -339,26 +343,32 @@ public Hook_PlayerTakeDamage_Post(const VictimId, InflictorId, AttackerId, Float
         return HC_CONTINUE;
     }
 
+    Dbg_Log("Hook_PlayerTakeDamage_Post(%d, %d, %d, %.2f, %d)", VictimId, InflictorId, AttackerId, fDamage, iDamageBits);
+
     new itemIndex = 0;
     if (FClassnameIs(InflictorId, "player")) {
         itemIndex = get_member(InflictorId, m_pActiveItem);
     }
+    Dbg_Log(" itemIndex = %d", itemIndex);
 
     /**
      * Для ножа почему-то вызывается хук дамага для тиммейтов,
      * хотя по факту урон не наносится.
      */
     if (
-        IsKnife(itemIndex)
+        (is_nullent(itemIndex) || IsKnife(itemIndex))
         && !rg_is_player_can_takedamage(VictimId, AttackerId)
     ) {
+        Dbg_Log(" knife, cant dmg");
         return HC_CONTINUE;
     }
 
     new weaponObject[S_CustomWeapon], T_CustomWeapon:weapon;
     if (!CWeapons_GetByInflictor(InflictorId, weaponObject, weapon)) {
+        Dbg_Log(" inflictor weapon not found");
         return HC_CONTINUE;
     }
+    Dbg_Log(" weaponObject = %d", weaponObject);
 
     CWeapons_Call(weaponObject, CWeapon_OnDamage, [weapon, itemIndex, VictimId, InflictorId, AttackerId, fDamage, iDamageBits]);
     if (Events_IsRet(CWAPI_STOP_MAIN)) {

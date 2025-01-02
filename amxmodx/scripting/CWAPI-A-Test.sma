@@ -96,7 +96,7 @@ public CWAPI_OnLoad() {
     new iTestInteger = 0;
     TrieGetCell(tAbilityParams, "TestInteger", iTestInteger);
 
-    PrintMessage(iWeapon, ItemId, "@OnDamage(%d, %d, %d, %d, %d, %.2f, %d, %d): %d", iWeapon, ItemId, VictimId, InflictorId, AttackerId, fDamage, iDamageBits, tAbilityParams, iTestInteger);
+    PrintMessage(iWeapon, AttackerId, "@OnDamage(%d, %d, %d, %d, %d, %.2f, %d, %d): %d", iWeapon, ItemId, VictimId, InflictorId, AttackerId, fDamage, iDamageBits, tAbilityParams, iTestInteger);
 }
 
 @OnReload(const T_CustomWeapon:iWeapon, const ItemId, &iClipSize, &iAnim, &Float:fDelay, const Trie:tAbilityParams) {
@@ -135,8 +135,15 @@ public CWAPI_OnLoad() {
 }
 
 
-PrintMessage(const T_CustomWeapon:iWeapon, const ItemId, const sMsg[], const any:...) {
-    new UserId = get_member(ItemId, m_pPlayer);
+PrintMessage(const T_CustomWeapon:iWeapon, const fromIndex, const sMsg[], const any:...) {
+    new UserId = 0;
+    if (!is_nullent(fromIndex)) {
+        if (FClassnameIs(fromIndex, "player")) {
+            UserId = fromIndex;
+        } else {
+            UserId = get_member(fromIndex, m_pPlayer);
+        }
+    }
 
     new sFmtMsg[256];
     vformat(sFmtMsg, charsmax(sFmtMsg), sMsg, 4);
