@@ -1,5 +1,4 @@
 {
-    "Name": "ExampleWeapon",
     "Reference": "weapon_deagle",
     "DamageMult": 5.0,
     "MaxClip": 42,
