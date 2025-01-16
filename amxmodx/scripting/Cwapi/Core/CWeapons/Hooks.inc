@@ -370,6 +370,10 @@ public Hook_PlayerTakeDamage_Post(const VictimId, InflictorId, AttackerId, Float
     }
     Dbg_Log(" weaponObject = %d", weaponObject);
 
+    if (InflictorId != AttackerId) {
+        fDamage *= weaponObject[CWeapon_DamageMult];
+    }
+
     CWeapons_Call(weaponObject, CWeapon_OnDamage, [weapon, itemIndex, VictimId, InflictorId, AttackerId, fDamage, iDamageBits]);
     if (Events_IsRet(CWAPI_STOP_MAIN)) {
         SetHookChainReturn(ATYPE_INTEGER, 0);
