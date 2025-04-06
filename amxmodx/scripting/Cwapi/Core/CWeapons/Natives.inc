@@ -21,6 +21,7 @@ CWeapons_Natives_Reg() {
     // Natives_Reg("Weapons_GetAbilityParams");
     Natives_Reg("Weapons_GetAttribute");
     Natives_Reg("Weapons_EmitDamage");
+    register_native("CWAPI_Weapons_GetAbilityParams", "@CWAPI_Weapons_GetAbilityParams");
 }
 
 T_CustomWeapon:@_Weapons_Find() {
@@ -156,5 +157,14 @@ Float:@_Weapons_EmitDamage() {
         get_param(Arg_DamageBits),
         get_param(Arg_ItemIndex),
         bool:get_param(Arg_IgnoreDamageMult)
+    );
+}
+
+Trie:@CWAPI_Weapons_GetAbilityParams() {
+    enum {Arg_WeaponIndex = 1, Arg_Ability}
+    
+    return CWeapons_GetAbilityParams(
+        T_CustomWeapon:get_param(Arg_WeaponIndex),
+        T_WeaponAbility:get_param(Arg_Ability)
     );
 }

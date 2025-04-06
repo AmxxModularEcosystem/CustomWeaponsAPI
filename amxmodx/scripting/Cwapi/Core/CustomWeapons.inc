@@ -347,6 +347,35 @@ Float:CWeapons_EmitDamage(
     return res > 0 ? finalDamage : 0.0;
 }
 
+Trie:CWeapons_GetAbilityParams(const T_CustomWeapon:weaponIndex, const T_WeaponAbility:ability) {
+    static weaponObject[S_CustomWeapon];
+    CWeapons_Get(weaponIndex, weaponObject);
+
+    if (weaponObject[CWeapon_Abilities] == Invalid_Array) {
+        return Invalid_Trie;
+    }
+
+    for (new i = 0, ii = ArraySize(weaponObject[CWeapon_Abilities]); i < ii; ++i) {
+        new T_WAbility_Unit:unit = ArrayGetCell(weaponObject[CWeapon_Abilities], i);
+
+        if (unit == Invalid_WAbility_Unit) {
+            continue;
+        }
+
+        static unitObject[S_WAbility_Unit];
+        WAbilityUnit_Get(unit, unitObject);
+
+        if (unitObject[WAbilityUnit_Ability] != ability) {
+            continue;
+        }
+
+        // todo стоит ли клонировать trie?
+        return unitObject[WAbilityUnit_Params];
+    }
+
+    return Invalid_Trie;
+}
+
 T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = false) {
     new JSON:jWeapon = CfgUtils_GetJson(sFile, true, bAbsolutePath);
 

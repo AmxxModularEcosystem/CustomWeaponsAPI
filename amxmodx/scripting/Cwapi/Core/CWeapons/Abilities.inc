@@ -141,6 +141,7 @@ T_WAbility_Unit:WAbilityUnit_LoadFromJsonObject(const JSON:jAbilityUnit, const T
         Ability[WAbility_Params], jAbilityUnit, AbilityUnit[WAbilityUnit_Params],
         iErrType, sErrParamName, charsmax(sErrParamName)
     );
+    TrieSetCell(AbilityUnit[WAbilityUnit_Params], CWAPI_ABILITY_HANDLER_PARAM_KEY, iAbility);
 
     if (iErrType != ParamsReadError_None) {
         // TODO: Написать обёртку для вывода ошибки параметров c учётом её типа

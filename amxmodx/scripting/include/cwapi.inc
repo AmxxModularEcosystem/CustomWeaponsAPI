@@ -44,6 +44,11 @@ stock const CWAPI_WEAPON_PARAM_TYPE_NAME[] = "CWAPI-Weapon";
  */
 stock const CWAPI_GIVE_TYPE_PARAM_TYPE_NAME[] = "CWAPI-GiveType";
 
+/**
+ * Ключ параметра способности, в котором хранится хендлер этой способности.
+ */
+stock const CWAPI_ABILITY_HANDLER_PARAM_KEY[] = "_ability_handler";
+
 
 /**
  * Максимальная длина названия способности.
@@ -628,6 +633,9 @@ native Float:CWAPI_Weapons_EmitDamage(
     const itemIndex = 0,
     const bool:ignoreDamageMult = false
 );
+
+// todo docs
+native CWAPI_Weapons_GetAbilityParams(const T_CustomWeapon:weaponIndex, const T_WeaponAbility:ability);
 
 /**
  * Регистрация способности кастомного оружия.
