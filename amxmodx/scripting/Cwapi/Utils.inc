@@ -106,37 +106,6 @@ stock ShowWeaponListHud(const UserId, const ItemId) {
     message_end();
 }
 
-// https://github.com/Nord1cWarr1or/Universal-AFK-Manager/blob/6272afbb8c27f8b7ad770e3036b5960042001e6b/scripting/UAFKManager.sma#L298-L321
-stock GetAmxxVersionNum() {
-    static iRes;
-    if (iRes) {
-        return iRes;
-    }
-
-    new sAmxxVer[16];
-    get_amxx_verstring(sAmxxVer, charsmax(sAmxxVer));
-
-    if (strfind(sAmxxVer, "1.10.0") != -1) {
-        iRes = 1100;
-    } else if (strfind(sAmxxVer, "1.9.0") != -1) {
-        iRes = 190;
-    } else if (strfind(sAmxxVer, "1.8.3") != -1) {
-        iRes = 183;
-    } else if (strfind(sAmxxVer, "1.8.2") != -1) {
-        iRes = 182;
-    } else {
-        iRes = 1;
-    }
-
-    return iRes;
-}
-
-#define RegisterPluginByVars() CompositeMacros( \
-    if (GetAmxxVersionNum() < 1100) { \
-        register_plugin(PluginName, PluginVersion, PluginAuthor); \
-    } \
-)
-
 stock CreateConstCvar(const sCvarName[], const sCvarValue[]) {
     set_pcvar_string(create_cvar(sCvarName, sCvarValue, FCVAR_SERVER), sCvarValue);
 }
@@ -194,6 +163,7 @@ stock WeaponIdType:GetWeaponIdByName(const sWeaponName[]) {
 
 #define ThrowError(%1) CompositeMacros( \
     log_error(0, %1); \
+    abort(0, %1); \
     log_amx(%1); \
 )
 

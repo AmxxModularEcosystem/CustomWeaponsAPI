@@ -30,7 +30,7 @@ PluginInit() {
     
     Dbg_PrintServer("%s run in debug mode.", PluginName);
 
-    RegisterPluginByVars();
+    register_plugin(PluginName, PluginVersion, PluginAuthor);
     register_library(CWAPI_LIBRARY);
     CreateConstCvar(CWAPI_VERSION_CVAR, CWAPI_VERSION);
 
