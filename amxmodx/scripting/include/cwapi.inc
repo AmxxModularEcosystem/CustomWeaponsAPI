@@ -635,7 +635,7 @@ native Float:CWAPI_Weapons_EmitDamage(
 );
 
 // todo docs
-native CWAPI_Weapons_GetAbilityParams(const T_CustomWeapon:weaponIndex, const T_WeaponAbility:ability);
+native Trie:CWAPI_Weapons_GetAbilityParams(const T_CustomWeapon:weaponIndex, const T_WeaponAbility:ability);
 
 /**
  * Регистрация способности кастомного оружия.
