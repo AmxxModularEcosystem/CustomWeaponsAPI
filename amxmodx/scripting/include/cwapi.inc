@@ -634,8 +634,35 @@ native Float:CWAPI_Weapons_EmitDamage(
     const bool:ignoreDamageMult = false
 );
 
-// todo docs
+/**
+ * Получение параметров указанной способности у указанного кастомного оружия.
+ * 
+ * @param weaponIndex   Хендлер кастомного оружия.
+ * @param ability       Хендлер способности.
+ * 
+ * @return Trie с параметрами, либо Invalid_Trie, если у указанного оружия нет указанной способности.
+ */
 native Trie:CWAPI_Weapons_GetAbilityParams(const T_CustomWeapon:weaponIndex, const T_WeaponAbility:ability);
+
+stock Trie:CWAPI_Weapons_GetAbilityParamsOrInvalid(const T_CustomWeapon:weaponIndex, const T_WeaponAbility:ability) {
+    if (weaponIndex == Invalid_CustomWeapon || ability == Invalid_WeaponAbility) {
+        return Invalid_Trie;
+    }
+
+    return CWAPI_Weapons_GetAbilityParams(weaponIndex, ability);
+}
+
+stock Trie:CWAPI_Weapons_GetAbilityParamsByItem(const item, const T_WeaponAbility:ability) {
+    return CWAPI_Weapons_GetAbilityParamsOrInvalid(CWAPI_Weapons_FindByItem(item), ability);
+}
+
+stock Trie:CWAPI_Weapons_GetAbilityParamsByNames(const weaponName[], const abilityName[]) {
+    return CWAPI_Weapons_GetAbilityParamsOrInvalid(CWAPI_Weapons_Find(weaponName), CWAPI_Abilities_Find(abilityName));
+}
+
+stock Trie:CWAPI_Weapons_GetAbilityParamsByItemAndName(const item, const abilityName[]) {
+    return CWAPI_Weapons_GetAbilityParamsOrInvalid(CWAPI_Weapons_FindByItem(item), CWAPI_Abilities_Find(abilityName));
+}
 
 /**
  * Регистрация способности кастомного оружия.
@@ -679,3 +706,12 @@ native CWAPI_Abilities_AddParams(const T_WeaponAbility:ability, any:... /* Param
  * @noreturn
  */
 native CWAPI_Abilities_AddEventListener(const T_WeaponAbility:ability, const E_CWeapon_Event:event, const callback[]);
+
+/**
+ * Поиск хендлера способности по её названию.
+ * 
+ * @param abilityName   Название способности.
+ * 
+ * @return  Хендлер способности. Invalid_WeaponAbility, если способность с таким названием не зарегистрирована.
+ */
+native T_WeaponAbility:CWAPI_Abilities_Find(const abilityName[]);

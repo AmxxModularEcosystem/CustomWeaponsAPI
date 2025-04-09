@@ -14,6 +14,7 @@ WAbilities_Natives_Reg() {
     Natives_Reg("Abilities_Register");
     Natives_Reg("Abilities_AddParams");
     Natives_Reg("Abilities_AddEventListener");
+    register_native("CWAPI_Abilities_Find", "@CWAPI_Abilities_Find");
 }
 
 T_WeaponAbility:@_Abilities_Register() {
@@ -54,4 +55,13 @@ T_WeaponAbility:@_Abilities_Register() {
     get_string(Arg_sCallback, sCallback, charsmax(sCallback));
 
     WAbility_AddEventListener(iAbility, iEvent, PluginId, sCallback);
+}
+
+T_WeaponAbility:@CWAPI_Abilities_Find() {
+    enum {Arg_AbilityName = 1}
+
+    new abilityName[CWAPI_ABILITY_NAME_MAX_LEN];
+    get_string(Arg_AbilityName, abilityName, charsmax(abilityName));
+
+    return WAbility_Find(abilityName);
 }
