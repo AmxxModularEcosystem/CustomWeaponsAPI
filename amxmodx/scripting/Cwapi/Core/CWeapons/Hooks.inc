@@ -19,7 +19,7 @@ static const _HAM_WEAPON_HOOKS[][_E_Ham_WeaponHook] = {
     {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Pre", false},
     {Ham_Weapon_PrimaryAttack, "Hook_PrimaryAttack_Post", true},
     {Ham_CS_Weapon_SendWeaponAnim, "Hook_SendWeaponAnim_Post", true},
-    // {Ham_CS_Item_GetMaxSpeed, "Hook_PlayerGetMaxSpeed", false},
+    {Ham_CS_Item_GetMaxSpeed, "@Ham_CS_Item_GetMaxSpeed_Pre", false},
     // {Ham_Weapon_SecondaryAttack, "Hook_SecondaryAttack", true},
     // {Ham_Item_AddToPlayer, "Hook_AddItemToPlayer_Post", true},
 };
@@ -597,21 +597,19 @@ public FMHook_UpdateClientData_Post(iPlayer, SendWeapons, CD_Handle) {
     return FMRES_IGNORED;
 }
 
-// public Hook_DefaultReload_Post(const ItemId, iClipSize, iAnim, Float:fDelay) {
-//     new WeaponId = GetWeapId(ItemId);
-//     if (!IsCustomWeapon(WeaponId)) {
-//         return HC_CONTINUE;
-//     }
+@Ham_CS_Item_GetMaxSpeed_Pre(const item) {
+    new weaponObject[S_CustomWeapon], T_CustomWeapon:weapon;
+    if (!CWeapons_GetByItem(item, weaponObject, weapon)) {
+        return HAM_IGNORED;
+    }
 
-//     new Data[CWAPI_WeaponData];
-//     ArrayGetArray(CustomWeapons, WeaponId, Data);
+    if (weaponObject[CWeapon_MaxWalkSpeed] < 0) {
+        return HAM_IGNORED;
+    }
 
-//     if (Data[CWAPI_WD_Accuracy] >= 0.0) {
-//         set_member(ItemId, m_Weapon_flAccuracy, Data[CWAPI_WD_Accuracy]);
-//     }
-
-//     return HC_CONTINUE;
-// }
+    SetHamReturnFloat(weaponObject[CWeapon_MaxWalkSpeed]);
+    return HAM_SUPERCEDE;
+}
 
 // public Hook_DefaultShotgunReload(const ItemId, iAnim, iStartAnim, Float:fDelay, Float:fStartDelay, const pszReloadSound1[], const pszReloadSound2[]) {
 //     new WeaponId = GetWeapId(ItemId);
@@ -640,48 +638,6 @@ public FMHook_UpdateClientData_Post(iPlayer, SendWeapons, CD_Handle) {
 //     }
     
 //     return HC_CONTINUE;
-// }
-
-// public Hook_PlayerGetMaxSpeed(const ItemId) {
-//     if (!IsCustomWeapon(GetWeapId(ItemId))) {
-//         return HAM_IGNORED;
-//     }
-    
-//     new Data[CWAPI_WeaponData];
-//     ArrayGetArray(CustomWeapons, GetWeapId(ItemId), Data);
-
-//     if (Data[CWAPI_WD_MaxWalkSpeed] >= 0) {
-//         SetHamReturnFloat(Data[CWAPI_WD_MaxWalkSpeed]);
-//         return HAM_SUPERCEDE;
-//     }
-
-//     return HAM_IGNORED;
-// }
-
-// public Hook_PrimaryAttack_Post(ItemId) {
-//     new WeaponId = GetWeapId(ItemId);
-
-//     if (
-//         !IsCustomWeapon(WeaponId)
-//         || get_member(ItemId, m_Weapon_fFireOnEmpty)
-//         || (
-//             IsPistol(ItemId)
-//             && get_member(ItemId, m_Weapon_iShotsFired) > 1
-//         )
-//     ) {
-//         return HAM_IGNORED;
-//     }
-
-//     new Data[CWAPI_WeaponData];
-//     ArrayGetArray(CustomWeapons, WeaponId, Data);
-
-//     // CallWeaponEvent(WeaponId, CWAPI_WE_PrimaryAttack, ItemId);
-
-//     if (Data[CWAPI_WD_PrimaryAttackRate] > 0.0) {
-//         SetWeaponNextAttack(ItemId, Data[CWAPI_WD_PrimaryAttackRate]);
-//     }
-
-//     return HAM_IGNORED;
 // }
 
 // public Hook_AddItemToPlayer_Post(const ItemId, const UserId) {

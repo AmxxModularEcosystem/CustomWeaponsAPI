@@ -35,13 +35,12 @@ PluginInit() {
     CreateConstCvar(CWAPI_VERSION_CVAR, CWAPI_VERSION);
 
     Forwards_Init("CWAPI");
-    CfgUtils_SetFolder(CWAPI_CONFIGS_FOLDER);
     CWeapons_Init();
     
     // Тут регаются абилки (Хотя мб надо под них создать отдельный форвард...)
     Forwards_RegAndCall("Load", ET_IGNORE);
 
-    CWeapons_LoadFromFolder("Weapons");
+    CWeapons_LoadFromFolder(PCPath_iMakePath(fmt("%s/%s", CWAPI_CONFIGS_FOLDER, CWAPI_WEAPONS_FOLDER)));
     server_print("[%s v%s] %d weapons loaded.", PluginName, PluginVersion, CWeapons_Count());
 
     Forwards_RegAndCall("Loaded", ET_IGNORE);

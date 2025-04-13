@@ -31,6 +31,13 @@ stock const CWAPI_VERSION_CVAR[] = "CWAPI_VERSION";
 stock const CWAPI_CONFIGS_FOLDER[] = "CustomWeaponsAPI";
 
 /**
+ * Название папки с файлами оружия CWAPI.
+ * 
+ * @note `amxmodx/configs/plugins/<CWAPI_CONFIGS_FOLDER>/<CWAPI_WEAPONS_FOLDER>`
+ */
+stock const CWAPI_WEAPONS_FOLDER[] = "Weapons";
+
+/**
  * Название типа параметра для кастомного оружия.
  * 
  * @note После чтения такого параметра в Trie будет лежать хендлер оружия.
@@ -345,6 +352,7 @@ enum E_CWeapon_Attribute {
      * Индекс стандартного оружия, на котором основано кастомное.
      * 
      * Тип: Integer
+     * Только для чтения
      */
     CWeaponAttr_ReferenceId,
 
@@ -382,6 +390,13 @@ enum E_CWeapon_Attribute {
      * Тип: Float
      */
     CWeaponAttr_ReloadTime,
+
+    /**
+     * Максимальная скорость ходьбы с оружием в руках.
+     * 
+     * Тип: Float
+     */
+    CWeaponAttr_MaxWalkSpeed,
 }
 
 /**

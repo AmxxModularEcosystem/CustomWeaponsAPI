@@ -17,7 +17,7 @@ public ParamsController_OnRegisterTypes() {
 
     new T_CustomWeapon:iWeapon = CWeapons_Find(sWeaponName);
     if (iWeapon == Invalid_CustomWeapon) {
-        ThrowError("Custom weapon '%s' not found.", sWeaponName);
+        PCJson_LogForFile(jValue, "ERROR", "Custom weapon '%s' not found.", sWeaponName);
         return false;
     }
     
@@ -32,7 +32,7 @@ public ParamsController_OnRegisterTypes() {
     new CWeapon_GiveType:iGiveType = CWeaponUtils_StrToGiveType(sValue, bIsValid);
 
     if (!bIsValid) {
-        ThrowError("Give type '%s' in invalid.", sValue);
+        PCJson_LogForFile(jValue, "ERROR", "Give type '%s' in invalid.", sValue);
         return false;
     }
     

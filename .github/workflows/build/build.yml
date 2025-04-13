@@ -13,8 +13,8 @@ on:
 
 env:
   PACKAGE_NAME: CustomWeaponsAPI
-  STORE_READMY: 1
-  PARAMS_CONRTOLLER_TAG: 1.0.0-b4
+  STORE_README: 1
+  PARAMS_CONRTOLLER_TAG: 1.0.0
 
 jobs:
   build:
@@ -114,12 +114,12 @@ jobs:
 
       - name: Move files
         env:
-          STORE_READMY: ${{ env.STORE_READMY }}
+          STORE_README: ${{ env.STORE_README }}
         run: |
           mkdir -p publish/${{ env.PACKAGE_NAME }}/addons
           mv amxmodx/ publish/${{ env.PACKAGE_NAME }}/addons
 
-          if [ ! -z "${STORE_READMY}" ]; then
+          if [ ! -z "${STORE_README}" ]; then
             mv README.md publish/
           fi
 

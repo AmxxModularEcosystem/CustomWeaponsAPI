@@ -161,12 +161,6 @@ stock WeaponIdType:GetWeaponIdByName(const sWeaponName[]) {
     return WeaponIdType:rg_get_weapon_info(sWeaponName, WI_ID);
 }
 
-#define ThrowError(%1) CompositeMacros( \
-    log_error(0, %1); \
-    abort(0, %1); \
-    log_amx(%1); \
-)
-
 stock InstantReload(const ItemId) {
     set_member(ItemId, m_Weapon_iClip, rg_get_iteminfo(ItemId, ItemInfo_iMaxClip));
 }

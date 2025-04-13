@@ -125,6 +125,8 @@ any:@_Weapons_GetAttribute(const iPlugin) {
             return CWeapons_GetProp(iWeapon, CWeapon_DeployTime);
         case CWeaponAttr_ReloadTime:
             return CWeapons_GetProp(iWeapon, CWeapon_ReloadTime);
+        case CWeaponAttr_MaxWalkSpeed:
+            return CWeapons_GetProp(iWeapon, CWeapon_MaxWalkSpeed);
     }
     
     new Weapon[S_CustomWeapon];

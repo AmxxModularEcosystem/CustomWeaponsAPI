@@ -45,7 +45,7 @@ CWeaponUtils_MakeEventCallback(const E_CWeapon_Event:iEvent, const iPlugin, cons
     }
 
     if (iListener < 0) {
-        ThrowError("Can`t create forward for function '%s' in plugin #%d.", sCallback, iPlugin);
+        abort(AMX_ERR_PARAMS, "Can`t create forward for function '%s' in plugin #%d.", sCallback, iPlugin);
     }
     
     return iListener;

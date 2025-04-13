@@ -9,6 +9,7 @@
 #include <json>
 #include <regex>
 #include <cwapi>
+#include <ParamsController>
 #include "Cwapi/ArrayMap"
 #include "Cwapi/Events"
 #include "Cwapi/Utils"
@@ -42,8 +43,8 @@ enum _:S_CustomWeapon {
     Float:CWeapon_DeployTime,
     Float:CWeapon_ReloadTime,
     bool:CWeapon_Grenade_PreventFITH,
+    Float:CWeapon_MaxWalkSpeed,
 
-    // Float:CWeapon_MaxWalkSpeed,
     // Float:CWeapon_PrimaryAttackRate,
     // Float:CWeapon_SecondaryAttackRate,
     // bool:CWeapon_HasSecondaryAttack,
@@ -163,7 +164,7 @@ bool:CWeapons_GetByName(const sWeaponName[], Weapon[S_CustomWeapon]) {
 
 bool:CWeapons_Get(const T_CustomWeapon:iWeapon, Weapon[S_CustomWeapon]) {
     if (!CWeapons_IsValidIndex(iWeapon)) {
-        ThrowError("Invalid custom weapon index (%d).", iWeapon);
+        abort(AMX_ERR_PARAMS, "Invalid custom weapon index (%d).", iWeapon);
         return false;
     }
 
@@ -173,7 +174,7 @@ bool:CWeapons_Get(const T_CustomWeapon:iWeapon, Weapon[S_CustomWeapon]) {
 
 any:CWeapons_GetProp(const T_CustomWeapon:iWeapon, const /*S_CustomWeapon:*/iPropKey) {
     if (!CWeapons_IsValidIndex(iWeapon)) {
-        ThrowError("Invalid custom weapon index (%d).", iWeapon);
+        abort(AMX_ERR_PARAMS, "Invalid custom weapon index (%d).", iWeapon);
         return 0;
     }
 
@@ -376,115 +377,114 @@ Trie:CWeapons_GetAbilityParams(const T_CustomWeapon:weaponIndex, const T_WeaponA
     return Invalid_Trie;
 }
 
-T_CustomWeapon:CWeapons_LoadFromCfg(const sFile[], const bool:bAbsolutePath = false) {
-    new JSON:jWeapon = CfgUtils_GetJson(sFile, true, bAbsolutePath);
+T_CustomWeapon:CWeapons_LoadFromFile(const path[]) {
+    new weaponName[CWAPI_WEAPON_NAME_MAX_LEN];
+    CfgUtils_GetFileName(path, weaponName, charsmax(weaponName));
 
-    if (jWeapon == Invalid_JSON) {
-        ThrowError("[ERROR] Invalid JSON syntax. File '%s'.", CfgUtils_GetPath(sFile));
-        return Invalid_CustomWeapon;
-    }
+    new JSON:weaponJson = PCJson_ParseFile(path);
+    new T_CustomWeapon:weapon = CWeapons_LoadFromJson(weaponJson, weaponName);
 
-    if (!json_is_object(jWeapon)) {
+    PCJson_Free(weaponJson);
+    return weapon;
+}
+
+T_CustomWeapon:CWeapons_LoadFromJson(const JSON:weaponJson, const weaponName[]) {
+    if (!json_is_object(weaponJson)) {
         // TODO: Прикрутить оболочку жисона и слать ошибки через неё
-        ThrowError("[ERROR] Invalid config structure. File '%s'.", CfgUtils_GetPath(sFile));
-        CfgUtils_JsonFree(jWeapon);
+        PCJson_LogForFile(weaponJson, "ERROR", "Invalid config structure.");
         return Invalid_CustomWeapon;
     }
 
     new WeaponData[S_CustomWeapon];
 
-    JsonObject_ReadStringOr(jWeapon, "Name", WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]), false) {
-        CfgUtils_GetFileName(sFile, WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]));
+    JsonObject_ReadStringOr(weaponJson, "Name", WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]), false) {
+        copy(WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]), weaponName);
     }
 
-    Dbg_Log("CWeapons_LoadFromCfg('%s', %s): Read weapon '%s'.", sFile, bAbsolutePath ? "true" : "false", WeaponData[CWeapon_Name]);
-
-    JsonObject_ReadStringOr(jWeapon, "Reference", WeaponData[CWeapon_Reference], charsmax(WeaponData[CWeapon_Reference]), false) {
-        ThrowError("[ERROR] Invalid config structure. File '%s'.", CfgUtils_GetPath(sFile));
-        CfgUtils_JsonFree(jWeapon);
+    JsonObject_ReadStringOr(weaponJson, "Reference", WeaponData[CWeapon_Reference], charsmax(WeaponData[CWeapon_Reference]), false) {
+        PCJson_LogForFile(weaponJson, "ERROR", "Invalid config structure.");
         return Invalid_CustomWeapon;
     }
     WeaponData[CWeapon_ReferenceId] = GetWeaponIdByName(WeaponData[CWeapon_Reference]);
 
-    WeaponData[CWeapon_MaxClip] = JsonObject_ReadInt(jWeapon, "MaxClip", -1);
-    WeaponData[CWeapon_MaxAmmo] = JsonObject_ReadInt(jWeapon, "MaxAmmo", -1);
-    WeaponData[CWeapon_Weight] = JsonObject_ReadInt(jWeapon, "Weight", -1);
-    WeaponData[CWeapon_DamageMult] = JsonObject_ReadFloat(jWeapon, "DamageMult", 1.0);
-    WeaponData[CWeapon_DeployTime] = JsonObject_ReadFloat(jWeapon, "DeployTime", -1.0);
-    WeaponData[CWeapon_ReloadTime] = JsonObject_ReadFloat(jWeapon, "ReloadTime", -1.0);
+    WeaponData[CWeapon_MaxClip] = JsonObject_ReadInt(weaponJson, "MaxClip", -1);
+    WeaponData[CWeapon_MaxAmmo] = JsonObject_ReadInt(weaponJson, "MaxAmmo", -1);
+    WeaponData[CWeapon_Weight] = JsonObject_ReadInt(weaponJson, "Weight", -1);
+    WeaponData[CWeapon_DamageMult] = JsonObject_ReadFloat(weaponJson, "DamageMult", 1.0);
+    WeaponData[CWeapon_DeployTime] = JsonObject_ReadFloat(weaponJson, "DeployTime", -1.0);
+    WeaponData[CWeapon_ReloadTime] = JsonObject_ReadFloat(weaponJson, "ReloadTime", -1.0);
+    WeaponData[CWeapon_MaxWalkSpeed] = JsonObject_ReadFloat(weaponJson, "MaxWalkSpeed", -1.0);
 
     if (IsWeaponGrenade(WeaponData[CWeapon_ReferenceId])) {
-        WeaponData[CWeapon_Grenade_PreventFITH] = JsonObject_ReadBool(jWeapon, "Grenade.PreventFITH", false, true);
+        WeaponData[CWeapon_Grenade_PreventFITH] = JsonObject_ReadBool(weaponJson, "Grenade.PreventFITH", false, true);
     }
 
     new Models[S_CWeapon_Models];
     if (!JsonObject_ReadAndPrecacheModel(
-        jWeapon, "Models.View",
+        weaponJson, "Models.View",
         Models[CWeapon_Model_View], charsmax(Models[CWeapon_Model_View]),
         .bDotNot = true
     )) {
-        log_amx("[WARNING] Model file '%s' not found. File '%s'.", Models[CWeapon_Model_View], CfgUtils_GetPath(sFile));
+        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found. File '%s'.", Models[CWeapon_Model_View]);
         Models[CWeapon_Model_View][0] = EOS;
     }
     
     if (!JsonObject_ReadAndPrecacheModel(
-        jWeapon, "Models.World",
+        weaponJson, "Models.World",
         Models[CWeapon_Model_World], charsmax(Models[CWeapon_Model_World]),
         .bDotNot = true
     )) {
-        log_amx("[WARNING] Model file '%s' not found. File '%s'.", Models[CWeapon_Model_World], CfgUtils_GetPath(sFile));
+        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found. File '%s'.", Models[CWeapon_Model_World]);
         Models[CWeapon_Model_World][0] = EOS;
     }
     
     if (!JsonObject_ReadAndPrecacheModel(
-        jWeapon, "Models.Player",
+        weaponJson, "Models.Player",
         Models[CWeapon_Model_Player], charsmax(Models[CWeapon_Model_Player]),
         .bDotNot = true
     )) {
-        log_amx("[WARNING] Model file '%s' not found. File '%s'.", Models[CWeapon_Model_Player], CfgUtils_GetPath(sFile));
+        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found. File '%s'.", Models[CWeapon_Model_Player]);
         Models[CWeapon_Model_Player][0] = EOS;
     }
 
     WeaponData[CWeapon_Models] = Models;
     
-    CWeapons__ReadSounds(jWeapon, WeaponData, CfgUtils_GetPath(sFile));
+    CWeapons__ReadSounds(weaponJson, WeaponData);
 
-    if (json_object_has_value(jWeapon, "Abilities", JSONObject)) {
-        new JSON:jAbilities = json_object_get_value(jWeapon, "Abilities");
+    if (json_object_has_value(weaponJson, "Abilities", JSONObject)) {
+        new JSON:jAbilities = json_object_get_value(weaponJson, "Abilities");
         WeaponData[CWeapon_Abilities] = WAbilityUnit_ReadJsonObject(jAbilities);
-        CfgUtils_JsonFree(jAbilities);
+        PCJson_Free(jAbilities);
     }
-    
-    CfgUtils_JsonFree(jWeapon);
 
     return CWeapons__Create(WeaponData);
 }
 
-static CWeapons__ReadSounds(const JSON:jWeapon, WeaponData[S_CustomWeapon], const sFileNameForErrors[]) {
+static CWeapons__ReadSounds(const JSON:weaponJson, WeaponData[S_CustomWeapon]) {
     WeaponData[CWeapon_HasCustomSounds] = false;
-    if (!json_object_has_value(jWeapon, "Sounds", JSONObject)) {
+    if (!json_object_has_value(weaponJson, "Sounds", JSONObject)) {
         return;
     }
 
-    new JSON:jSounds = json_object_get_value(jWeapon, "Sounds");
-    if (!json_object_has_value(jSounds, "Shot", JSONString)) {
-        log_amx("[ERROR] 'Sounds.Shot' field required if 'Sounds' field exists. File '%s'.", sFileNameForErrors);
+    new JSON:soundsJson = json_object_get_value(weaponJson, "Sounds");
+    if (!json_object_has_value(soundsJson, "Shot", JSONString)) {
+        PCJson_LogForFile(soundsJson, "WARNING", "'Sounds.Shot' field required if 'Sounds' field exists. File '%s'.");
         return;
     }
 
     new Sounds[S_CWeapon_Sounds];
 
     if (JsonObject_ReadAndPrecacheSound(
-        jSounds, "Shot",
+        soundsJson, "Shot",
         Sounds[CWeapon_Sound_Shot], charsmax(Sounds[CWeapon_Sound_Shot])
     ) == JsonUtilsRead_PrecacheFileNotFound) {
-        log_amx("[ERROR] Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_Shot], sFileNameForErrors);
+        PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_Shot]);
         return;
     }
     
-    switch (JsonObject_ReadAndPrecacheSound(jSounds, "ShotSilenced", Sounds[CWeapon_Sound_ShotSilenced], charsmax(Sounds[CWeapon_Sound_ShotSilenced]))) {
+    switch (JsonObject_ReadAndPrecacheSound(soundsJson, "ShotSilenced", Sounds[CWeapon_Sound_ShotSilenced], charsmax(Sounds[CWeapon_Sound_ShotSilenced]))) {
         case JsonUtilsRead_PrecacheFileNotFound: {
-            log_amx("[WARNING] Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_ShotSilenced], sFileNameForErrors);
+            PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_ShotSilenced]);
             Sounds[CWeapon_Sound_ShotSilenced][0] = EOS;
         }
         case JsonUtilsRead_FieldIsEmpty: {
@@ -492,9 +492,9 @@ static CWeapons__ReadSounds(const JSON:jWeapon, WeaponData[S_CustomWeapon], cons
         }
     }
     
-    switch (JsonObject_ReadAndPrecacheSound(jSounds, "ShotBurst", Sounds[CWeapon_Sound_ShotBurst], charsmax(Sounds[CWeapon_Sound_ShotBurst]))) {
+    switch (JsonObject_ReadAndPrecacheSound(soundsJson, "ShotBurst", Sounds[CWeapon_Sound_ShotBurst], charsmax(Sounds[CWeapon_Sound_ShotBurst]))) {
         case JsonUtilsRead_PrecacheFileNotFound: {
-            log_amx("[WARNING] Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_ShotBurst], sFileNameForErrors);
+            PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_ShotBurst]);
             Sounds[CWeapon_Sound_ShotBurst][0] = EOS;
         }
         case JsonUtilsRead_FieldIsEmpty: {
@@ -506,17 +506,20 @@ static CWeapons__ReadSounds(const JSON:jWeapon, WeaponData[S_CustomWeapon], cons
     WeaponData[CWeapon_HasCustomSounds] = true;
 }
 
-CWeapons_LoadFromFolder(const sFolder[]) {
-    Dbg_Log("CWeapons_LoadFromFolder('%s'): Call func.", sFolder);
+CWeapons_LoadFromFolder(const path[]) {
+    Dbg_Log("CWeapons_LoadFromFolder('%s'): Call func.", path);
+
+    static pathNonConst[PLATFORM_MAX_PATH];
+    copy(pathNonConst, charsmax(pathNonConst), path);
 
     new sFile[PLATFORM_MAX_PATH], iDirHandler, FileType:iType;
-    iDirHandler = open_dir(CfgUtils_GetPath(sFolder), sFile, charsmax(sFile), iType);
+    iDirHandler = open_dir(pathNonConst, sFile, charsmax(sFile), iType);
     if (!iDirHandler) {
-        ThrowError("[ERROR] Can't open folder '%s'.", CfgUtils_GetPath(sFolder));
+        abort(AMX_ERR_PARAMS, "[ERROR] Can't open folder '%s'.", path);
         return;
     }
     
-    Dbg_Log("CWeapons_LoadFromFolder('%s'): Read weapons from folder '%s'.", sFolder, CfgUtils_GetPath(sFolder));
+    Dbg_Log("CWeapons_LoadFromFolder('%s'): Read weapons from folder.", path);
 
     new Regex:iRegEx_FileName, ret;
     iRegEx_FileName = regex_compile("(.+).json$", ret, "", 0, "i");
@@ -527,11 +530,12 @@ CWeapons_LoadFromFolder(const sFolder[]) {
         }
 
         if (iType == FileType_Directory) {
-            CWeapons_LoadFromFolder(fmt("%s/%s", sFolder, sFile));
+            CWeapons_LoadFromFolder(fmt("%s/%s", path, sFile));
         } else if (iType == FileType_File) {
             if (regex_match_c(sFile, iRegEx_FileName) > 0) {
                 regex_substr(iRegEx_FileName, 1, sFile, charsmax(sFile));
-                CWeapons_LoadFromCfg(fmt("%s/%s", sFolder, sFile));
+
+                CWeapons_LoadFromFile(fmt("%s/%s.json", path, sFile));
             }
         }
     } while (next_file(iDirHandler, sFile, charsmax(sFile), iType));
