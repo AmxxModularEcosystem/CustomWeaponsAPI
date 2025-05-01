@@ -425,7 +425,7 @@ T_CustomWeapon:CWeapons_LoadFromJson(const JSON:weaponJson, const weaponName[]) 
         Models[CWeapon_Model_View], charsmax(Models[CWeapon_Model_View]),
         .bDotNot = true
     )) {
-        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found. File '%s'.", Models[CWeapon_Model_View]);
+        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found.", Models[CWeapon_Model_View]);
         Models[CWeapon_Model_View][0] = EOS;
     }
     
@@ -434,7 +434,7 @@ T_CustomWeapon:CWeapons_LoadFromJson(const JSON:weaponJson, const weaponName[]) 
         Models[CWeapon_Model_World], charsmax(Models[CWeapon_Model_World]),
         .bDotNot = true
     )) {
-        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found. File '%s'.", Models[CWeapon_Model_World]);
+        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found.", Models[CWeapon_Model_World]);
         Models[CWeapon_Model_World][0] = EOS;
     }
     
@@ -443,7 +443,7 @@ T_CustomWeapon:CWeapons_LoadFromJson(const JSON:weaponJson, const weaponName[]) 
         Models[CWeapon_Model_Player], charsmax(Models[CWeapon_Model_Player]),
         .bDotNot = true
     )) {
-        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found. File '%s'.", Models[CWeapon_Model_Player]);
+        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found.", Models[CWeapon_Model_Player]);
         Models[CWeapon_Model_Player][0] = EOS;
     }
 
@@ -468,7 +468,7 @@ static CWeapons__ReadSounds(const JSON:weaponJson, WeaponData[S_CustomWeapon]) {
 
     new JSON:soundsJson = json_object_get_value(weaponJson, "Sounds");
     if (!json_object_has_value(soundsJson, "Shot", JSONString)) {
-        PCJson_LogForFile(soundsJson, "WARNING", "'Sounds.Shot' field required if 'Sounds' field exists. File '%s'.");
+        PCJson_LogForFile(soundsJson, "WARNING", "'Sounds.Shot' field required if 'Sounds' field exists.");
         return;
     }
 
@@ -478,13 +478,13 @@ static CWeapons__ReadSounds(const JSON:weaponJson, WeaponData[S_CustomWeapon]) {
         soundsJson, "Shot",
         Sounds[CWeapon_Sound_Shot], charsmax(Sounds[CWeapon_Sound_Shot])
     ) == JsonUtilsRead_PrecacheFileNotFound) {
-        PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_Shot]);
+        PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found.", Sounds[CWeapon_Sound_Shot]);
         return;
     }
     
     switch (JsonObject_ReadAndPrecacheSound(soundsJson, "ShotSilenced", Sounds[CWeapon_Sound_ShotSilenced], charsmax(Sounds[CWeapon_Sound_ShotSilenced]))) {
         case JsonUtilsRead_PrecacheFileNotFound: {
-            PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_ShotSilenced]);
+            PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found.", Sounds[CWeapon_Sound_ShotSilenced]);
             Sounds[CWeapon_Sound_ShotSilenced][0] = EOS;
         }
         case JsonUtilsRead_FieldIsEmpty: {
@@ -494,7 +494,7 @@ static CWeapons__ReadSounds(const JSON:weaponJson, WeaponData[S_CustomWeapon]) {
     
     switch (JsonObject_ReadAndPrecacheSound(soundsJson, "ShotBurst", Sounds[CWeapon_Sound_ShotBurst], charsmax(Sounds[CWeapon_Sound_ShotBurst]))) {
         case JsonUtilsRead_PrecacheFileNotFound: {
-            PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found. File '%s'.", Sounds[CWeapon_Sound_ShotBurst]);
+            PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found.", Sounds[CWeapon_Sound_ShotBurst]);
             Sounds[CWeapon_Sound_ShotBurst][0] = EOS;
         }
         case JsonUtilsRead_FieldIsEmpty: {
