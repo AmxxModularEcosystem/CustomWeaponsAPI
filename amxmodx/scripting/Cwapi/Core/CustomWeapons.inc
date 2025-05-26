@@ -378,11 +378,8 @@ Trie:CWeapons_GetAbilityParams(const T_CustomWeapon:weaponIndex, const T_WeaponA
 }
 
 T_CustomWeapon:CWeapons_LoadFromFile(const path[]) {
-    new weaponName[CWAPI_WEAPON_NAME_MAX_LEN];
-    CfgUtils_GetFileName(path, weaponName, charsmax(weaponName));
-
     new JSON:weaponJson = PCJson_ParseFile(path);
-    new T_CustomWeapon:weapon = CWeapons_LoadFromJson(weaponJson, weaponName);
+    new T_CustomWeapon:weapon = CWeapons_LoadFromJson(weaponJson, PCPath_iGetFileName(path));
 
     PCJson_Free(weaponJson);
     return weapon;
@@ -390,63 +387,36 @@ T_CustomWeapon:CWeapons_LoadFromFile(const path[]) {
 
 T_CustomWeapon:CWeapons_LoadFromJson(const JSON:weaponJson, const weaponName[]) {
     if (!json_is_object(weaponJson)) {
-        // TODO: Прикрутить оболочку жисона и слать ошибки через неё
-        PCJson_LogForFile(weaponJson, "ERROR", "Invalid config structure.");
+        PCJson_LogForFile(weaponJson, "ERROR", "Invalid config structure. Root values must be an object.");
         return Invalid_CustomWeapon;
     }
 
     new WeaponData[S_CustomWeapon];
 
-    JsonObject_ReadStringOr(weaponJson, "Name", WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]), false) {
-        copy(WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]), weaponName);
-    }
-
-    JsonObject_ReadStringOr(weaponJson, "Reference", WeaponData[CWeapon_Reference], charsmax(WeaponData[CWeapon_Reference]), false) {
-        PCJson_LogForFile(weaponJson, "ERROR", "Invalid config structure.");
+    PCSingle_ObjString(weaponJson, "Reference", WeaponData[CWeapon_Reference], charsmax(WeaponData[CWeapon_Reference]));
+    if (WeaponData[CWeapon_Reference][0] == EOS) {
+        PCJson_LogForFile(weaponJson, "ERROR", "Invalid config structure. Root weapon object must contain 'Reference' field.");
         return Invalid_CustomWeapon;
     }
     WeaponData[CWeapon_ReferenceId] = GetWeaponIdByName(WeaponData[CWeapon_Reference]);
 
-    WeaponData[CWeapon_MaxClip] = JsonObject_ReadInt(weaponJson, "MaxClip", -1);
-    WeaponData[CWeapon_MaxAmmo] = JsonObject_ReadInt(weaponJson, "MaxAmmo", -1);
-    WeaponData[CWeapon_Weight] = JsonObject_ReadInt(weaponJson, "Weight", -1);
-    WeaponData[CWeapon_DamageMult] = JsonObject_ReadFloat(weaponJson, "DamageMult", 1.0);
-    WeaponData[CWeapon_DeployTime] = JsonObject_ReadFloat(weaponJson, "DeployTime", -1.0);
-    WeaponData[CWeapon_ReloadTime] = JsonObject_ReadFloat(weaponJson, "ReloadTime", -1.0);
-    WeaponData[CWeapon_MaxWalkSpeed] = JsonObject_ReadFloat(weaponJson, "MaxWalkSpeed", -1.0);
+    PCSingle_ObjString(weaponJson, "Name", WeaponData[CWeapon_Name], charsmax(WeaponData[CWeapon_Name]), weaponName);
+    WeaponData[CWeapon_MaxClip] = PCSingle_ObjInt(weaponJson, "MaxClip", -1);
+    WeaponData[CWeapon_MaxAmmo] = PCSingle_ObjInt(weaponJson, "MaxAmmo", -1);
+    WeaponData[CWeapon_Weight] = PCSingle_ObjInt(weaponJson, "Weight", -1);
+    WeaponData[CWeapon_DamageMult] = PCSingle_ObjFloat(weaponJson, "DamageMult", 1.0);
+    WeaponData[CWeapon_DeployTime] = PCSingle_ObjFloat(weaponJson, "DeployTime", -1.0);
+    WeaponData[CWeapon_ReloadTime] = PCSingle_ObjFloat(weaponJson, "ReloadTime", -1.0);
+    WeaponData[CWeapon_MaxWalkSpeed] = PCSingle_ObjFloat(weaponJson, "MaxWalkSpeed", -1.0);
 
     if (IsWeaponGrenade(WeaponData[CWeapon_ReferenceId])) {
-        WeaponData[CWeapon_Grenade_PreventFITH] = JsonObject_ReadBool(weaponJson, "Grenade.PreventFITH", false, true);
+        WeaponData[CWeapon_Grenade_PreventFITH] = PCSingle_ObjBool(weaponJson, "Grenade.PreventFITH", false, .dotNot = true);
     }
 
     new Models[S_CWeapon_Models];
-    if (!JsonObject_ReadAndPrecacheModel(
-        weaponJson, "Models.View",
-        Models[CWeapon_Model_View], charsmax(Models[CWeapon_Model_View]),
-        .bDotNot = true
-    )) {
-        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found.", Models[CWeapon_Model_View]);
-        Models[CWeapon_Model_View][0] = EOS;
-    }
-    
-    if (!JsonObject_ReadAndPrecacheModel(
-        weaponJson, "Models.World",
-        Models[CWeapon_Model_World], charsmax(Models[CWeapon_Model_World]),
-        .bDotNot = true
-    )) {
-        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found.", Models[CWeapon_Model_World]);
-        Models[CWeapon_Model_World][0] = EOS;
-    }
-    
-    if (!JsonObject_ReadAndPrecacheModel(
-        weaponJson, "Models.Player",
-        Models[CWeapon_Model_Player], charsmax(Models[CWeapon_Model_Player]),
-        .bDotNot = true
-    )) {
-        PCJson_LogForFile(weaponJson, "WARNING", "Model file '%s' not found.", Models[CWeapon_Model_Player]);
-        Models[CWeapon_Model_Player][0] = EOS;
-    }
-
+    PCSingle_ObjModel(weaponJson, "Models.View", Models[CWeapon_Model_View], charsmax(Models[CWeapon_Model_View]), .dotNot = true);
+    PCSingle_ObjModel(weaponJson, "Models.Player", Models[CWeapon_Model_Player], charsmax(Models[CWeapon_Model_Player]), .dotNot = true);
+    PCSingle_ObjModel(weaponJson, "Models.World", Models[CWeapon_Model_World], charsmax(Models[CWeapon_Model_World]), .dotNot = true);
     WeaponData[CWeapon_Models] = Models;
     
     CWeapons__ReadSounds(weaponJson, WeaponData);
@@ -473,35 +443,9 @@ static CWeapons__ReadSounds(const JSON:weaponJson, WeaponData[S_CustomWeapon]) {
     }
 
     new Sounds[S_CWeapon_Sounds];
-
-    if (JsonObject_ReadAndPrecacheSound(
-        soundsJson, "Shot",
-        Sounds[CWeapon_Sound_Shot], charsmax(Sounds[CWeapon_Sound_Shot])
-    ) == JsonUtilsRead_PrecacheFileNotFound) {
-        PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found.", Sounds[CWeapon_Sound_Shot]);
-        return;
-    }
-    
-    switch (JsonObject_ReadAndPrecacheSound(soundsJson, "ShotSilenced", Sounds[CWeapon_Sound_ShotSilenced], charsmax(Sounds[CWeapon_Sound_ShotSilenced]))) {
-        case JsonUtilsRead_PrecacheFileNotFound: {
-            PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found.", Sounds[CWeapon_Sound_ShotSilenced]);
-            Sounds[CWeapon_Sound_ShotSilenced][0] = EOS;
-        }
-        case JsonUtilsRead_FieldIsEmpty: {
-            Sounds[CWeapon_Sound_ShotSilenced] = Sounds[CWeapon_Sound_Shot];
-        }
-    }
-    
-    switch (JsonObject_ReadAndPrecacheSound(soundsJson, "ShotBurst", Sounds[CWeapon_Sound_ShotBurst], charsmax(Sounds[CWeapon_Sound_ShotBurst]))) {
-        case JsonUtilsRead_PrecacheFileNotFound: {
-            PCJson_LogForFile(soundsJson, "WARNING", "Sound file '%s' not found.", Sounds[CWeapon_Sound_ShotBurst]);
-            Sounds[CWeapon_Sound_ShotBurst][0] = EOS;
-        }
-        case JsonUtilsRead_FieldIsEmpty: {
-            Sounds[CWeapon_Sound_ShotBurst] = Sounds[CWeapon_Sound_Shot];
-        }
-    }
-
+    PCSingle_ObjSound(soundsJson, "Shot", Sounds[CWeapon_Sound_Shot], charsmax(Sounds[CWeapon_Sound_Shot]));
+    PCSingle_ObjSound(soundsJson, "ShotSilenced", Sounds[CWeapon_Sound_ShotSilenced], charsmax(Sounds[CWeapon_Sound_ShotSilenced]), Sounds[CWeapon_Sound_Shot]);
+    PCSingle_ObjSound(soundsJson, "ShotBurst", Sounds[CWeapon_Sound_ShotBurst], charsmax(Sounds[CWeapon_Sound_ShotBurst]), Sounds[CWeapon_Sound_Shot]);
     WeaponData[CWeapon_Sounds] = Sounds;
     WeaponData[CWeapon_HasCustomSounds] = true;
 }

@@ -14,7 +14,7 @@ on:
 env:
   PACKAGE_NAME: CustomWeaponsAPI
   STORE_README: 1
-  PARAMS_CONRTOLLER_TAG: 1.0.0
+  PARAMS_CONRTOLLER_TAG: 1.1.0
 
 jobs:
   build:
