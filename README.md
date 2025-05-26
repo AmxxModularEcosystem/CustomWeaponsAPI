@@ -10,7 +10,7 @@
 
 - [AmxModX 1.9.0](https://www.amxmodx.org/downloads-new.php)
 - [ReAPI 5.24.x или новее](https://github.com/s1lentq/reapi/releases/latest)
-- [Params Controller](https://github.com/AmxxModularEcosystem/ParamsController) версии [1.0.0](https://github.com/AmxxModularEcosystem/ParamsController/releases/tag/1.0.0) или [выше](https://github.com/AmxxModularEcosystem/ParamsController/releases/latest)
+- [Params Controller](https://github.com/AmxxModularEcosystem/ParamsController) версии [1.1.1](https://github.com/AmxxModularEcosystem/ParamsController/releases/tag/1.1.1) или [выше](https://github.com/AmxxModularEcosystem/ParamsController/releases/latest)
 
 ## Миграция с версии 0.7.x на версию 1.0.0
 
