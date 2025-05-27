@@ -378,7 +378,7 @@ Trie:CWeapons_GetAbilityParams(const T_CustomWeapon:weaponIndex, const T_WeaponA
 }
 
 T_CustomWeapon:CWeapons_LoadFromFile(const path[]) {
-    new JSON:weaponJson = PCJson_ParseFile(path);
+    new JSON:weaponJson = PCJson_ParseFile(path, PCPath_iMakePath(CWAPI_CONFIGS_FOLDER));
     new T_CustomWeapon:weapon = CWeapons_LoadFromJson(weaponJson, PCPath_iGetFileName(path));
 
     PCJson_Free(weaponJson);
