@@ -135,6 +135,8 @@ public Hook_PlayerThrowGrenade_Post(const playerIndex, const grenadeItemIndex, F
 
     new grenadeEntityIndex = GetHookChainReturn(ATYPE_INTEGER);
     set_entvar(grenadeEntityIndex, var_impulse, CWeapons_GetImpulse(weaponIndex));
+    set_entvar(grenadeEntityIndex, var_model, weaponObject[CWeapon_Grenade_Model]);
+    set_entvar(grenadeEntityIndex, var_modelindex, weaponObject[CWeapon_Grenade_ModelIndex]);
 
     Dbg_Log("Hook_PlayerThrowGrenade_Post(%n, %d): grenadeEntityIndex = %d.", playerIndex, grenadeItemIndex, grenadeEntityIndex);
     Dbg_Log("Hook_PlayerThrowGrenade_Post(%n, %d): Set impulse = %d (%d).", playerIndex, grenadeItemIndex, CWeapons_GetImpulse(weaponIndex), weaponIndex);

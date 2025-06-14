@@ -43,6 +43,8 @@ enum _:S_CustomWeapon {
     Float:CWeapon_DeployTime,
     Float:CWeapon_ReloadTime,
     bool:CWeapon_Grenade_PreventFITH,
+    CWeapon_Grenade_Model[PLATFORM_MAX_PATH],
+    CWeapon_Grenade_ModelIndex,
     Float:CWeapon_MaxWalkSpeed,
 
     // Float:CWeapon_PrimaryAttackRate,
@@ -409,15 +411,19 @@ T_CustomWeapon:CWeapons_LoadFromJson(const JSON:weaponJson, const weaponName[]) 
     WeaponData[CWeapon_ReloadTime] = PCSingle_ObjFloat(weaponJson, "ReloadTime", -1.0);
     WeaponData[CWeapon_MaxWalkSpeed] = PCSingle_ObjFloat(weaponJson, "MaxWalkSpeed", -1.0);
 
-    if (IsWeaponGrenade(WeaponData[CWeapon_ReferenceId])) {
-        WeaponData[CWeapon_Grenade_PreventFITH] = PCSingle_ObjBool(weaponJson, "Grenade.PreventFITH", false, .dotNot = true);
-    }
-
     new Models[S_CWeapon_Models];
     PCSingle_ObjModel(weaponJson, "Models.View", Models[CWeapon_Model_View], charsmax(Models[CWeapon_Model_View]), .dotNot = true);
     PCSingle_ObjModel(weaponJson, "Models.Player", Models[CWeapon_Model_Player], charsmax(Models[CWeapon_Model_Player]), .dotNot = true);
     PCSingle_ObjModel(weaponJson, "Models.World", Models[CWeapon_Model_World], charsmax(Models[CWeapon_Model_World]), .dotNot = true);
     WeaponData[CWeapon_Models] = Models;
+
+    if (IsWeaponGrenade(WeaponData[CWeapon_ReferenceId])) {
+        WeaponData[CWeapon_Grenade_PreventFITH] = PCSingle_ObjBool(weaponJson, "Grenade.PreventFITH", false, .dotNot = true);
+        PCSingle_ObjModel(weaponJson, "Grenade.Model", WeaponData[CWeapon_Grenade_Model], charsmax(WeaponData[CWeapon_Grenade_Model]), Models[CWeapon_Model_World], .dotNot = true);
+        if (WeaponData[CWeapon_Grenade_Model][0] != EOS) {
+            WeaponData[CWeapon_Grenade_ModelIndex] = precache_model(WeaponData[CWeapon_Grenade_Model]);
+        }
+    }
     
     CWeapons__ReadSounds(weaponJson, WeaponData);
 
