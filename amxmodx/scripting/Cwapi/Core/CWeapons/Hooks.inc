@@ -26,12 +26,15 @@ static const _HAM_WEAPON_HOOKS[][_E_Ham_WeaponHook] = {
 
 static Trie:gRegisteredRefWeapons = Invalid_Trie;
 
+static Trie:ItemOwners = Invalid_Trie;
+
 CWeapons_Hooks_Init() {
     CWeapons_Hooks__RegReapi();
     RegisterHam(Ham_Touch, "weaponbox", "Hook_WeaponBoxTouch", false);
     register_forward(FM_UpdateClientData, "FMHook_UpdateClientData_Post", true);
 
     gRegisteredRefWeapons = TrieCreate();
+    ItemOwners = TrieCreate();
 }
 
 CWeapons_Hooks_RegForWeapon(const sReference[], const sWeaponName[]) {
@@ -56,6 +59,7 @@ static CWeapons_Hooks__RegReapi() {
     RegisterHookChain(RG_CBasePlayer_Radio, "Hook_PlayerRadio_Pre", .post = false);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Post", true);
     // RegisterHookChain(RG_CBasePlayerWeapon_DefaultShotgunReload, "Hook_DefaultShotgunReload", false);
+    RegisterHookChain(RG_CBasePlayer_RemoveAllItems, "Hook_RemoveAllItems_Pre", false);
 }
 
 static CWeapons_Hooks__RegHamOnce(const sWeaponName[]) {
@@ -78,6 +82,38 @@ static CWeapons_Hooks__RegHam(const sWeaponName[]) {
 }
 
 // Callbacks
+
+public Hook_RemoveAllItems_Pre(const playerIndex) {
+    new Array:forRemove = ArrayCreate(11, 1);
+
+    new TrieIter:iter = TrieIterCreate(ItemOwners);
+    while (!TrieIterEnded(iter)) {
+        new owner;
+        TrieIterGetCell(iter, owner);
+        if (owner == playerIndex) {
+            new key[11];
+            TrieIterGetKey(iter, key, charsmax(key));
+            ArrayPushString(forRemove, key);
+        }
+        TrieIterNext(iter);
+    }
+    TrieIterDestroy(iter);
+
+    for (new i = 0, ii = ArraySize(forRemove); i < ii; i++) {
+        new key[11];
+        ArrayGetString(forRemove, i, key, charsmax(key));
+        TrieDeleteKey(ItemOwners, key);
+    }
+    ArrayDestroy(forRemove);
+
+    new item = get_member(playerIndex, m_rgpPlayerItems);
+    while (!is_nullent(item)) {
+        Hook_RemovePlayerItem_Post(playerIndex, item);
+        item = get_member(item, m_pNext);
+    }
+
+    return HC_CONTINUE;
+}
 
 public Hook_PlayerRadio_Pre(const playerIndex, msgId[], msgVerbose[]) {
     if(msgVerbose[0] == EOS || !equal(msgVerbose, "#Fire_in_the_hole")) {
@@ -239,6 +275,10 @@ public Hook_AddPlayerItem_Pre(const UserId, const ItemId) {
 
     CWeapons_Call(Weapon, CWeapon_OnAddPlayerItem, [iWeapon, ItemId, UserId]);
 
+    new itemIdStr[11];
+    num_to_str(ItemId, itemIdStr, charsmax(itemIdStr));
+    TrieSetCell(ItemOwners, itemIdStr, UserId);
+
     return HC_CONTINUE;
 }
 
@@ -249,6 +289,15 @@ public Hook_RemovePlayerItem_Post(const UserId, const ItemId) {
     }
     new Weapon[S_CustomWeapon], T_CustomWeapon:iWeapon;
     if (!CWeapons_GetByItem(ItemId, Weapon, iWeapon)) {
+        return HC_CONTINUE;
+    }
+
+    new itemIdStr[11];
+    num_to_str(ItemId, itemIdStr, charsmax(itemIdStr));
+    new owner = 0;
+    TrieGetCell(ItemOwners, itemIdStr, owner);
+    TrieDeleteKey(ItemOwners, itemIdStr);
+    if (owner != UserId) {
         return HC_CONTINUE;
     }
 
