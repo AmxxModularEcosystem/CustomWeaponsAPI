@@ -84,28 +84,6 @@ static CWeapons_Hooks__RegHam(const sWeaponName[]) {
 // Callbacks
 
 public Hook_RemoveAllItems_Pre(const playerIndex) {
-    new Array:forRemove = ArrayCreate(11, 1);
-
-    new TrieIter:iter = TrieIterCreate(ItemOwners);
-    while (!TrieIterEnded(iter)) {
-        new owner;
-        TrieIterGetCell(iter, owner);
-        if (owner == playerIndex) {
-            new key[11];
-            TrieIterGetKey(iter, key, charsmax(key));
-            ArrayPushString(forRemove, key);
-        }
-        TrieIterNext(iter);
-    }
-    TrieIterDestroy(iter);
-
-    for (new i = 0, ii = ArraySize(forRemove); i < ii; i++) {
-        new key[11];
-        ArrayGetString(forRemove, i, key, charsmax(key));
-        TrieDeleteKey(ItemOwners, key);
-    }
-    ArrayDestroy(forRemove);
-
     new item = get_member(playerIndex, m_rgpPlayerItems);
     while (!is_nullent(item)) {
         Hook_RemovePlayerItem_Post(playerIndex, item);
@@ -294,14 +272,14 @@ public Hook_RemovePlayerItem_Post(const UserId, const ItemId) {
 
     new itemIdStr[11];
     num_to_str(ItemId, itemIdStr, charsmax(itemIdStr));
+
     new owner = 0;
     TrieGetCell(ItemOwners, itemIdStr, owner);
     TrieDeleteKey(ItemOwners, itemIdStr);
-    if (owner != UserId) {
-        return HC_CONTINUE;
+    
+    if (owner == UserId) {
+        CWeapons_Call(Weapon, CWeapon_OnRemovePlayerItem, [iWeapon, ItemId, UserId]);
     }
-
-    CWeapons_Call(Weapon, CWeapon_OnRemovePlayerItem, [iWeapon, ItemId, UserId]);
 
     return HC_CONTINUE;
 }
