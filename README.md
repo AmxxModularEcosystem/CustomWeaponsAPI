@@ -9,14 +9,12 @@
 ## Требования
 
 - [AmxModX 1.9.0](https://www.amxmodx.org/downloads-new.php)
-- [ReAPI 5.24.x или новее](https://github.com/s1lentq/reapi/releases/latest)
+- [ReAPI 5.26.x или новее](https://github.com/s1lentq/reapi/releases/latest)
 - [Params Controller](https://github.com/AmxxModularEcosystem/ParamsController) версии [1.1.2](https://github.com/AmxxModularEcosystem/ParamsController/releases/tag/1.1.2) или [выше](https://github.com/AmxxModularEcosystem/ParamsController/releases/latest)
 
 ## Миграция с версии 0.7.x на версию 1.0.0
 
-[Мигратор конфигов оружия...](https://amxxmodularecosystem.github.io/vue-cwapi-weapons-migrator/)
-
-Все расширения для версии 0.7.x несовместимы с версией 1.0.0. Включая [расширение](https://github.com/AmxxModularEcosystem/IC-I-Cwapi) для VipModular, его требуется обновить до версии 2.0.0 или выше.
+Все расширения для версии 0.7.x не совместимы с версией 1.0.0. Включая [расширение](https://github.com/AmxxModularEcosystem/IC-I-Cwapi) для VipModular, его требуется обновить до версии 2.0.0 или выше.
 
 В файлах кастомных оружий были переименованы некоторые поля:
 
