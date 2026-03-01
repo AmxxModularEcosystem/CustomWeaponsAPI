@@ -51,7 +51,7 @@ static CWeapons_Hooks__RegReapi() {
     RegisterHookChain(RG_CBasePlayer_RemovePlayerItem, "Hook_RemovePlayerItem_Post", true);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Pre", false);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultDeploy, "Hook_DefaultDeploy_Post", true);
-    RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage_Post", false);
+    RegisterHookChain(RG_CBasePlayer_TakeDamage, "Hook_PlayerTakeDamage_Pre", false);
     RegisterHookChain(RG_CBasePlayerWeapon_DefaultReload, "Hook_DefaultReload_Pre", false);
     RegisterHookChain(RG_CSGameRules_CanHavePlayerItem, "Hook_CanHavePlayerItem_Pre", false);
     RegisterHookChain(RG_CBasePlayer_ThrowGrenade, "Hook_PlayerThrowGrenade_Pre", .post = false);
@@ -364,7 +364,7 @@ public Hook_ItemHolster_Pre(const ItemId) {
     return HAM_IGNORED;
 }
 
-public Hook_PlayerTakeDamage_Post(const VictimId, InflictorId, AttackerId, Float:fDamage, iDamageBits) {
+public Hook_PlayerTakeDamage_Pre(const VictimId, InflictorId, AttackerId, Float:fDamage, iDamageBits) {
     if (
         !is_user_connected(VictimId)
         || !is_user_connected(AttackerId)
@@ -372,7 +372,7 @@ public Hook_PlayerTakeDamage_Post(const VictimId, InflictorId, AttackerId, Float
         return HC_CONTINUE;
     }
 
-    Dbg_Log("Hook_PlayerTakeDamage_Post(%d, %d, %d, %.2f, %d)", VictimId, InflictorId, AttackerId, fDamage, iDamageBits);
+    Dbg_Log("Hook_PlayerTakeDamage_Pre(%d, %d, %d, %.2f, %d)", VictimId, InflictorId, AttackerId, fDamage, iDamageBits);
 
     new itemIndex = 0;
     if (FClassnameIs(InflictorId, "player")) {
