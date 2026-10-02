@@ -460,7 +460,7 @@ CWeapons_LoadFromFolder(const path[]) {
     Dbg_Log("CWeapons_LoadFromFolder('%s'): Call func.", path);
 
     if (!dir_exists(path)) {
-        log_amx("[ERROR] Weapons folder '%s' not found. Custom weapons loading skipped.", path);
+        log_amx("[WARNING] Weapons folder '%s' not found. Custom weapons loading skipped.", path);
         return;
     }
 
@@ -470,7 +470,7 @@ CWeapons_LoadFromFolder(const path[]) {
     new sFile[PLATFORM_MAX_PATH], iDirHandler, FileType:iType;
     iDirHandler = open_dir(pathNonConst, sFile, charsmax(sFile), iType);
     if (!iDirHandler) {
-        log_amx("[ERROR] Can't open folder '%s'. Custom weapons loading skipped.", path);
+        log_amx("[WARNING] Can't open folder '%s'. Custom weapons loading skipped.", path);
         return;
     }
     

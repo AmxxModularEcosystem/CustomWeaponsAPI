@@ -6,7 +6,7 @@
 #include <amxmodx>
 #include <reapi>
 
-#define _CWAPI_VERSION "1.0.2"
+#define _CWAPI_VERSION "1.0.3"
 
 /**
  * Строковое представление версии CWAPI.
