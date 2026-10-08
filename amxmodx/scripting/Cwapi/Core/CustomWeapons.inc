@@ -443,17 +443,63 @@ static CWeapons__ReadSounds(const JSON:weaponJson, WeaponData[S_CustomWeapon]) {
     }
 
     new JSON:soundsJson = json_object_get_value(weaponJson, "Sounds");
-    if (!json_object_has_value(soundsJson, "Shot", JSONString)) {
-        PCJson_LogForFile(soundsJson, "WARNING", "'Sounds.Shot' field required if 'Sounds' field exists.");
-        return;
-    }
+
+    CWeapons__PrecacheOnlySounds(soundsJson);
 
     new Sounds[S_CWeapon_Sounds];
     PCSingle_ObjSound(soundsJson, "Shot", Sounds[CWeapon_Sound_Shot], charsmax(Sounds[CWeapon_Sound_Shot]));
     PCSingle_ObjSound(soundsJson, "ShotSilenced", Sounds[CWeapon_Sound_ShotSilenced], charsmax(Sounds[CWeapon_Sound_ShotSilenced]), Sounds[CWeapon_Sound_Shot]);
     PCSingle_ObjSound(soundsJson, "ShotBurst", Sounds[CWeapon_Sound_ShotBurst], charsmax(Sounds[CWeapon_Sound_ShotBurst]), Sounds[CWeapon_Sound_Shot]);
     WeaponData[CWeapon_Sounds] = Sounds;
-    WeaponData[CWeapon_HasCustomSounds] = true;
+
+    // 'Shot' не обязателен. Кастомная обработка (NotClientWeapons) включается при
+    // наличии обычного или бесшумного звука выстрела. 'ShotSilenced' наследует 'Shot',
+    // поэтому проверяем оба поля. 'ShotBurst' сам по себе флаг не включает.
+    WeaponData[CWeapon_HasCustomSounds] = (
+        Sounds[CWeapon_Sound_Shot][0] != EOS
+        || Sounds[CWeapon_Sound_ShotSilenced][0] != EOS
+    );
+
+    PCJson_Free(soundsJson);
+}
+
+/**
+ * Прекеширует звуки из поля 'Sounds.PrecacheOnly'.
+ *
+ * Такие звуки не используются плагином явно - клиент проигрывает их сам,
+ * поэтому они нигде не сохраняются, а только помещаются в прекеш.
+ * Поддерживается как одиночный звук, так и массив звуков.
+ */
+static CWeapons__PrecacheOnlySounds(const JSON:soundsJson) {
+    if (!json_object_has_value(soundsJson, "PrecacheOnly")) {
+        return;
+    }
+
+    new JSON:precacheJson = json_object_get_value(soundsJson, "PrecacheOnly");
+    if (precacheJson == Invalid_JSON) {
+        return;
+    }
+
+    new sSound[PLATFORM_MAX_PATH];
+
+    if (json_is_array(precacheJson)) {
+        new JSON:soundJson;
+        for (new i = 0, ii = json_array_get_count(precacheJson); i < ii; ++i) {
+            soundJson = json_array_get_value(precacheJson, i);
+            if (soundJson == Invalid_JSON) {
+                continue;
+            }
+
+            sSound[0] = EOS;
+            PCSingle_Sound(soundJson, sSound, charsmax(sSound));
+            json_free(soundJson);
+        }
+    } else {
+        sSound[0] = EOS;
+        PCSingle_Sound(precacheJson, sSound, charsmax(sSound));
+    }
+
+    PCJson_Free(precacheJson);
 }
 
 CWeapons_LoadFromFolder(const path[]) {
