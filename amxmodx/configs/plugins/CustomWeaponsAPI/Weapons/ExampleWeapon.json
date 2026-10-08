@@ -15,7 +15,11 @@
     "Sounds": {
         "Shot": "weapons/famas-1.wav",
         "ShotSilenced": "weapons/galil-1.wav",
-        "ShotBurst": "weapons/hegrenade-1.wav"
+        "ShotBurst": "weapons/hegrenade-1.wav",
+        "PrecacheOnly": [
+            "weapons/ak47-1.wav",
+            "weapons/m4a1-1.wav"
+        ]
     },
 
     "Abilities": {
